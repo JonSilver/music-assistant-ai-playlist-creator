@@ -8,6 +8,7 @@
     "backend"
   ],
   "scripts": {
+    "postinstall": "npm rebuild --workspace=frontend",
     "dev": "concurrently \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
     "build": "npm run build --workspaces",
     "dev:frontend": "npm run dev --workspace=frontend",
