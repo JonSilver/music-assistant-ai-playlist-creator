@@ -15,10 +15,22 @@ This project provides an AI-assisted playlist creation interface for Music Assis
 - **API Communication**: TBD (fetch, axios, or React Query)
 
 ### Backend
-- **Runtime**: TBD (Node.js/Express, Python/FastAPI, or other)
-- **Language**: TypeScript or Python
-- **AI Integration**: TBD (Claude API, OpenAI, or other)
-- **Music Assistant Integration**: REST API
+- **Runtime**: Node.js with Express
+- **Language**: TypeScript (strict mode)
+- **Database**: SQLite (for storing prompts, history, settings if needed)
+- **AI Integration**: Claude API or OpenAI API (user-configured)
+- **Music Assistant Integration**: WebSocket API (also available as REST)
+
+### Music Assistant Details
+- **What it is**: Open-source media library manager (Python-based)
+- **Deployment**: Runs on local network device (Raspberry Pi, NAS, Intel NUC)
+- **Default Port**: 8095
+- **API Type**: WebSocket with partial REST exposure
+- **Authentication**: None required (local network access)
+- **API Documentation**: Auto-generated at `http://<MA_SERVER_IP>:8095/api-docs`
+- **Client Libraries**:
+  - Python: https://github.com/music-assistant/client
+  - TypeScript reference: https://github.com/music-assistant/frontend
 
 ### Architecture Flow
 ```
@@ -26,13 +38,17 @@ User Input (Prompt)
     ↓
 Frontend (React)
     ↓
-Backend API
+Backend API Server
     ↓
-AI Service (Playlist Generation)
+AI Service (Claude/OpenAI)
     ↓
-Music Assistant API (Track Search & Playlist Creation)
+AI Returns Structured Track List
     ↓
-Response to Frontend
+Backend Searches MA Library via WebSocket
+    ↓
+Match Tracks & Create Playlist via MA API
+    ↓
+Response to Frontend (with match results)
 ```
 
 ## Core Features
@@ -51,11 +67,13 @@ Response to Frontend
   - Confidence scores (optional)
 
 ### 3. Music Assistant Integration
-- Connect to existing Music Assistant instance
-- Search library for AI-suggested tracks
-- Match tracks with fuzzy search if needed
-- Create playlist via MA API
-- Handle partial matches and missing tracks
+- Connect to MA instance via WebSocket (user provides server URL)
+- Use `music_assistant.search` for global search across library
+- Use `music_assistant.get_library` for local library queries
+- Search by track name, artist, and album
+- Create playlist via `createPlaylist()` API method
+- Add matched tracks via `addPlaylistTracks()`
+- Handle partial matches and missing tracks gracefully
 
 ### 4. Results Display
 - Show matched tracks
@@ -103,59 +121,140 @@ Response to Frontend
 ## Project Structure (Proposed)
 
 ```
-src/
-├── components/        # React components
-│   ├── ui/           # Reusable UI components
-│   └── features/     # Feature-specific components
-├── hooks/            # Custom React hooks
-├── services/         # API clients and external services
-│   ├── ai/          # AI service integration
-│   └── musicAssistant/ # Music Assistant API client
-├── types/            # TypeScript type definitions
-├── utils/            # Utility functions
-├── lib/              # Third-party library configurations
-└── App.tsx           # Main application component
+/
+├── frontend/               # React application
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   │   ├── ui/       # Reusable UI components
+│   │   │   └── features/ # Feature-specific components
+│   │   ├── hooks/        # Custom React hooks
+│   │   ├── services/     # API clients
+│   │   │   └── api.ts   # Backend API client
+│   │   ├── types/        # TypeScript type definitions
+│   │   ├── utils/        # Utility functions
+│   │   ├── lib/          # Third-party configs
+│   │   └── App.tsx       # Main application
+│   ├── package.json
+│   └── vite.config.ts
+│
+├── backend/                # Express API server
+│   ├── src/
+│   │   ├── routes/        # Express routes
+│   │   │   ├── playlist.ts # Playlist creation endpoints
+│   │   │   └── health.ts  # Health check
+│   │   ├── services/
+│   │   │   ├── ai.ts     # AI service integration
+│   │   │   └── musicAssistant.ts # MA WebSocket client
+│   │   ├── db/           # SQLite database
+│   │   │   └── schema.ts # DB schema & migrations
+│   │   ├── types/        # Shared TypeScript types
+│   │   ├── utils/        # Utilities
+│   │   └── server.ts     # Express app setup
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── shared/                 # Shared types between frontend/backend
+│   └── types.ts
+│
+├── .env.example           # Environment variables template
+├── docker-compose.yml     # Docker setup (optional)
+├── package.json           # Root workspace config
+└── README.md
 ```
 
 ## Integration Points
 
 ### Music Assistant API
-- **Base URL**: TBD
-- **Authentication**: TBD (API key, OAuth, or none)
-- **Key Endpoints**:
-  - Search tracks
-  - Create playlist
-  - Add tracks to playlist
-  - Get library metadata
+- **Base URL**: User-configured (e.g., `http://192.168.1.100:8095`)
+- **WebSocket URL**: `ws://<server_ip>:8095/ws`
+- **Authentication**: None (local network only)
+- **API Documentation**: Available at `http://<server_ip>:8095/api-docs`
+- **Key API Methods**:
+  - `getLibraryTracks()` - retrieve all library tracks with filters/sorting
+  - `getLibraryArtists()` - get artists from library
+  - `getLibraryAlbums()` - get albums from library
+  - `getLibraryPlaylists()` - retrieve existing playlists
+  - `search()` - global search on library and providers (supports: artist, album, track, playlist, radio)
+  - `createPlaylist(name, provider)` - create new playlist
+  - `addPlaylistTracks(playlistId, uris)` - add tracks to playlist
+  - `getPlaylistTracks(playlistId)` - retrieve playlist contents
+
+**Search Parameters**:
+- `name`: search query string
+- `media_type`: artist, album, track, radio, or playlist
+- `limit`: max results per type
+- `library_only`: restrict to library items only
 
 ### AI Service
-- **Provider**: TBD (Claude API preferred, OpenAI alternative)
-- **Model**: TBD
-- **Prompt Engineering**: System prompt to ensure structured output
-- **Response Format**: JSON with track list
+- **Provider**: Claude API or OpenAI (user's choice)
+- **API Key**: User-provided via environment variable
+- **Model**: Claude 3.5 Sonnet or GPT-4
+- **Prompt Engineering**: System prompt requesting structured JSON output
+- **Response Format**: JSON array with objects containing:
+  ```json
+  {
+    "tracks": [
+      {
+        "title": "Track Name",
+        "artist": "Artist Name",
+        "album": "Album Name (optional)"
+      }
+    ]
+  }
+  ```
 
-## Open Questions
+## Configuration & Decisions Needed
 
-### Critical
-1. **Backend Stack**: Node.js/Express, Python/FastAPI, or serverless functions?
-2. **AI Service**: Claude API (preferred?) or OpenAI? API keys management?
-3. **Music Assistant Connection**:
-   - How to connect to MA instance? (URL configuration, discovery?)
-   - Authentication method?
-   - API documentation location?
-4. **Deployment Target**: Self-hosted, Docker, cloud platform?
+### Technology Choices
 
-### Important
-5. **State Management**: Simple Context, Zustand, or Redux Toolkit?
-6. **Styling Solution**: Preference for Tailwind, CSS Modules, or styled-components?
-7. **Environment Variables**: How should users configure API keys and MA connection?
-8. **Error Handling**: Retry logic, fallbacks for partial matches?
+**Decided:**
+1. ✅ **Backend Stack**: Node.js/Express with TypeScript
+2. ✅ **Database**: SQLite (for optional features like history, settings)
 
-### Nice to Have
-9. **Multi-user Support**: Single user or multi-user with profiles?
-10. **Playlist Refinement**: Allow iterative refinement of AI suggestions?
-11. **Analytics**: Track usage, popular prompts, success rates?
-12. **Export**: Save prompts, export playlists to other formats?
+**To Decide:**
+3. **State Management**: React Context, Zustand, or Redux Toolkit?
+   - Simple Context likely sufficient for this app
+
+4. **Styling Solution**: Tailwind CSS, CSS Modules, or styled-components?
+
+5. **WebSocket Library**:
+   - Frontend: native WebSocket API, ws library, or socket.io-client?
+   - Backend: ws, socket.io for MA connection?
+
+### Deployment & Configuration
+5. **Deployment Target**:
+   - Docker container (recommended for easy setup)
+   - Self-hosted Node/Python server
+   - Could run on same device as Music Assistant
+
+6. **Environment Configuration**:
+   - `.env` file with:
+     - `MUSIC_ASSISTANT_URL` (e.g., `http://192.168.1.100:8095`)
+     - `AI_API_KEY` (Claude or OpenAI)
+     - `AI_PROVIDER` (claude or openai)
+     - `PORT` (default 3000)
+
+### Implementation Details
+7. **Track Matching Strategy**:
+   - Exact match first
+   - Fuzzy match if needed (Levenshtein distance?)
+   - Allow user to resolve ambiguous matches?
+
+8. **Error Handling**:
+   - Retry logic for network failures
+   - Partial playlist creation if some tracks not found
+   - Show clear feedback on unmatched tracks
+
+9. **AI Prompt Design**:
+   - Include user's music library context in prompt?
+   - Request multiple alternatives per track?
+   - Specify playlist length in prompt?
+
+### Nice to Have Features
+10. **Playlist Refinement**: Allow editing before creation?
+11. **Prompt Templates**: Common playlist types (workout, chill, etc.)?
+12. **History**: Save past prompts and generated playlists?
+13. **Export**: Export playlist as M3U, Spotify format, etc.?
 
 ## Development Workflow
 
