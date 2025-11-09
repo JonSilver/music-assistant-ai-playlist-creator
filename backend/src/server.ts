@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { mkdirSync } from 'fs'
 import { PlaylistDatabase } from './db/schema.js'
 import { setupSettingsRoutes } from './routes/settings.js'
 import { setupPlaylistRoutes } from './routes/playlist.js'
@@ -19,6 +20,11 @@ const PORT = process.env.PORT ?? 3001
 
 // Initialize database
 const dbPath = process.env.DATABASE_PATH ?? path.join(__dirname, '../../data/playlists.db')
+const dbDir = path.dirname(dbPath)
+
+// Create data directory if it doesn't exist
+mkdirSync(dbDir, { recursive: true })
+
 const db = new PlaylistDatabase(dbPath)
 
 // Middleware
