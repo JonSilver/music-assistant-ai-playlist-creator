@@ -106,27 +106,41 @@ This builds both the frontend and backend for production.
 
 ### Quick Start
 
-```bash
-docker-compose up -d
-```
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
 
-The application will be available at http://localhost
+2. Edit `.env` to customize your setup (optional):
+   ```bash
+   # Data directory on host machine for SQLite database
+   DATA_PATH=./data
+
+   # Port to expose the application on
+   APP_PORT=80
+   ```
+
+3. Start the container:
+   ```bash
+   docker-compose up -d
+   ```
+
+The application will be available at http://localhost (or the port you configured).
 
 ### Data Persistence
 
-The SQLite database is stored in a volume mapped to `./data` in your current directory. This directory is created automatically and contains:
+The SQLite database is stored in the directory specified by `DATA_PATH` in your `.env` file (defaults to `./data`). This directory is created automatically and contains:
 - `playlists.db` - SQLite database with settings, prompt history, and presets
 
-To use a different data directory, edit the `volumes` section in `docker-compose.yml`:
+To use a different data directory, simply change `DATA_PATH` in your `.env` file:
 
-```yaml
-volumes:
-  - /your/custom/path:/app/data
+```bash
+DATA_PATH=/mnt/storage/playlist-creator
 ```
 
 ### Configuration
 
-All settings are configured through the web UI. Navigate to Settings and configure:
+All application settings are configured through the web UI. Navigate to Settings and configure:
 - Music Assistant URL (e.g., `http://192.168.1.100:8095`)
 - AI Provider (Claude or OpenAI)
 - API keys

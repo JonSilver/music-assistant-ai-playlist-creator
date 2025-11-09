@@ -7,10 +7,10 @@ services:
       dockerfile: Dockerfile
     container_name: playlist-creator
     ports:
-      - '80:80'
+      - '${APP_PORT:-80}:80'
     environment:
       - PORT=3001
       - DATABASE_PATH=/app/data/playlists.db
     volumes:
-      - ./data:/app/data
+      - '${DATA_PATH:-./data}:/app/data'
     restart: unless-stopped
