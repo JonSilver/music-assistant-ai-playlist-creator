@@ -117,7 +117,7 @@ This builds both the frontend and backend for production.
    DATA_PATH=./data
 
    # Port to expose the application on
-   APP_PORT=80
+   APP_PORT=8080
    ```
 
 3. Start the container:
@@ -125,7 +125,7 @@ This builds both the frontend and backend for production.
    docker-compose up -d
    ```
 
-The application will be available at http://localhost (or the port you configured).
+The application will be available at http://localhost:8080 (or the port you configured).
 
 ### Data Persistence
 
