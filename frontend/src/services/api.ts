@@ -82,5 +82,30 @@ export const api = {
     attemptPromise<{ history: PromptHistory[] }>(async () => fetchJSON('/prompts/history')),
 
   getPresetPrompts: async () =>
-    attemptPromise<{ presets: PresetPrompt[] }>(async () => fetchJSON('/prompts/presets'))
+    attemptPromise<{ presets: PresetPrompt[] }>(async () => fetchJSON('/prompts/presets')),
+
+  // Connection tests
+  testMusicAssistant: async (url: string) =>
+    attemptPromise<{ success: boolean; error?: string }>(async () =>
+      fetchJSON('/settings/test/music-assistant', {
+        method: 'POST',
+        body: JSON.stringify({ url })
+      })
+    ),
+
+  testAnthropic: async (apiKey: string) =>
+    attemptPromise<{ success: boolean; error?: string }>(async () =>
+      fetchJSON('/settings/test/anthropic', {
+        method: 'POST',
+        body: JSON.stringify({ apiKey })
+      })
+    ),
+
+  testOpenAI: async (apiKey: string, baseUrl?: string) =>
+    attemptPromise<{ success: boolean; error?: string }>(async () =>
+      fetchJSON('/settings/test/openai', {
+        method: 'POST',
+        body: JSON.stringify({ apiKey, baseUrl })
+      })
+    )
 }

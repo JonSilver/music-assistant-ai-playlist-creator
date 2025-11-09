@@ -35,6 +35,14 @@ const App = (): React.JSX.Element => {
   const [openaiBaseUrl, setOpenaiBaseUrl] = useState('')
   const [customSystemPrompt, setCustomSystemPrompt] = useState('')
   const [temperature, setTemperature] = useState('1.0')
+  const [testingMA, setTestingMA] = useState(false)
+  const [testingAnthropic, setTestingAnthropic] = useState(false)
+  const [testingOpenAI, setTestingOpenAI] = useState(false)
+  const [testResults, setTestResults] = useState<{
+    ma?: { success: boolean; error?: string }
+    anthropic?: { success: boolean; error?: string }
+    openai?: { success: boolean; error?: string }
+  }>({})
 
   useEffect(() => {
     void loadHistory()
@@ -159,6 +167,66 @@ const App = (): React.JSX.Element => {
       setPlaylistName(item.playlistName)
     }
     setShowHistory(false)
+  }
+
+  const handleTestMA = async (): Promise<void> => {
+    if (musicAssistantUrl.trim().length === 0) {
+      setError('Please enter a Music Assistant URL')
+      return
+    }
+
+    setTestingMA(true)
+    setTestResults(prev => ({ ...prev, ma: undefined }))
+
+    const [err, result] = await api.testMusicAssistant(musicAssistantUrl.trim())
+    setTestingMA(false)
+
+    if (err !== undefined) {
+      setTestResults(prev => ({ ...prev, ma: { success: false, error: err.message } }))
+    } else {
+      setTestResults(prev => ({ ...prev, ma: result }))
+    }
+  }
+
+  const handleTestAnthropic = async (): Promise<void> => {
+    if (anthropicApiKey.trim().length === 0) {
+      setError('Please enter an Anthropic API key')
+      return
+    }
+
+    setTestingAnthropic(true)
+    setTestResults(prev => ({ ...prev, anthropic: undefined }))
+
+    const [err, result] = await api.testAnthropic(anthropicApiKey.trim())
+    setTestingAnthropic(false)
+
+    if (err !== undefined) {
+      setTestResults(prev => ({ ...prev, anthropic: { success: false, error: err.message } }))
+    } else {
+      setTestResults(prev => ({ ...prev, anthropic: result }))
+    }
+  }
+
+  const handleTestOpenAI = async (): Promise<void> => {
+    if (openaiApiKey.trim().length === 0) {
+      setError('Please enter an OpenAI API key')
+      return
+    }
+
+    setTestingOpenAI(true)
+    setTestResults(prev => ({ ...prev, openai: undefined }))
+
+    const [err, result] = await api.testOpenAI(
+      openaiApiKey.trim(),
+      openaiBaseUrl.trim().length > 0 ? openaiBaseUrl.trim() : undefined
+    )
+    setTestingOpenAI(false)
+
+    if (err !== undefined) {
+      setTestResults(prev => ({ ...prev, openai: { success: false, error: err.message } }))
+    } else {
+      setTestResults(prev => ({ ...prev, openai: result }))
+    }
   }
 
   const handleRefinePlaylist = async (): Promise<void> => {
@@ -595,6 +663,27 @@ const App = (): React.JSX.Element => {
               <label className="label">
                 <span className="label-text-alt">WebSocket URL of your Music Assistant server</span>
               </label>
+              <button
+                className="btn btn-sm btn-outline mt-2"
+                onClick={() => {
+                  void handleTestMA()
+                }}
+                disabled={testingMA || musicAssistantUrl.trim().length === 0}
+              >
+                {testingMA && <span className="loading loading-spinner loading-xs"></span>}
+                {testingMA ? 'Testing...' : 'Test Connection'}
+              </button>
+              {testResults.ma !== undefined && (
+                <div
+                  className={`alert ${testResults.ma.success ? 'alert-success' : 'alert-error'} mt-2`}
+                >
+                  <span className="text-sm">
+                    {testResults.ma.success
+                      ? 'Connection successful!'
+                      : `Connection failed: ${testResults.ma.error ?? 'Unknown error'}`}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="form-control mb-4">
@@ -627,6 +716,27 @@ const App = (): React.JSX.Element => {
                     setAnthropicApiKey(e.target.value)
                   }}
                 />
+                <button
+                  className="btn btn-sm btn-outline mt-2"
+                  onClick={() => {
+                    void handleTestAnthropic()
+                  }}
+                  disabled={testingAnthropic || anthropicApiKey.trim().length === 0}
+                >
+                  {testingAnthropic && <span className="loading loading-spinner loading-xs"></span>}
+                  {testingAnthropic ? 'Testing...' : 'Test API Key'}
+                </button>
+                {testResults.anthropic !== undefined && (
+                  <div
+                    className={`alert ${testResults.anthropic.success ? 'alert-success' : 'alert-error'} mt-2`}
+                  >
+                    <span className="text-sm">
+                      {testResults.anthropic.success
+                        ? 'API key valid!'
+                        : `API key test failed: ${testResults.anthropic.error ?? 'Unknown error'}`}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -664,6 +774,28 @@ const App = (): React.JSX.Element => {
                     <span className="label-text-alt">For OpenAI-compatible endpoints</span>
                   </label>
                 </div>
+
+                <button
+                  className="btn btn-sm btn-outline mb-4"
+                  onClick={() => {
+                    void handleTestOpenAI()
+                  }}
+                  disabled={testingOpenAI || openaiApiKey.trim().length === 0}
+                >
+                  {testingOpenAI && <span className="loading loading-spinner loading-xs"></span>}
+                  {testingOpenAI ? 'Testing...' : 'Test API Key'}
+                </button>
+                {testResults.openai !== undefined && (
+                  <div
+                    className={`alert ${testResults.openai.success ? 'alert-success' : 'alert-error'} mb-4`}
+                  >
+                    <span className="text-sm">
+                      {testResults.openai.success
+                        ? 'API key valid!'
+                        : `API key test failed: ${testResults.openai.error ?? 'Unknown error'}`}
+                    </span>
+                  </div>
+                )}
               </>
             )}
 

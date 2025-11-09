@@ -1,4 +1,7 @@
 import type { Router, Request, Response } from 'express'
+import { attempt } from '@jfdi/attempt'
+import { MusicAssistantClient } from '../services/musicAssistant.js'
+import { AIService } from '../services/ai.js'
 import type { PlaylistDatabase } from '../db/schema.js'
 import type { UpdateSettingsRequest, GetSettingsResponse } from '../../../shared/types.js'
 
@@ -60,5 +63,83 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
     }
 
     res.json({ success: true })
+  })
+
+  // Test Music Assistant connection
+  router.post('/settings/test/music-assistant', async (req: Request, res: Response) => {
+    const { url } = req.body as { url: string }
+
+    if (!url) {
+      res.status(400).json({ success: false, error: 'URL is required' })
+      return
+    }
+
+    const result = await attempt(async () => {
+      const client = new MusicAssistantClient(url)
+      await client.connect()
+      client.disconnect()
+      return { success: true }
+    })
+
+    if (!result.ok) {
+      res.json({ success: false, error: result.error.message })
+      return
+    }
+
+    res.json(result.value)
+  })
+
+  // Test Anthropic API key
+  router.post('/settings/test/anthropic', async (req: Request, res: Response) => {
+    const { apiKey } = req.body as { apiKey: string }
+
+    if (!apiKey) {
+      res.status(400).json({ success: false, error: 'API key is required' })
+      return
+    }
+
+    const result = await attempt(async () => {
+      const aiService = new AIService(apiKey, undefined, undefined)
+      // Simple test prompt
+      await aiService.generatePlaylist({
+        prompt: 'Test',
+        provider: 'claude'
+      })
+      return { success: true }
+    })
+
+    if (!result.ok) {
+      res.json({ success: false, error: result.error.message })
+      return
+    }
+
+    res.json(result.value)
+  })
+
+  // Test OpenAI API key
+  router.post('/settings/test/openai', async (req: Request, res: Response) => {
+    const { apiKey, baseUrl } = req.body as { apiKey: string; baseUrl?: string }
+
+    if (!apiKey) {
+      res.status(400).json({ success: false, error: 'API key is required' })
+      return
+    }
+
+    const result = await attempt(async () => {
+      const aiService = new AIService(undefined, apiKey, baseUrl)
+      // Simple test prompt
+      await aiService.generatePlaylist({
+        prompt: 'Test',
+        provider: 'openai'
+      })
+      return { success: true }
+    })
+
+    if (!result.ok) {
+      res.json({ success: false, error: result.error.message })
+      return
+    }
+
+    res.json(result.value)
   })
 }
