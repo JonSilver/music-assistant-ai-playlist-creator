@@ -1,0 +1,29 @@
+{
+  "name": "music-assistant-ai-playlist-creator",
+  "version": "1.0.0",
+  "description": "AI-assisted playlist creator for Music Assistant",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
+    "build": "npm run build --workspaces",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "type-check": "npm run type-check --workspaces --if-present"
+  },
+  "keywords": [
+    "music-assistant",
+    "ai",
+    "playlist",
+    "claude",
+    "openai"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
