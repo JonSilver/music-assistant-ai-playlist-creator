@@ -52,8 +52,8 @@ export default tseslint.config(
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
-        },
+          caughtErrorsIgnorePattern: '^_'
+        }
       ],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-non-null-assertion': 'error',
@@ -62,16 +62,16 @@ export default tseslint.config(
         {
           allowExpressions: true,
           allowTypedFunctionExpressions: true,
-          allowHigherOrderFunctions: true,
-        },
+          allowHigherOrderFunctions: true
+        }
       ],
       '@typescript-eslint/strict-boolean-expressions': [
         'error',
         {
           allowString: false,
           allowNumber: false,
-          allowNullableObject: false,
-        },
+          allowNullableObject: false
+        }
       ],
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
