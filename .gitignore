@@ -15,6 +15,12 @@ dist/
 build/
 *.tsbuildinfo
 
+# TypeScript compiled outputs
+shared/*.js
+shared/*.d.ts
+shared/*.js.map
+shared/*.d.ts.map
+
 # Database
 *.db
 *.sqlite
