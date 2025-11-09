@@ -10,7 +10,7 @@ import type {
   TrackMatch
 } from '@shared/types'
 
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001/api'
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3333/api'
 
 interface ErrorResponse {
   error?: string

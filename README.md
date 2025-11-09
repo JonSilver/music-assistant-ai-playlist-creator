@@ -79,7 +79,7 @@ npm run dev
 ```
 
 Frontend: http://localhost:5555
-Backend: http://localhost:3001
+Backend: http://localhost:3333
 
 ## Usage
 
