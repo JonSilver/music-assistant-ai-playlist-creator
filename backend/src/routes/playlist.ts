@@ -11,30 +11,18 @@ import type {
   TrackSuggestion
 } from '../../../shared/types.js'
 
-const matchTrack = (suggestion: TrackSuggestion, libraryTracks: Array<{ name: string; artists: Array<{ name: string }>; album?: { name: string }; uri: string; provider: string; item_id: string }>): TrackMatch => {
-  // Simple fuzzy matching based on track title and artist
-  const suggestedTitle = suggestion.title.toLowerCase()
-  const suggestedArtist = suggestion.artist.toLowerCase()
+const matchTrack = async (suggestion: TrackSuggestion, maClient: MusicAssistantClient): Promise<TrackMatch> => {
+  // Use Music Assistant's search to find the track
+  const searchQuery = `${suggestion.title} ${suggestion.artist}`
+  const searchResults = await maClient.searchTracks(searchQuery, 5)
 
-  for (const track of libraryTracks) {
-    const trackTitle = track.name.toLowerCase()
-    const trackArtists = track.artists.map(a => a.name.toLowerCase())
-
-    // Check if title matches (allowing some flexibility)
-    const titleMatch = trackTitle.includes(suggestedTitle) || suggestedTitle.includes(trackTitle)
-
-    // Check if artist matches
-    const artistMatch = trackArtists.some(
-      artist => artist.includes(suggestedArtist) || suggestedArtist.includes(artist)
-    )
-
-    if (titleMatch && artistMatch) {
-      return {
-        suggestion,
-        matched: true,
-        maTrack: track,
-        confidence: 1.0
-      }
+  if (searchResults.length > 0) {
+    // Take the first result as the best match
+    return {
+      suggestion,
+      matched: true,
+      maTrack: searchResults[0],
+      confidence: 1.0
     }
   }
 
@@ -86,12 +74,9 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         temperature
       })
 
-      // Get library tracks for matching
-      const libraryTracks = await maClient.getLibraryTracks()
-
-      // Match AI suggestions to library tracks
-      const matches: TrackMatch[] = aiResponse.tracks.map(suggestion =>
-        matchTrack(suggestion, libraryTracks)
+      // Match AI suggestions using Music Assistant search
+      const matches: TrackMatch[] = await Promise.all(
+        aiResponse.tracks.map(suggestion => matchTrack(suggestion, maClient))
       )
 
       maClient.disconnect()
@@ -206,9 +191,8 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         temperature
       })
 
-      const libraryTracks = await maClient.getLibraryTracks()
-      const matches: TrackMatch[] = aiResponse.tracks.map(suggestion =>
-        matchTrack(suggestion, libraryTracks)
+      const matches: TrackMatch[] = await Promise.all(
+        aiResponse.tracks.map(suggestion => matchTrack(suggestion, maClient))
       )
 
       maClient.disconnect()
