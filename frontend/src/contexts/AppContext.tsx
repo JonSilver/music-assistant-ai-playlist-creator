@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import type { GetSettingsResponse, UpdateSettingsRequest } from '@shared/types'
 import { api } from '../services/api'
 
@@ -12,7 +12,7 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
 
-export const AppProvider = ({ children }: { children: ReactNode }): JSX.Element => {
+export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.Element => {
   const [settings, setSettings] = useState<GetSettingsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

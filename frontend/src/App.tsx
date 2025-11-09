@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useApp } from './contexts/AppContext'
 import { api } from './services/api'
 import type {
@@ -8,7 +8,7 @@ import type {
   TrackMatch
 } from '../../shared/types'
 
-const App = (): JSX.Element => {
+const App = (): React.JSX.Element => {
   const { settings, updateSettings, loading: settingsLoading } = useApp()
   const [prompt, setPrompt] = useState('')
   const [playlistName, setPlaylistName] = useState('')
@@ -84,7 +84,7 @@ const App = (): JSX.Element => {
       return
     }
 
-    setGeneratedTracks(result.tracks)
+    setGeneratedTracks(result.matches)
     void loadHistory()
   }
 
@@ -144,7 +144,7 @@ const App = (): JSX.Element => {
 
   const handleUseHistory = (item: PromptHistory): void => {
     setPrompt(item.prompt)
-    if (item.playlistName !== null) {
+    if (item.playlistName !== undefined) {
       setPlaylistName(item.playlistName)
     }
     setShowHistory(false)
@@ -335,7 +335,9 @@ const App = (): JSX.Element => {
                 onClick={() => {
                   void handleGeneratePlaylist()
                 }}
-                disabled={generating || prompt.trim().length === 0 || playlistName.trim().length === 0}
+                disabled={
+                  generating || prompt.trim().length === 0 || playlistName.trim().length === 0
+                }
               >
                 {generating && <span className="loading loading-spinner"></span>}
                 {generating ? 'Generating...' : 'Generate Playlist'}
@@ -558,7 +560,7 @@ const App = (): JSX.Element => {
                           <p className="text-sm opacity-75 mt-1">{item.prompt}</p>
                         </div>
                         <div className="text-xs opacity-50 ml-4">
-                          {new Date(item.createdAt).toLocaleDateString()}
+                          {new Date(item.timestamp).toLocaleDateString()}
                         </div>
                       </div>
                       <div className="text-xs opacity-50">{item.trackCount} tracks</div>

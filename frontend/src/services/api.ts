@@ -6,7 +6,8 @@ import type {
   CreatePlaylistResponse,
   RefinePlaylistRequest,
   PromptHistory,
-  PresetPrompt
+  PresetPrompt,
+  TrackMatch
 } from '@shared/types'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api'
@@ -55,10 +56,7 @@ export const api = {
       })
     ),
 
-  createPlaylist: async (data: {
-    playlistName: string
-    tracks: CreatePlaylistResponse['tracks']
-  }) =>
+  createPlaylist: async (data: { playlistName: string; tracks: TrackMatch[] }) =>
     attemptPromise<{ success: boolean; playlistId: string; tracksAdded: number }>(async () =>
       fetchJSON('/playlist/create', {
         method: 'POST',
@@ -69,7 +67,7 @@ export const api = {
   refinePlaylist: async (request: RefinePlaylistRequest) =>
     attemptPromise<{
       success: boolean
-      tracks: CreatePlaylistResponse['tracks']
+      tracks: TrackMatch[]
       totalSuggested: number
       totalMatched: number
     }>(async () =>
