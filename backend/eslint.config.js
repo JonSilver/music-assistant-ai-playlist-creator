@@ -1,17 +1,15 @@
 import js from '@eslint/js'
 import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import prettier from 'eslint-plugin-prettier'
 import prettierConfig from 'eslint-config-prettier'
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'node_modules', '*.config.js', '*.config.ts']
+    ignores: ['dist', 'node_modules', '*.config.js']
   },
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.ts'],
     extends: [
       js.configs.recommended,
       ...tseslint.configs.strictTypeChecked,
@@ -20,31 +18,21 @@ export default tseslint.config(
     ],
     languageOptions: {
       ecmaVersion: 2022,
-      globals: globals.browser,
+      globals: {
+        ...globals.node,
+        ...globals.es2022
+      },
       parserOptions: {
-        project: ['./tsconfig.app.json', './tsconfig.node.json'],
+        project: './tsconfig.json',
         tsconfigRootDir: import.meta.dirname
       }
     },
     plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
       prettier
     },
     rules: {
       // Prettier
       'prettier/prettier': 'error',
-
-      // React Hooks - ALL ERRORS (not warnings)
-      ...reactHooks.configs.recommended.rules,
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'error',
-
-      // React Refresh
-      'react-refresh/only-export-components': [
-        'error',
-        { allowConstantExport: true }
-      ],
 
       // TypeScript strict rules
       '@typescript-eslint/no-unused-vars': [
@@ -52,8 +40,8 @@ export default tseslint.config(
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
-        },
+          caughtErrorsIgnorePattern: '^_'
+        }
       ],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-non-null-assertion': 'error',
@@ -79,16 +67,20 @@ export default tseslint.config(
       '@typescript-eslint/no-unnecessary-condition': 'error',
       '@typescript-eslint/prefer-nullish-coalescing': 'error',
       '@typescript-eslint/prefer-optional-chain': 'error',
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        { prefer: 'type-imports' },
+      ],
 
       // General best practices
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-console': 'off', // Allow console in backend
       'no-debugger': 'error',
-      'no-alert': 'error',
       eqeqeq: ['error', 'always'],
       'no-var': 'error',
       'prefer-const': 'error',
       'prefer-arrow-callback': 'error',
       'no-param-reassign': 'error',
+      'no-throw-literal': 'error',
 
       // Code style preferences
       'comma-dangle': ['error', 'never'],
