@@ -47,60 +47,15 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 
 ## Prerequisites
 
-- Node.js 18+ and npm
+- Docker and docker-compose
 - Music Assistant server running on your local network
 - Claude API key or OpenAI API key
 
 ## Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd music-assistant-ai-playlist-creator
-   ```
+See the **Docker Deployment** section below for production deployment.
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Configure environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-
-   Edit `.env` and configure:
-   - `MUSIC_ASSISTANT_URL`: Your Music Assistant server URL (e.g., `http://192.168.1.100:8095`)
-   - `AI_PROVIDER`: Choose `claude` or `openai`
-   - `ANTHROPIC_API_KEY`: Your Claude API key (if using Claude)
-   - `OPENAI_API_KEY`: Your OpenAI API key (if using OpenAI)
-   - `PORT`: Backend server port (default: 3001)
-
-## Development
-
-Run both frontend and backend in development mode:
-
-```bash
-npm run dev
-```
-
-Or run them separately:
-
-```bash
-# Frontend only (runs on http://localhost:5173)
-npm run dev:frontend
-
-# Backend only (runs on http://localhost:3001)
-npm run dev:backend
-```
-
-## Building for Production
-
-```bash
-npm run build
-```
-
-This builds both the frontend and backend for production.
+For development setup, see the **Development** section.
 
 ## Docker Deployment
 
@@ -156,6 +111,34 @@ docker-compose build --no-cache
 docker-compose up -d
 ```
 
+## Development
+
+For local development without Docker:
+
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+2. **Run in development mode**
+   ```bash
+   npm run dev
+   ```
+
+   Or run frontend and backend separately:
+   ```bash
+   # Frontend (http://localhost:5173)
+   npm run dev:frontend
+
+   # Backend (http://localhost:3001)
+   npm run dev:backend
+   ```
+
+3. **Configure via web UI**
+   - Open http://localhost:5173
+   - Go to Settings
+   - Configure Music Assistant URL, AI provider, and API keys
+
 ## Project Structure
 
 ```
@@ -190,12 +173,15 @@ docker-compose up -d
 
 ## Usage
 
-1. Start the application with `npm run dev`
-2. Open http://localhost:5173 in your browser
-3. Enter a description of your desired playlist (e.g., "Upbeat 80s rock for a road trip")
-4. Review the AI-suggested tracks
-5. Remove any unwanted tracks or request refinements
-6. Create the playlist in Music Assistant
+1. Start the application (see Docker Deployment or Development sections)
+2. Open the web UI (http://localhost:9876 for Docker, http://localhost:5173 for dev)
+3. Go to Settings and configure:
+   - Music Assistant URL
+   - AI provider and API key
+4. Enter a playlist description (e.g., "Upbeat 80s rock for a road trip")
+5. Review the AI-suggested tracks
+6. Remove unwanted tracks or request refinements
+7. Create the playlist in Music Assistant
 
 ## API Endpoints
 
@@ -204,6 +190,9 @@ docker-compose up -d
 - `GET /api/health` - Health check
 - `GET /api/settings` - Get application settings
 - `PUT /api/settings` - Update application settings
+- `POST /api/settings/test/music-assistant` - Test Music Assistant connection
+- `POST /api/settings/test/anthropic` - Test Anthropic API key
+- `POST /api/settings/test/openai` - Test OpenAI API key
 - `POST /api/playlist/generate` - Generate playlist suggestions from prompt
 - `POST /api/playlist/create` - Create playlist in Music Assistant
 - `POST /api/playlist/refine` - Refine existing playlist suggestions
@@ -212,15 +201,14 @@ docker-compose up -d
 
 ## Environment Variables
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `MUSIC_ASSISTANT_URL` | Music Assistant server URL | Yes | - |
-| `AI_PROVIDER` | AI provider (`claude` or `openai`) | Yes | `claude` |
-| `ANTHROPIC_API_KEY` | Claude API key | If using Claude | - |
-| `OPENAI_API_KEY` | OpenAI API key | If using OpenAI | - |
-| `PORT` | Backend server port | No | `3001` |
-| `FRONTEND_URL` | Frontend URL for CORS | No | `http://localhost:5173` |
-| `DATABASE_PATH` | SQLite database path | No | `./data/playlists.db` |
+For Docker deployment only (configured in `.env` file):
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATA_PATH` | Host directory for SQLite database | `./data` |
+| `APP_PORT` | Port to expose the application on | `9876` |
+
+All application settings (Music Assistant URL, AI provider, API keys) are configured through the web UI and stored in the SQLite database.
 
 ## Code Quality
 
