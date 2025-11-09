@@ -44,15 +44,15 @@ Frontend (React + daisyUI)
     ↓
 Backend API Server
     ↓
+Backend Fetches User's Favorite Artists (for AI context)
+    ↓
 AI Service (Claude/OpenAI)
     ↓
 AI Returns Structured Track List
     ↓
-Backend Searches MA Library via WebSocket
+Backend Searches MA Library (via MA search API)
     ↓
-Backend Fetches User's Favorite Artists (for context)
-    ↓
-Match Tracks (fuzzy matching) & Create Playlist via MA API
+Backend Matches Tracks & Creates Playlist
     ↓
 Response to Frontend (with match results)
 ```
@@ -86,10 +86,10 @@ Response to Frontend (with match results)
 ### 3. Music Assistant Integration ✅
 - WebSocket connection to MA instance
 - Retrieve user's favorite artists for AI context
-- Fuzzy track matching (title + artist comparison)
+- Track matching using MA's search API
 - Create playlist via MA API
 - Add matched tracks to playlist
-- Handle partial matches and missing tracks gracefully
+- Handle missing tracks gracefully
 
 ### 4. Results Display ✅
 - Show matched tracks with green "Found" badge
@@ -103,6 +103,9 @@ Response to Frontend (with match results)
 - AI provider selection (Claude/OpenAI)
 - API key management (Anthropic/OpenAI)
 - OpenAI base URL for compatible endpoints
+- Connection testing for MA, Anthropic, and OpenAI
+- Customizable temperature (0-2) for AI creativity
+- Custom system prompts
 - All settings stored in SQLite and configurable via UI
 
 ## Code Quality Standards
@@ -169,7 +172,6 @@ try {
 /
 ├── frontend/               # React application
 │   ├── src/
-│   │   ├── components/    # (empty - using daisyUI)
 │   │   ├── contexts/      # React Context providers
 │   │   │   └── AppContext.tsx
 │   │   ├── services/      # API clients
@@ -181,35 +183,34 @@ try {
 │   ├── vite.config.ts
 │   ├── tailwind.config.js  # daisyUI configuration
 │   ├── eslint.config.js    # Strict TypeScript + Prettier rules
-│   └── Dockerfile          # Frontend container
+│   └── nginx.conf         # Nginx config for frontend
 │
 ├── backend/                # Express API server
 │   ├── src/
 │   │   ├── routes/        # Express routes
 │   │   │   ├── playlist.ts # Playlist creation endpoints
 │   │   │   ├── prompts.ts  # History and presets
-│   │   │   └── settings.ts # Settings CRUD
+│   │   │   └── settings.ts # Settings CRUD + test endpoints
 │   │   ├── services/
 │   │   │   ├── ai.ts     # AI service (Claude + OpenAI)
 │   │   │   └── musicAssistant.ts # MA WebSocket client
 │   │   ├── db/           # SQLite database
 │   │   │   └── schema.ts # DB schema with settings/history/presets
-│   │   ├── utils/        # Utilities
 │   │   └── server.ts     # Express app with CORS and graceful shutdown
 │   ├── package.json
-│   ├── tsconfig.json
-│   ├── eslint.config.js
-│   └── Dockerfile          # Backend container
+│   └── tsconfig.json
 │
 ├── shared/                 # Shared types between frontend/backend
 │   └── types.ts
 │
-├── .env.example           # Environment variables template
-├── .prettierrc.json       # Prettier config (no trailing commas, etc.)
+├── Dockerfile             # Single container (nginx + node)
+├── supervisord.conf       # Runs nginx and backend together
+├── nginx.conf             # Nginx config (serves frontend, proxies /api)
+├── .env.example           # Docker volume/port configuration
 ├── docker-compose.yml     # Docker orchestration
 ├── package.json           # Root workspace config
-├── claude.md              # This file
-└── README.md
+├── claude.md              # This file (technical documentation)
+└── README.md              # User-facing documentation
 ```
 
 ## Integration Points
@@ -266,12 +267,12 @@ try {
 - ✅ Docker deployment setup
 
 ### Deployment & Configuration
-- **Docker**: Multi-stage builds for frontend and backend
-- **Frontend Container**: nginx serving static files with gzip compression
-- **Backend Container**: Node.js with production dependencies only
-- **Data Persistence**: SQLite database mounted as Docker volume
-- **Environment Variables**: All configuration via UI (no .env required)
-- **Port Mapping**: Backend on 3001, Frontend on 5173 (dev) / 80 (prod)
+- **Docker**: Single container with nginx + Node.js using supervisor
+- **Architecture**: nginx serves frontend static files and proxies `/api` to backend
+- **Port**: Exposed on port 9876 (configurable via APP_PORT in .env)
+- **Data Persistence**: SQLite database mounted as Docker volume (configurable via DATA_PATH in .env)
+- **Configuration**: All app settings via UI (stored in SQLite)
+- **Environment Variables**: Only DATA_PATH and APP_PORT for Docker setup
 
 ## Build Status
 
@@ -281,17 +282,19 @@ vite v7.2.2 building client environment for production...
 ✓ 32 modules transformed.
 dist/index.html                   0.46 kB │ gzip:  0.29 kB
 dist/assets/index-*.css          19.34 kB │ gzip:  5.46 kB
-dist/assets/index-*.js          206.09 kB │ gzip: 64.01 kB
-✓ built in 1.12s
+dist/assets/index-*.js          213.86 kB │ gzip: 65.62 kB
+✓ built in 1.15s
 ```
 
-### Linting Status
-- **Frontend**: 6 errors (all from external library type definitions)
-  - 4 from fetch API/browser APIs typed as `any`
-  - 1 react-refresh rule (cosmetic)
-  - 1 unnecessary conditional (overly strict)
-- **Backend**: ~110 errors (mostly similar external API issues)
-- **Note**: All errors are from external libraries, not our code quality issues
+### ✅ Backend Build: SUCCESS
+```
+> backend@1.0.0 build
+> tsc
+```
+
+### ✅ Linting: CLEAN
+- Frontend: No errors
+- Backend: No errors (after fixing @jfdi/attempt usage)
 
 ## Development Workflow
 
@@ -320,6 +323,9 @@ docker-compose up --build
 ### Settings
 - `GET /api/settings` - Get current settings
 - `PUT /api/settings` - Update settings
+- `POST /api/settings/test/music-assistant` - Test MA WebSocket connection
+- `POST /api/settings/test/anthropic` - Test Anthropic API key
+- `POST /api/settings/test/openai` - Test OpenAI API key
 
 ### Playlist
 - `POST /api/playlist/generate` - Generate playlist from prompt
