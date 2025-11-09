@@ -1,6 +1,6 @@
 import WebSocket from 'ws'
 import { attempt } from '@jfdi/attempt'
-import type { MATrack } from '../../../shared/types.js'
+import type { MATrack } from '@shared/types'
 
 interface MAMessage {
   message_id: string

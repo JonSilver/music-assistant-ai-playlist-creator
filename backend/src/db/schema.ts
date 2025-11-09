@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3'
 import { attempt } from '@jfdi/attempt'
-import type { PresetPrompt, PromptHistory } from '../../../shared/types.js'
+import type { PresetPrompt, PromptHistory } from '@shared/types'
 
 export class PlaylistDatabase {
   private db: Database.Database
