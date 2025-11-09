@@ -43,6 +43,8 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 
 ## Installation
 
+### Using Docker (Recommended)
+
 1. Copy the environment file:
    ```bash
    cp .env.example .env
@@ -66,6 +68,32 @@ An AI-powered web application for creating intelligent playlists in Music Assist
    - AI Provider (Claude or OpenAI)
    - API Key
    - Test the connections to verify
+
+### Development Setup (Local)
+
+**Linux/macOS:**
+```bash
+git clone <repo-url>
+cd music-assistant-ai-playlist-creator
+npm install
+npm run dev
+```
+
+**Windows:**
+```powershell
+git clone <repo-url>
+cd music-assistant-ai-playlist-creator
+npm install
+cd frontend
+Remove-Item package-lock.json -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
+npm install
+cd ..
+npm run dev
+```
+
+Frontend: http://localhost:5173
+Backend: http://localhost:3001
 
 ## Usage
 
@@ -150,24 +178,9 @@ To use a different location, edit `DATA_PATH` in your `.env` file.
 └── supervisord.conf      # Process manager
 ```
 
-## Development
-
-For local development without Docker:
+## Build Commands
 
 ```bash
-npm install
-npm run dev
-```
-
-Frontend: http://localhost:5173
-Backend: http://localhost:3001
-
-### Build Commands
-
-```bash
-# Install dependencies
-npm install
-
 # Run development servers
 npm run dev
 
