@@ -30,7 +30,7 @@ const db = new PlaylistDatabase(dbPath)
 // Middleware
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:5173'
+    origin: process.env.FRONTEND_URL ?? 'http://localhost:5555'
   })
 )
 app.use(express.json())
