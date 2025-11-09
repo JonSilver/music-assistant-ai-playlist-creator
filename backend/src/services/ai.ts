@@ -37,7 +37,9 @@ export class AIService {
   }
 
   private buildSystemPrompt(favoriteArtists?: string[], customPrompt?: string): string {
-    let prompt = customPrompt ?? `You are a music playlist curator assistant. Your job is to create thoughtful, cohesive playlists based on user descriptions.
+    let prompt =
+      customPrompt ??
+      `You are a music playlist curator assistant. Your job is to create thoughtful, cohesive playlists based on user descriptions.
 
 IMPORTANT: Return ONLY valid JSON in the exact format specified below. No other text.
 

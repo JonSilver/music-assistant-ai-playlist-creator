@@ -24,10 +24,13 @@ interface MASearchResult {
 export class MusicAssistantClient {
   private ws: WebSocket | null = null
   private messageId = 0
-  private pendingRequests = new Map<string, {
-    resolve: (value: unknown) => void
-    reject: (error: Error) => void
-  }>()
+  private pendingRequests = new Map<
+    string,
+    {
+      resolve: (value: unknown) => void
+      reject: (error: Error) => void
+    }
+  >()
 
   constructor(private url: string) {}
 
@@ -43,9 +46,15 @@ export class MusicAssistantClient {
           return
         }
 
-        this.ws.on('open', () => resolve())
-        this.ws.on('error', err => reject(err))
-        this.ws.on('message', data => this.handleMessage(data.toString()))
+        this.ws.on('open', () => {
+          resolve()
+        })
+        this.ws.on('error', err => {
+          reject(err)
+        })
+        this.ws.on('message', data => {
+          this.handleMessage(data.toString())
+        })
       })
     })
 
@@ -122,7 +131,7 @@ export class MusicAssistantClient {
 
   async getFavoriteArtists(): Promise<string[]> {
     const favResult = await attempt(async () => {
-      const result = await this.sendCommand<{ items: Array<{ name: string }> }>('music/favorites', {
+      const result = await this.sendCommand<{ items: { name: string }[] }>('music/favorites', {
         media_type: 'artist'
       })
       return result.items.map(item => item.name)

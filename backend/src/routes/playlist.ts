@@ -11,7 +11,10 @@ import type {
   TrackSuggestion
 } from '../../../shared/types.js'
 
-const matchTrack = async (suggestion: TrackSuggestion, maClient: MusicAssistantClient): Promise<TrackMatch> => {
+const matchTrack = async (
+  suggestion: TrackSuggestion,
+  maClient: MusicAssistantClient
+): Promise<TrackMatch> => {
   // Use Music Assistant's search to find the track
   const searchQuery = `${suggestion.title} ${suggestion.artist}`
   const searchResults = await maClient.searchTracks(searchQuery, 5)
@@ -119,9 +122,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       const playlistId = await maClient.createPlaylist(playlistName)
 
       // Add matched tracks
-      const trackUris = matches
-        .filter(m => m.matched && m.maTrack)
-        .map(m => m.maTrack!.uri)
+      const trackUris = matches.filter(m => m.matched && m.maTrack).map(m => m.maTrack!.uri)
 
       if (trackUris.length > 0) {
         await maClient.addTracksToPlaylist(playlistId, trackUris)
@@ -130,11 +131,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       maClient.disconnect()
 
       // Save to history
-      db.addPromptHistory(
-        req.body.prompt as string ?? 'Unknown',
-        playlistName,
-        trackUris.length
-      )
+      db.addPromptHistory((req.body.prompt as string) ?? 'Unknown', playlistName, trackUris.length)
 
       return { playlistId, trackCount: trackUris.length }
     })
@@ -174,7 +171,9 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       const favoriteArtists = await maClient.getFavoriteArtists()
 
       // Build refinement prompt
-      const currentTracks = request.currentTracks.map(m => `${m.suggestion.title} by ${m.suggestion.artist}`)
+      const currentTracks = request.currentTracks.map(
+        m => `${m.suggestion.title} by ${m.suggestion.artist}`
+      )
       const refinementContext = `Current playlist:\n${currentTracks.join('\n')}\n\nRefinement request: ${request.refinementPrompt}`
 
       const aiService = new AIService(

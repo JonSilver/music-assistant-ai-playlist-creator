@@ -43,7 +43,9 @@ export class PlaylistDatabase {
     `)
 
     // Insert default presets if table is empty
-    const count = this.db.prepare('SELECT COUNT(*) as count FROM preset_prompts').get() as { count: number }
+    const count = this.db.prepare('SELECT COUNT(*) as count FROM preset_prompts').get() as {
+      count: number
+    }
 
     if (count.count === 0) {
       this.insertDefaultPresets()
@@ -56,35 +58,40 @@ export class PlaylistDatabase {
         id: 'workout-high-energy',
         name: 'High Energy Workout',
         description: 'Upbeat tracks to power through your workout',
-        prompt: 'Create a high-energy workout playlist with fast-paced, motivating tracks. Include rock, electronic, and hip-hop with strong beats and driving rhythms. Perfect for cardio and intense training.',
+        prompt:
+          'Create a high-energy workout playlist with fast-paced, motivating tracks. Include rock, electronic, and hip-hop with strong beats and driving rhythms. Perfect for cardio and intense training.',
         category: 'workout'
       },
       {
         id: 'chill-focus',
         name: 'Focus & Study',
         description: 'Calm instrumental music for concentration',
-        prompt: 'Create a calm, focused playlist for studying or deep work. Include lo-fi, ambient, classical, and instrumental tracks. No lyrics, smooth transitions, steady tempo around 60-80 BPM.',
+        prompt:
+          'Create a calm, focused playlist for studying or deep work. Include lo-fi, ambient, classical, and instrumental tracks. No lyrics, smooth transitions, steady tempo around 60-80 BPM.',
         category: 'focus'
       },
       {
         id: 'party-dance',
         name: 'Party Mix',
         description: 'Popular dance hits to get everyone moving',
-        prompt: 'Create an energetic party playlist with current and classic dance hits. Mix pop, dance, EDM, and hip-hop. High energy, recognizable tracks that get people on the dance floor.',
+        prompt:
+          'Create an energetic party playlist with current and classic dance hits. Mix pop, dance, EDM, and hip-hop. High energy, recognizable tracks that get people on the dance floor.',
         category: 'party'
       },
       {
         id: 'chill-evening',
         name: 'Evening Relaxation',
         description: 'Mellow tracks for unwinding',
-        prompt: 'Create a relaxing evening playlist with mellow, soothing tracks. Include indie, acoustic, jazz, and soul. Perfect for winding down after a long day.',
+        prompt:
+          'Create a relaxing evening playlist with mellow, soothing tracks. Include indie, acoustic, jazz, and soul. Perfect for winding down after a long day.',
         category: 'chill'
       },
       {
         id: 'road-trip',
         name: 'Road Trip',
         description: 'Sing-along classics for the open road',
-        prompt: 'Create an epic road trip playlist with classic rock, alternative, and sing-along anthems. Mix of decades, feel-good vibes, great for long drives.',
+        prompt:
+          'Create an epic road trip playlist with classic rock, alternative, and sing-along anthems. Mix of decades, feel-good vibes, great for long drives.',
         category: 'other'
       }
     ]
@@ -101,7 +108,9 @@ export class PlaylistDatabase {
 
   getSetting(key: string): string | null {
     const result = attempt(() => {
-      const row = this.db.prepare('SELECT value FROM settings WHERE key = ?').get(key) as { value: string } | undefined
+      const row = this.db.prepare('SELECT value FROM settings WHERE key = ?').get(key) as
+        | { value: string }
+        | undefined
       return row?.value ?? null
     })
 
@@ -110,11 +119,15 @@ export class PlaylistDatabase {
 
   setSetting(key: string, value: string): void {
     const result = attempt(() => {
-      this.db.prepare(`
+      this.db
+        .prepare(
+          `
         INSERT INTO settings (key, value, updated_at)
         VALUES (?, ?, ?)
         ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = ?
-      `).run(key, value, Date.now(), value, Date.now())
+      `
+        )
+        .run(key, value, Date.now(), value, Date.now())
     })
 
     if (!result.ok) {
@@ -124,10 +137,14 @@ export class PlaylistDatabase {
 
   addPromptHistory(prompt: string, playlistName: string | null, trackCount: number): number {
     const result = attempt(() => {
-      const info = this.db.prepare(`
+      const info = this.db
+        .prepare(
+          `
         INSERT INTO prompt_history (prompt, playlist_name, track_count, timestamp)
         VALUES (?, ?, ?, ?)
-      `).run(prompt, playlistName, trackCount, new Date().toISOString())
+      `
+        )
+        .run(prompt, playlistName, trackCount, new Date().toISOString())
 
       return info.lastInsertRowid as number
     })
@@ -141,12 +158,16 @@ export class PlaylistDatabase {
 
   getPromptHistory(limit = 50): PromptHistory[] {
     const result = attempt(() => {
-      const rows = this.db.prepare(`
+      const rows = this.db
+        .prepare(
+          `
         SELECT id, prompt, playlist_name, track_count, timestamp
         FROM prompt_history
         ORDER BY id DESC
         LIMIT ?
-      `).all(limit) as PromptHistory[]
+      `
+        )
+        .all(limit) as PromptHistory[]
 
       return rows
     })
@@ -156,11 +177,15 @@ export class PlaylistDatabase {
 
   getPresetPrompts(): PresetPrompt[] {
     const result = attempt(() => {
-      const rows = this.db.prepare(`
+      const rows = this.db
+        .prepare(
+          `
         SELECT id, name, description, prompt, category
         FROM preset_prompts
         ORDER BY category, name
-      `).all() as PresetPrompt[]
+      `
+        )
+        .all() as PresetPrompt[]
 
       return rows
     })
