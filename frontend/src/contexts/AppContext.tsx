@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import type { GetSettingsResponse, UpdateSettingsRequest } from '@shared/types'
 import { api } from '../services/api'

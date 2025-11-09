@@ -10,7 +10,7 @@ import type {
   TrackMatch
 } from '@shared/types'
 
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api'
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001/api'
 
 interface ErrorResponse {
   error?: string
@@ -21,18 +21,20 @@ const fetchJSON = async <T>(url: string, options?: RequestInit): Promise<T> => {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      ...(options?.headers ?? {})
+      ...(options?.headers as Record<string, string> | undefined)
     }
   })
 
   if (!response.ok) {
-    const [err, errorBody] = await attemptPromise<ErrorResponse>(async () => response.json())
+    const [err, errorBody] = await attemptPromise<ErrorResponse>(
+      async () => (await response.json()) as ErrorResponse
+    )
     const message =
       err === undefined && errorBody.error !== undefined ? errorBody.error : response.statusText
     throw new Error(message)
   }
 
-  return response.json() as Promise<T>
+  return (await response.json()) as T
 }
 
 export const api = {

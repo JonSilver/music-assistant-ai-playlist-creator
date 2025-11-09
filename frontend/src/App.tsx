@@ -51,7 +51,7 @@ const App = (): React.JSX.Element => {
 
   useEffect(() => {
     if (settings !== null) {
-      setMusicAssistantUrl(settings.musicAssistantUrl ?? '')
+      setMusicAssistantUrl(settings.musicAssistantUrl)
       setAiProvider(settings.aiProvider)
       setAnthropicApiKey(settings.anthropicApiKey ?? '')
       setOpenaiApiKey(settings.openaiApiKey ?? '')
@@ -473,7 +473,8 @@ const App = (): React.JSX.Element => {
                   <div className="text-sm space-y-1">
                     <p>
                       <span className="font-semibold">{matchedCount}</span> of{' '}
-                      <span className="font-semibold">{totalCount}</span> tracks found in your library
+                      <span className="font-semibold">{totalCount}</span> tracks found in your
+                      library
                       {matchPercentage > 0 && (
                         <span className="ml-2 badge badge-sm badge-info">{matchPercentage}%</span>
                       )}
