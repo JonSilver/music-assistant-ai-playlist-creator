@@ -40,7 +40,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
   router.post('/playlist/generate', async (req: Request, res: Response) => {
     const request = req.body as CreatePlaylistRequest
 
-    const result = await attempt(async () => {
+    const [err, result] = await attempt(async () => {
       // Get settings
       const maUrl = db.getSetting('musicAssistantUrl')
       const aiProvider = (db.getSetting('aiProvider') ?? 'claude') as 'claude' | 'openai'
@@ -51,7 +51,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       const temperatureStr = db.getSetting('temperature')
       const temperature = temperatureStr !== null ? parseFloat(temperatureStr) : undefined
 
-      if (!maUrl) {
+      if (maUrl === null || maUrl.length === 0) {
         throw new Error('Music Assistant URL not configured')
       }
 
@@ -94,24 +94,24 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       return response
     })
 
-    if (!result.ok) {
+    if (err !== undefined) {
       res.status(500).json({
         error: 'Failed to generate playlist',
-        details: result.error.message
+        details: err.message
       })
       return
     }
 
-    res.json(result.value)
+    res.json(result)
   })
 
   // Create playlist in Music Assistant
   router.post('/playlist/create', async (req: Request, res: Response) => {
-    const { playlistName, matches } = req.body as { playlistName: string; matches: TrackMatch[] }
+    const { playlistName, tracks } = req.body as { playlistName: string; tracks: TrackMatch[] }
 
-    const result = await attempt(async () => {
+    const [err, result] = await attempt(async () => {
       const maUrl = db.getSetting('musicAssistantUrl')
-      if (!maUrl) {
+      if (maUrl === null || maUrl.length === 0) {
         throw new Error('Music Assistant URL not configured')
       }
 
@@ -122,7 +122,9 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       const playlistId = await maClient.createPlaylist(playlistName)
 
       // Add matched tracks
-      const trackUris = matches.filter(m => m.matched && m.maTrack).map(m => m.maTrack!.uri)
+      const trackUris = tracks
+        .filter(m => m.matched && m.maTrack !== undefined)
+        .map(m => m.maTrack!.uri)
 
       if (trackUris.length > 0) {
         await maClient.addTracksToPlaylist(playlistId, trackUris)
@@ -131,27 +133,28 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       maClient.disconnect()
 
       // Save to history
-      db.addPromptHistory((req.body.prompt as string) ?? 'Unknown', playlistName, trackUris.length)
+      const promptFromBody = req.body.prompt as string | undefined
+      db.addPromptHistory(promptFromBody ?? 'Unknown', playlistName, trackUris.length)
 
-      return { playlistId, trackCount: trackUris.length }
+      return { playlistId, tracksAdded: trackUris.length }
     })
 
-    if (!result.ok) {
+    if (err !== undefined) {
       res.status(500).json({
         error: 'Failed to create playlist',
-        details: result.error.message
+        details: err.message
       })
       return
     }
 
-    res.json({ success: true, ...result.value })
+    res.json({ success: true, ...result })
   })
 
   // Refine playlist
   router.post('/playlist/refine', async (req: Request, res: Response) => {
     const request = req.body as RefinePlaylistRequest
 
-    const result = await attempt(async () => {
+    const [err, result] = await attempt(async () => {
       const maUrl = db.getSetting('musicAssistantUrl')
       const aiProvider = (db.getSetting('aiProvider') ?? 'claude') as 'claude' | 'openai'
       const anthropicKey = db.getSetting('anthropicApiKey')
@@ -161,7 +164,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       const temperatureStr = db.getSetting('temperature')
       const temperature = temperatureStr !== null ? parseFloat(temperatureStr) : undefined
 
-      if (!maUrl) {
+      if (maUrl === null || maUrl.length === 0) {
         throw new Error('Music Assistant URL not configured')
       }
 
@@ -202,14 +205,14 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       }
     })
 
-    if (!result.ok) {
+    if (err !== undefined) {
       res.status(500).json({
         error: 'Failed to refine playlist',
-        details: result.error.message
+        details: err.message
       })
       return
     }
 
-    res.json({ success: true, ...result.value })
+    res.json({ success: true, ...result })
   })
 }

@@ -107,18 +107,18 @@ export class PlaylistDatabase {
   }
 
   getSetting(key: string): string | null {
-    const result = attempt(() => {
+    const [err, result] = attempt(() => {
       const row = this.db.prepare('SELECT value FROM settings WHERE key = ?').get(key) as
         | { value: string }
         | undefined
       return row?.value ?? null
     })
 
-    return result.ok ? result.value : null
+    return err !== undefined ? null : result
   }
 
   setSetting(key: string, value: string): void {
-    const result = attempt(() => {
+    const [err] = attempt(() => {
       this.db
         .prepare(
           `
@@ -130,13 +130,13 @@ export class PlaylistDatabase {
         .run(key, value, Date.now(), value, Date.now())
     })
 
-    if (!result.ok) {
-      throw new Error(`Failed to set setting: ${result.error.message}`)
+    if (err !== undefined) {
+      throw new Error(`Failed to set setting: ${err.message}`)
     }
   }
 
   addPromptHistory(prompt: string, playlistName: string | null, trackCount: number): number {
-    const result = attempt(() => {
+    const [err, result] = attempt(() => {
       const info = this.db
         .prepare(
           `
@@ -149,15 +149,15 @@ export class PlaylistDatabase {
       return info.lastInsertRowid as number
     })
 
-    if (!result.ok) {
-      throw new Error(`Failed to add prompt history: ${result.error.message}`)
+    if (err !== undefined) {
+      throw new Error(`Failed to add prompt history: ${err.message}`)
     }
 
-    return result.value
+    return result
   }
 
   getPromptHistory(limit = 50): PromptHistory[] {
-    const result = attempt(() => {
+    const [err, result] = attempt(() => {
       const rows = this.db
         .prepare(
           `
@@ -172,11 +172,11 @@ export class PlaylistDatabase {
       return rows
     })
 
-    return result.ok ? result.value : []
+    return err !== undefined ? [] : result
   }
 
   getPresetPrompts(): PresetPrompt[] {
-    const result = attempt(() => {
+    const [err, result] = attempt(() => {
       const rows = this.db
         .prepare(
           `
@@ -190,7 +190,7 @@ export class PlaylistDatabase {
       return rows
     })
 
-    return result.ok ? result.value : []
+    return err !== undefined ? [] : result
   }
 
   close(): void {

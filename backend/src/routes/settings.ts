@@ -74,19 +74,19 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
       return
     }
 
-    const result = await attempt(async () => {
+    const [err, result] = await attempt(async () => {
       const client = new MusicAssistantClient(url)
       await client.connect()
       client.disconnect()
       return { success: true }
     })
 
-    if (!result.ok) {
-      res.json({ success: false, error: result.error.message })
+    if (err !== undefined) {
+      res.json({ success: false, error: err.message })
       return
     }
 
-    res.json(result.value)
+    res.json(result)
   })
 
   // Test Anthropic API key
@@ -98,7 +98,7 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
       return
     }
 
-    const result = await attempt(async () => {
+    const [err, result] = await attempt(async () => {
       const aiService = new AIService(apiKey, undefined, undefined)
       // Simple test prompt
       await aiService.generatePlaylist({
@@ -108,12 +108,12 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
       return { success: true }
     })
 
-    if (!result.ok) {
-      res.json({ success: false, error: result.error.message })
+    if (err !== undefined) {
+      res.json({ success: false, error: err.message })
       return
     }
 
-    res.json(result.value)
+    res.json(result)
   })
 
   // Test OpenAI API key
@@ -125,7 +125,7 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
       return
     }
 
-    const result = await attempt(async () => {
+    const [err, result] = await attempt(async () => {
       const aiService = new AIService(undefined, apiKey, baseUrl)
       // Simple test prompt
       await aiService.generatePlaylist({
@@ -135,11 +135,11 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
       return { success: true }
     })
 
-    if (!result.ok) {
-      res.json({ success: false, error: result.error.message })
+    if (err !== undefined) {
+      res.json({ success: false, error: err.message })
       return
     }
 
-    res.json(result.value)
+    res.json(result)
   })
 }

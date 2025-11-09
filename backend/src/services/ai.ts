@@ -21,14 +21,14 @@ export class AIService {
   private openai: OpenAI | null = null
 
   constructor(
-    private anthropicKey?: string,
-    private openaiKey?: string,
-    private openaiBaseUrl?: string
+    anthropicKey?: string,
+    openaiKey?: string,
+    openaiBaseUrl?: string
   ) {
-    if (anthropicKey) {
+    if (anthropicKey !== undefined) {
       this.anthropic = new Anthropic({ apiKey: anthropicKey })
     }
-    if (openaiKey) {
+    if (openaiKey !== undefined) {
       this.openai = new OpenAI({
         apiKey: openaiKey,
         baseURL: openaiBaseUrl
@@ -89,11 +89,11 @@ When appropriate, consider including tracks from these artists or similar artist
     systemPrompt: string,
     temperature: number
   ): Promise<AIPlaylistResponse> {
-    if (!this.anthropic) {
+    if (this.anthropic === null) {
       throw new Error('Claude API key not configured')
     }
 
-    const result = await attempt(async () => {
+    const [err, result] = await attempt(async () => {
       const response = await this.anthropic!.messages.create({
         model: 'claude-3-5-sonnet-20241022',
         max_tokens: 4096,
@@ -115,11 +115,11 @@ When appropriate, consider including tracks from these artists or similar artist
       return this.parseAIResponse(content.text)
     })
 
-    if (!result.ok) {
-      throw new Error(`Claude API error: ${result.error.message}`)
+    if (err !== undefined) {
+      throw new Error(`Claude API error: ${err.message}`)
     }
 
-    return result.value
+    return result
   }
 
   private async generateWithOpenAI(
@@ -127,11 +127,11 @@ When appropriate, consider including tracks from these artists or similar artist
     systemPrompt: string,
     temperature: number
   ): Promise<AIPlaylistResponse> {
-    if (!this.openai) {
+    if (this.openai === null) {
       throw new Error('OpenAI API key not configured')
     }
 
-    const result = await attempt(async () => {
+    const [err, result] = await attempt(async () => {
       const response = await this.openai!.chat.completions.create({
         model: 'gpt-4-turbo-preview',
         temperature,
@@ -143,37 +143,40 @@ When appropriate, consider including tracks from these artists or similar artist
       })
 
       const content = response.choices[0]?.message.content
-      if (!content) {
+      if (content === null || content === undefined) {
         throw new Error('No response from OpenAI')
       }
 
       return this.parseAIResponse(content)
     })
 
-    if (!result.ok) {
-      throw new Error(`OpenAI API error: ${result.error.message}`)
+    if (err !== undefined) {
+      throw new Error(`OpenAI API error: ${err.message}`)
     }
 
-    return result.value
+    return result
   }
 
   private parseAIResponse(content: string): AIPlaylistResponse {
-    const parseResult = attempt(() => JSON.parse(content) as AIPlaylistResponse)
+    const [err, data] = attempt(() => JSON.parse(content) as AIPlaylistResponse)
 
-    if (!parseResult.ok) {
+    if (err !== undefined) {
       throw new Error('Failed to parse AI response as JSON')
     }
 
-    const data = parseResult.value
-
     // Validate response structure
-    if (!data.tracks || !Array.isArray(data.tracks)) {
+    if (data.tracks === undefined || !Array.isArray(data.tracks)) {
       throw new Error('Invalid AI response: missing tracks array')
     }
 
     // Validate each track
     for (const track of data.tracks) {
-      if (!track.title || !track.artist) {
+      if (
+        track.title === undefined ||
+        track.title.length === 0 ||
+        track.artist === undefined ||
+        track.artist.length === 0
+      ) {
         throw new Error('Invalid track in AI response: missing title or artist')
       }
     }

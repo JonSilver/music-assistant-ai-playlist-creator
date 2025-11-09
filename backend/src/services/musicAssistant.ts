@@ -37,11 +37,11 @@ export class MusicAssistantClient {
   async connect(): Promise<void> {
     const wsUrl = this.url.replace(/^http/, 'ws') + '/ws'
 
-    const result = await attempt(async () => {
+    const [err] = await attempt(async () => {
       this.ws = new WebSocket(wsUrl)
 
       return new Promise<void>((resolve, reject) => {
-        if (!this.ws) {
+        if (this.ws === null) {
           reject(new Error('WebSocket not initialized'))
           return
         }
@@ -58,25 +58,24 @@ export class MusicAssistantClient {
       })
     })
 
-    if (!result.ok) {
-      throw new Error(`Failed to connect to Music Assistant: ${result.error.message}`)
+    if (err !== undefined) {
+      throw new Error(`Failed to connect to Music Assistant: ${err.message}`)
     }
   }
 
   private handleMessage(data: string): void {
-    const result = attempt(() => JSON.parse(data) as MAResponse)
+    const [err, message] = attempt(() => JSON.parse(data) as MAResponse)
 
-    if (!result.ok) {
-      console.error('Failed to parse MA message:', result.error)
+    if (err !== undefined) {
+      console.error('Failed to parse MA message:', err)
       return
     }
 
-    const message = result.value
     const pending = this.pendingRequests.get(message.message_id)
 
-    if (!pending) return
+    if (pending === undefined) return
 
-    if (message.error) {
+    if (message.error !== undefined && message.error !== null) {
       pending.reject(new Error(message.error.message))
     } else {
       pending.resolve(message.result)
@@ -86,7 +85,7 @@ export class MusicAssistantClient {
   }
 
   private async sendCommand<T>(command: string, params?: Record<string, unknown>): Promise<T> {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+    if (this.ws === null || this.ws.readyState !== WebSocket.OPEN) {
       throw new Error('Not connected to Music Assistant')
     }
 
@@ -100,13 +99,13 @@ export class MusicAssistantClient {
     return new Promise((resolve, reject) => {
       this.pendingRequests.set(messageId, { resolve: resolve as (value: unknown) => void, reject })
 
-      const result = attempt(() => {
+      const [err] = attempt(() => {
         this.ws?.send(JSON.stringify(message))
       })
 
-      if (!result.ok) {
+      if (err !== undefined) {
         this.pendingRequests.delete(messageId)
-        reject(result.error)
+        reject(err)
       }
 
       // Timeout after 30 seconds
@@ -130,15 +129,15 @@ export class MusicAssistantClient {
   }
 
   async getFavoriteArtists(): Promise<string[]> {
-    const favResult = await attempt(async () => {
-      const result = await this.sendCommand<{ items: { name: string }[] }>('music/favorites', {
+    const [err, result] = await attempt(async () => {
+      const response = await this.sendCommand<{ items: { name: string }[] }>('music/favorites', {
         media_type: 'artist'
       })
-      return result.items.map(item => item.name)
+      return response.items.map(item => item.name)
     })
 
     // If favorites endpoint doesn't exist or fails, return empty array
-    return favResult.ok ? favResult.value : []
+    return err !== undefined ? [] : result
   }
 
   async getLibraryTracks(limit = 1000): Promise<MATrack[]> {
