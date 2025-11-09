@@ -1,5 +1,54 @@
 # Music Assistant AI Playlist Creator
 
+## CRITICAL: Behavioral Guidelines
+
+**READ THIS FIRST. FOLLOW STRICTLY.**
+
+### DO NOT:
+- ❌ **Overcomplicate solutions** - Use existing APIs, don't write custom logic
+- ❌ **Add features not requested** - Stick to what the user asked for
+- ❌ **Assume implementation details** - Read documentation first
+- ❌ **Create separate containers** - This is a home server app, single container only
+- ❌ **Use common ports** - 80, 3000, 8080 are all unacceptable
+- ❌ **Add documentation in user-facing README** - Technical details go in claude.md only
+- ❌ **Make defensive assumptions** - If unclear, ASK
+- ❌ **Write code as a "demonstration"** - Write minimal, correct code only
+- ❌ **Add roadmap bloat** - No features that don't make sense for a playlist creator
+- ❌ **Use try/catch** - Use @jfdi/attempt with tuple destructuring
+- ❌ **Use .ok/.value pattern** - Use `[err, result]` destructuring
+
+### DO:
+- ✅ **Use existing APIs** - Music Assistant has search, use it
+- ✅ **Read the documentation** - Check what APIs exist before writing code
+- ✅ **Follow user instructions exactly** - Don't interpret, follow literally
+- ✅ **Keep it simple** - Single container, simple architecture
+- ✅ **Ask when unclear** - Better to ask than assume wrong
+- ✅ **Test your thinking** - Does this make sense for a home server?
+- ✅ **Verify builds work** - Both frontend and backend must compile cleanly
+- ✅ **Use tuple destructuring** - `const [err, result] = await attempt(...)`
+
+### Common Mistakes to Avoid:
+1. **Writing manual matching logic** when Music Assistant has search API
+2. **Creating multi-container setups** when a single container works fine
+3. **Adding fake metrics** like confidence scores when we don't have them
+4. **Port conflicts** - avoid 80, 3000, 8080, 8095 (MA uses this)
+5. **Roadmap pollution** - no player integration, export features, analytics
+6. **Over-engineering** - this is a simple home server app
+
+### This Project Is:
+- A simple home server application
+- Single-user, local network only
+- Settings configured via web UI
+- Data stored in SQLite
+- Docker deployment with volume mapping
+
+### This Project Is NOT:
+- An enterprise application
+- Multi-tenant
+- A music player (Music Assistant is the player)
+- A streaming service
+- Requiring authentication
+
 ## Project Overview
 
 This project provides an AI-assisted playlist creation interface for Music Assistant. Users describe their desired playlist in natural language, and the AI generates a curated playlist by selecting tracks from their existing Music Assistant library.
