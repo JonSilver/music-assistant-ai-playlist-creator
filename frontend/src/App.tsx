@@ -3,6 +3,7 @@ import { useApp } from './contexts/AppContext'
 import { api } from './services/api'
 import type {
   CreatePlaylistRequest,
+  RefinePlaylistRequest,
   PromptHistory,
   PresetPrompt,
   TrackMatch
@@ -21,6 +22,9 @@ const App = (): React.JSX.Element => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [showRefine, setShowRefine] = useState(false)
+  const [refinementPrompt, setRefinementPrompt] = useState('')
+  const [refining, setRefining] = useState(false)
 
   // Form state for settings
   const [musicAssistantUrl, setMusicAssistantUrl] = useState('')
@@ -154,6 +158,35 @@ const App = (): React.JSX.Element => {
       setPlaylistName(item.playlistName)
     }
     setShowHistory(false)
+  }
+
+  const handleRefinePlaylist = async (): Promise<void> => {
+    if (refinementPrompt.trim().length === 0) {
+      setError('Please provide refinement instructions')
+      return
+    }
+
+    setRefining(true)
+    setError(null)
+
+    const request: RefinePlaylistRequest = {
+      originalPrompt: prompt.trim(),
+      refinementPrompt: refinementPrompt.trim(),
+      currentTracks: generatedTracks
+    }
+
+    const [err, result] = await api.refinePlaylist(request)
+    setRefining(false)
+
+    if (err !== undefined) {
+      setError(`Failed to refine playlist: ${err.message}`)
+      return
+    }
+
+    setGeneratedTracks(result.matches)
+    setRefinementPrompt('')
+    setShowRefine(false)
+    setSuccessMessage(`Playlist refined! ${result.totalMatched.toString()} tracks matched.`)
   }
 
   if (settingsLoading) {
@@ -408,6 +441,14 @@ const App = (): React.JSX.Element => {
                   Clear
                 </button>
                 <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowRefine(true)
+                  }}
+                >
+                  Refine Playlist
+                </button>
+                <button
                   className="btn btn-primary"
                   onClick={() => {
                     void handleCreatePlaylist()
@@ -628,6 +669,56 @@ const App = (): React.JSX.Element => {
                 }}
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Refine Playlist Modal */}
+      {showRefine && (
+        <div className="modal modal-open">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg mb-4">Refine Playlist</h3>
+
+            <p className="text-sm opacity-75 mb-4">
+              Describe how you want to modify the current playlist. The AI will generate a new
+              version based on your refinement instructions.
+            </p>
+
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Refinement Instructions</span>
+              </label>
+              <textarea
+                className="textarea textarea-bordered h-32"
+                placeholder="e.g., Add more upbeat tracks, Remove anything slower than 120 BPM, Include more Beatles songs, Make it more energetic"
+                value={refinementPrompt}
+                onChange={e => {
+                  setRefinementPrompt(e.target.value)
+                }}
+              ></textarea>
+            </div>
+
+            <div className="modal-action">
+              <button
+                className="btn btn-ghost"
+                onClick={() => {
+                  setShowRefine(false)
+                  setRefinementPrompt('')
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  void handleRefinePlaylist()
+                }}
+                disabled={refining || refinementPrompt.trim().length === 0}
+              >
+                {refining && <span className="loading loading-spinner"></span>}
+                {refining ? 'Refining...' : 'Refine Playlist'}
               </button>
             </div>
           </div>

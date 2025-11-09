@@ -67,7 +67,7 @@ export const api = {
   refinePlaylist: async (request: RefinePlaylistRequest) =>
     attemptPromise<{
       success: boolean
-      tracks: TrackMatch[]
+      matches: TrackMatch[]
       totalSuggested: number
       totalMatched: number
     }>(async () =>
