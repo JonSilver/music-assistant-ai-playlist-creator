@@ -175,7 +175,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
 
       // Build refinement prompt
       const currentTracks = request.currentTracks.map(
-        m => `${m.suggestion.title} by ${m.suggestion.artist}`
+        (m: TrackMatch) => `${m.suggestion.title} by ${m.suggestion.artist}`
       )
       const refinementContext = `Current playlist:\n${currentTracks.join('\n')}\n\nRefinement request: ${request.refinementPrompt}`
 
