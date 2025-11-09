@@ -85,3 +85,26 @@ export interface APIError {
   error: string;
   details?: string;
 }
+
+// Settings
+export interface AppSettings {
+  musicAssistantUrl: string;
+  aiProvider: AIProvider;
+  anthropicApiKey?: string;
+  openaiApiKey?: string;
+  openaiBaseUrl?: string;
+}
+
+// Settings request/response
+export interface UpdateSettingsRequest {
+  musicAssistantUrl?: string;
+  aiProvider?: AIProvider;
+  anthropicApiKey?: string;
+  openaiApiKey?: string;
+  openaiBaseUrl?: string;
+}
+
+export interface GetSettingsResponse extends AppSettings {
+  hasAnthropicKey: boolean;
+  hasOpenAIKey: boolean;
+}
