@@ -102,6 +102,55 @@ npm run build
 
 This builds both the frontend and backend for production.
 
+## Docker Deployment
+
+### Quick Start
+
+```bash
+docker-compose up -d
+```
+
+The application will be available at:
+- Frontend: http://localhost
+- Backend API: http://localhost:3001/api
+
+### Data Persistence
+
+The SQLite database is stored in a Docker volume mapped to `./data` on your host machine. This directory will be created automatically and contains:
+- `playlists.db` - SQLite database with settings, prompt history, and presets
+
+To specify a different data directory, edit `docker-compose.yml`:
+
+```yaml
+volumes:
+  - /your/custom/path:/app/data
+```
+
+### Configuration
+
+All settings are configured through the web UI after starting the containers. Navigate to Settings and configure:
+- Music Assistant URL
+- AI Provider (Claude or OpenAI)
+- API keys
+- Temperature and custom system prompts
+
+Alternatively, you can set environment variables in `docker-compose.yml`:
+
+```yaml
+environment:
+  - DATABASE_PATH=/app/data/playlists.db
+```
+
+### Rebuilding
+
+After pulling updates:
+
+```bash
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+```
+
 ## Project Structure
 
 ```

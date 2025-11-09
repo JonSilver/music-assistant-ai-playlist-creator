@@ -2,16 +2,18 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Copy shared types first
+COPY shared /shared
+
 # Copy package files
-COPY package*.json ./
-COPY shared ../shared
+COPY backend/package*.json ./
 
 # Install dependencies
 RUN npm ci
 
 # Copy source
-COPY src ./src
-COPY tsconfig.json ./
+COPY backend/src ./src
+COPY backend/tsconfig.json ./
 
 # Build
 RUN npm run build
@@ -22,7 +24,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY backend/package*.json ./
 
 # Install production dependencies only
 RUN npm ci --production
