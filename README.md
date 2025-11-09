@@ -181,24 +181,19 @@ This project maintains high code quality standards:
 ## Roadmap / Potential Features
 
 ### High Priority
-- **Better Fuzzy Matching**: Implement proper fuzzy matching library (fuse.js or Levenshtein distance) to catch misspellings and variations
 - **Manual Track Addition**: Search Music Assistant library and manually add tracks to generated playlist
 - **Save Custom Prompts as Templates**: Allow users to save their custom system prompts as reusable templates
-- **Match Confidence Scores**: Show low/medium/high confidence for each matched track
-
-### Medium Priority
 - **Playlist Preview/Editing**:
   - Drag and drop to reorder tracks
   - See track duration and album art
-  - Search library to add tracks manually
+
+### Medium Priority
 - **Multiple Playlist Generation**: Generate 3-5 variations at once with different temperatures and pick the best
-- **Smart Context**: Auto-populate prompts based on time of day, day of week, or listening history
-- **Unmatched Track Suggestions**: When tracks aren't found, suggest similar tracks from your library
+- **Unmatched Track Suggestions**: When tracks aren't found, suggest similar alternatives from your library
+- **Smart Context**: Auto-populate prompts based on time of day or day of week
+- **Export/Share**: Export track lists as text or CSV
 
 ### Lower Priority
-- **Track Preview**: Play 30-second previews before creating playlist
-- **Music Assistant Player Integration**: Start playing generated playlist immediately
-- **Export/Share**: Export track lists as text, CSV, or share to Spotify/Apple Music
 - **Analytics**: Track playlist creation stats and preferences over time
 - **Batch Operations**: Create multiple playlists from a list of prompts
 
