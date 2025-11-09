@@ -180,22 +180,9 @@ This project maintains high code quality standards:
 
 ## Roadmap / Potential Features
 
-### High Priority
-- **Manual Track Addition**: Search Music Assistant library and manually add tracks to generated playlist
-- **Save Custom Prompts as Templates**: Allow users to save their custom system prompts as reusable templates
-- **Playlist Preview/Editing**:
-  - Drag and drop to reorder tracks
-  - See track duration and album art
-
-### Medium Priority
-- **Multiple Playlist Generation**: Generate 3-5 variations at once with different temperatures and pick the best
-- **Unmatched Track Suggestions**: When tracks aren't found, suggest similar alternatives from your library
-- **Smart Context**: Auto-populate prompts based on time of day or day of week
-- **Export/Share**: Export track lists as text or CSV
-
-### Lower Priority
-- **Analytics**: Track playlist creation stats and preferences over time
-- **Batch Operations**: Create multiple playlists from a list of prompts
+- **Manual Track Addition**: Search Music Assistant library and manually add tracks to the playlist
+- **Track Duration**: Show track length in the track list
+- **Drag & Drop Reordering**: Reorder tracks before creating playlist
 
 ## Contributing
 
