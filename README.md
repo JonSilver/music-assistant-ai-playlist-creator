@@ -74,12 +74,14 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 ```bash
 git clone <repo-url>
 cd music-assistant-ai-playlist-creator
+cp .env.example .env  # Optional: customize dev ports in .env
 npm install
 npm run dev
 ```
 
-Frontend: http://localhost:5555
-Backend: http://localhost:3333
+Default dev ports (configurable in `.env`):
+- Frontend: http://localhost:5555 (set `FRONTEND_PORT`)
+- Backend: http://localhost:3333 (set `BACKEND_PORT` and `VITE_BACKEND_PORT`)
 
 ## Usage
 
@@ -112,8 +114,14 @@ Backend: http://localhost:3333
 
 ### Environment Variables (.env)
 
+**Docker/Production:**
 - `DATA_PATH` - Directory for SQLite database (default: `./data`)
 - `APP_PORT` - Port to expose the application (default: `9876`)
+
+**Development:**
+- `BACKEND_PORT` - Backend API server port (default: `3333`)
+- `FRONTEND_PORT` - Frontend dev server port (default: `5555`)
+- `VITE_BACKEND_PORT` - Backend port for frontend API calls (default: `3333`, must match `BACKEND_PORT`)
 
 ### Application Settings (via UI)
 

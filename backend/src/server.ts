@@ -16,7 +16,7 @@ const __dirname = path.dirname(__filename)
 dotenv.config({ path: path.join(__dirname, '../../.env') })
 
 const app = express()
-const PORT = process.env.PORT ?? 3333
+const PORT = process.env.PORT ?? process.env.BACKEND_PORT ?? '3333'
 
 // Initialize database
 const dbPath = process.env.DATABASE_PATH ?? path.join(__dirname, '../../data/playlists.db')
@@ -28,9 +28,10 @@ mkdirSync(dbDir, { recursive: true })
 const db = new PlaylistDatabase(dbPath)
 
 // Middleware
+const frontendPort = process.env.FRONTEND_PORT ?? '5555'
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:5555'
+    origin: process.env.FRONTEND_URL ?? `http://localhost:${frontendPort}`
   })
 )
 app.use(express.json())
