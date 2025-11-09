@@ -93,6 +93,8 @@ export interface AppSettings {
   anthropicApiKey?: string;
   openaiApiKey?: string;
   openaiBaseUrl?: string;
+  customSystemPrompt?: string;
+  temperature?: number;
 }
 
 // Settings request/response
@@ -102,6 +104,8 @@ export interface UpdateSettingsRequest {
   anthropicApiKey?: string;
   openaiApiKey?: string;
   openaiBaseUrl?: string;
+  customSystemPrompt?: string;
+  temperature?: number;
 }
 
 export interface GetSettingsResponse extends AppSettings {

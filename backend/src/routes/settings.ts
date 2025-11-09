@@ -10,11 +10,16 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
     const anthropicKey = db.getSetting('anthropicApiKey')
     const openaiKey = db.getSetting('openaiApiKey')
     const openaiBaseUrl = db.getSetting('openaiBaseUrl')
+    const customSystemPrompt = db.getSetting('customSystemPrompt')
+    const temperatureStr = db.getSetting('temperature')
+    const temperature = temperatureStr !== null ? parseFloat(temperatureStr) : undefined
 
     const response: GetSettingsResponse = {
       musicAssistantUrl,
       aiProvider,
       openaiBaseUrl: openaiBaseUrl ?? undefined,
+      customSystemPrompt: customSystemPrompt ?? undefined,
+      temperature,
       hasAnthropicKey: Boolean(anthropicKey),
       hasOpenAIKey: Boolean(openaiKey)
     }
@@ -44,6 +49,14 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
 
     if (updates.openaiBaseUrl !== undefined) {
       db.setSetting('openaiBaseUrl', updates.openaiBaseUrl)
+    }
+
+    if (updates.customSystemPrompt !== undefined) {
+      db.setSetting('customSystemPrompt', updates.customSystemPrompt)
+    }
+
+    if (updates.temperature !== undefined) {
+      db.setSetting('temperature', updates.temperature.toString())
     }
 
     res.json({ success: true })

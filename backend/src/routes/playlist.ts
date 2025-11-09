@@ -57,6 +57,9 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       const anthropicKey = db.getSetting('anthropicApiKey')
       const openaiKey = db.getSetting('openaiApiKey')
       const openaiBaseUrl = db.getSetting('openaiBaseUrl')
+      const customSystemPrompt = db.getSetting('customSystemPrompt')
+      const temperatureStr = db.getSetting('temperature')
+      const temperature = temperatureStr !== null ? parseFloat(temperatureStr) : undefined
 
       if (!maUrl) {
         throw new Error('Music Assistant URL not configured')
@@ -78,7 +81,9 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       const aiResponse = await aiService.generatePlaylist({
         prompt: request.prompt,
         favoriteArtists,
-        provider: request.provider ?? aiProvider
+        provider: request.provider ?? aiProvider,
+        customSystemPrompt: customSystemPrompt ?? undefined,
+        temperature
       })
 
       // Get library tracks for matching
@@ -171,6 +176,9 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       const anthropicKey = db.getSetting('anthropicApiKey')
       const openaiKey = db.getSetting('openaiApiKey')
       const openaiBaseUrl = db.getSetting('openaiBaseUrl')
+      const customSystemPrompt = db.getSetting('customSystemPrompt')
+      const temperatureStr = db.getSetting('temperature')
+      const temperature = temperatureStr !== null ? parseFloat(temperatureStr) : undefined
 
       if (!maUrl) {
         throw new Error('Music Assistant URL not configured')
@@ -193,7 +201,9 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       const aiResponse = await aiService.generatePlaylist({
         prompt: refinementContext,
         favoriteArtists,
-        provider: request.provider ?? aiProvider
+        provider: request.provider ?? aiProvider,
+        customSystemPrompt: customSystemPrompt ?? undefined,
+        temperature
       })
 
       const libraryTracks = await maClient.getLibraryTracks()

@@ -7,6 +7,8 @@ interface AIPlaylistRequest {
   prompt: string
   favoriteArtists?: string[]
   provider: AIProvider
+  customSystemPrompt?: string
+  temperature?: number
 }
 
 interface AIPlaylistResponse {
@@ -34,8 +36,8 @@ export class AIService {
     }
   }
 
-  private buildSystemPrompt(favoriteArtists?: string[]): string {
-    let prompt = `You are a music playlist curator assistant. Your job is to create thoughtful, cohesive playlists based on user descriptions.
+  private buildSystemPrompt(favoriteArtists?: string[], customPrompt?: string): string {
+    let prompt = customPrompt ?? `You are a music playlist curator assistant. Your job is to create thoughtful, cohesive playlists based on user descriptions.
 
 IMPORTANT: Return ONLY valid JSON in the exact format specified below. No other text.
 
@@ -56,29 +58,34 @@ Format your response as JSON:
 When appropriate, consider including tracks from these artists or similar artists.`
     }
 
-    prompt += `\n\nGuidelines:
+    // Only add guidelines if using default prompt
+    if (!customPrompt) {
+      prompt += `\n\nGuidelines:
 - Create 15-30 tracks unless user specifies otherwise
 - Ensure good flow and cohesion
 - Match the mood, genre, and era requested
 - Include artist and album information for better matching
 - Be specific with track titles and artist names
 - Consider the user's favorite artists when relevant`
+    }
 
     return prompt
   }
 
   async generatePlaylist(request: AIPlaylistRequest): Promise<AIPlaylistResponse> {
-    const systemPrompt = this.buildSystemPrompt(request.favoriteArtists)
+    const systemPrompt = this.buildSystemPrompt(request.favoriteArtists, request.customSystemPrompt)
+    const temperature = request.temperature ?? 1.0
 
     if (request.provider === 'claude') {
-      return this.generateWithClaude(request.prompt, systemPrompt)
+      return this.generateWithClaude(request.prompt, systemPrompt, temperature)
     }
-    return this.generateWithOpenAI(request.prompt, systemPrompt)
+    return this.generateWithOpenAI(request.prompt, systemPrompt, temperature)
   }
 
   private async generateWithClaude(
     userPrompt: string,
-    systemPrompt: string
+    systemPrompt: string,
+    temperature: number
   ): Promise<AIPlaylistResponse> {
     if (!this.anthropic) {
       throw new Error('Claude API key not configured')
@@ -88,6 +95,7 @@ When appropriate, consider including tracks from these artists or similar artist
       const response = await this.anthropic!.messages.create({
         model: 'claude-3-5-sonnet-20241022',
         max_tokens: 4096,
+        temperature,
         system: systemPrompt,
         messages: [
           {
@@ -114,7 +122,8 @@ When appropriate, consider including tracks from these artists or similar artist
 
   private async generateWithOpenAI(
     userPrompt: string,
-    systemPrompt: string
+    systemPrompt: string,
+    temperature: number
   ): Promise<AIPlaylistResponse> {
     if (!this.openai) {
       throw new Error('OpenAI API key not configured')
@@ -123,6 +132,7 @@ When appropriate, consider including tracks from these artists or similar artist
     const result = await attempt(async () => {
       const response = await this.openai!.chat.completions.create({
         model: 'gpt-4-turbo-preview',
+        temperature,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }

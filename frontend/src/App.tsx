@@ -28,6 +28,8 @@ const App = (): React.JSX.Element => {
   const [anthropicApiKey, setAnthropicApiKey] = useState('')
   const [openaiApiKey, setOpenaiApiKey] = useState('')
   const [openaiBaseUrl, setOpenaiBaseUrl] = useState('')
+  const [customSystemPrompt, setCustomSystemPrompt] = useState('')
+  const [temperature, setTemperature] = useState('1.0')
 
   useEffect(() => {
     void loadHistory()
@@ -41,6 +43,8 @@ const App = (): React.JSX.Element => {
       setAnthropicApiKey(settings.anthropicApiKey ?? '')
       setOpenaiApiKey(settings.openaiApiKey ?? '')
       setOpenaiBaseUrl(settings.openaiBaseUrl ?? '')
+      setCustomSystemPrompt(settings.customSystemPrompt ?? '')
+      setTemperature(settings.temperature?.toString() ?? '1.0')
     }
   }, [settings])
 
@@ -127,7 +131,9 @@ const App = (): React.JSX.Element => {
       aiProvider,
       anthropicApiKey: anthropicApiKey.length > 0 ? anthropicApiKey : undefined,
       openaiApiKey: openaiApiKey.length > 0 ? openaiApiKey : undefined,
-      openaiBaseUrl: openaiBaseUrl.length > 0 ? openaiBaseUrl : undefined
+      openaiBaseUrl: openaiBaseUrl.length > 0 ? openaiBaseUrl : undefined,
+      customSystemPrompt: customSystemPrompt.length > 0 ? customSystemPrompt : undefined,
+      temperature: temperature.length > 0 ? parseFloat(temperature) : undefined
     })
 
     if (err !== undefined) {
@@ -510,6 +516,50 @@ const App = (): React.JSX.Element => {
                 </div>
               </>
             )}
+
+            <div className="divider"></div>
+
+            <div className="form-control mb-4">
+              <label className="label">
+                <span className="label-text">Temperature</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="2"
+                step="0.1"
+                placeholder="1.0"
+                className="input input-bordered"
+                value={temperature}
+                onChange={e => {
+                  setTemperature(e.target.value)
+                }}
+              />
+              <label className="label">
+                <span className="label-text-alt">
+                  Controls randomness (0 = focused, 2 = creative). Default: 1.0
+                </span>
+              </label>
+            </div>
+
+            <div className="form-control mb-4">
+              <label className="label">
+                <span className="label-text">Custom System Prompt (Optional)</span>
+              </label>
+              <textarea
+                className="textarea textarea-bordered h-32"
+                placeholder="Override the default AI system prompt. Leave empty to use default."
+                value={customSystemPrompt}
+                onChange={e => {
+                  setCustomSystemPrompt(e.target.value)
+                }}
+              ></textarea>
+              <label className="label">
+                <span className="label-text-alt">
+                  Customize how the AI curates playlists. Must return JSON format.
+                </span>
+              </label>
+            </div>
 
             <div className="modal-action">
               <button
