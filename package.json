@@ -8,6 +8,7 @@
     "backend"
   ],
   "scripts": {
+    "predev": "npm run build --workspace=backend",
     "dev": "concurrently -n frontend,backend-tsc,backend-server \"npm run dev --workspace=frontend\" \"tsc --watch --project backend\" \"nodemon --watch backend/dist --exec node backend/dist/server.js\"",
     "build": "npm run build --workspaces",
     "dev:frontend": "npm run dev --workspace=frontend",
