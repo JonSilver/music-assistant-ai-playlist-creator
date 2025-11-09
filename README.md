@@ -13,10 +13,32 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 - **Prompt History**: Track previously used prompts
 - **Preset Prompts**: Quick access to common playlist types
 
+## Architecture
+
+### Tech Stack
+
+- **Frontend**: React 19.2 + TypeScript + Vite
+- **UI Framework**: Tailwind CSS + daisyUI
+- **Backend**: Node.js + Express + TypeScript
+- **Database**: SQLite
+- **AI Integration**: Claude API and OpenAI API
+- **Music Assistant**: WebSocket API integration
+- **Error Handling**: @jfdi/attempt (tuple destructuring pattern)
+- **Deployment**: Single Docker container with nginx + Node.js
+
+### How It Works
+
+1. User enters a natural language playlist description
+2. Backend fetches user's favorite artists from Music Assistant for context
+3. AI service (Claude or OpenAI) generates structured track list
+4. Backend searches Music Assistant library for each suggested track
+5. Matched tracks are displayed with Found/Not Found badges
+6. User can refine suggestions or create playlist in Music Assistant
+
 ## Prerequisites
 
 - Docker and docker-compose
-- Music Assistant server running on your local network
+- Music Assistant server running on your local network (default port 8095)
 - Claude API key or OpenAI API key
 
 ## Installation
@@ -54,6 +76,42 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 5. Remove unwanted tracks or click "Refine Playlist" for adjustments
 6. Click "Create Playlist in Music Assistant"
 
+## API Endpoints
+
+### Settings
+- `GET /api/settings` - Get current settings
+- `PUT /api/settings` - Update settings
+- `POST /api/settings/test/music-assistant` - Test MA WebSocket connection
+- `POST /api/settings/test/anthropic` - Test Anthropic API key
+- `POST /api/settings/test/openai` - Test OpenAI API key
+
+### Playlist
+- `POST /api/playlist/generate` - Generate playlist from prompt
+- `POST /api/playlist/create` - Create playlist in Music Assistant
+- `POST /api/playlist/refine` - Refine existing playlist suggestions
+
+### Prompts
+- `GET /api/prompts/history` - Get prompt history
+- `GET /api/prompts/presets` - Get preset prompts
+
+## Configuration
+
+### Environment Variables (.env)
+
+- `DATA_PATH` - Directory for SQLite database (default: `./data`)
+- `APP_PORT` - Port to expose the application (default: `9876`)
+
+### Application Settings (via UI)
+
+All application settings are configured through the web interface and stored in SQLite:
+
+- **Music Assistant URL**: WebSocket endpoint for your Music Assistant instance
+- **AI Provider**: Choose between Claude (Anthropic) or OpenAI
+- **API Keys**: Anthropic API key and/or OpenAI API key
+- **OpenAI Base URL**: Optional custom endpoint for OpenAI-compatible services
+- **Temperature**: AI creativity level (0-2, default: 0.7)
+- **System Prompt**: Custom instructions for the AI
+
 ## Data Storage
 
 The SQLite database is stored in the directory specified by `DATA_PATH` (defaults to `./data`). This contains:
@@ -63,12 +121,33 @@ The SQLite database is stored in the directory specified by `DATA_PATH` (default
 
 To use a different location, edit `DATA_PATH` in your `.env` file.
 
-## Updating
+## Project Structure
 
-```bash
-docker-compose down
-docker-compose pull
-docker-compose up -d
+```
+/
+├── frontend/               # React application
+│   ├── src/
+│   │   ├── contexts/      # React Context providers
+│   │   ├── services/      # API clients
+│   │   ├── App.tsx        # Main application
+│   │   └── main.tsx       # Entry point
+│   └── package.json
+│
+├── backend/               # Express API server
+│   ├── src/
+│   │   ├── routes/       # Express routes
+│   │   ├── services/     # AI and Music Assistant services
+│   │   ├── db/           # SQLite database
+│   │   └── server.ts     # Express app
+│   └── package.json
+│
+├── shared/               # Shared TypeScript types
+│   └── types.ts
+│
+├── Dockerfile            # Single container build
+├── docker-compose.yml    # Docker orchestration
+├── nginx.conf            # Nginx configuration
+└── supervisord.conf      # Process manager
 ```
 
 ## Development
@@ -82,6 +161,82 @@ npm run dev
 
 Frontend: http://localhost:5173
 Backend: http://localhost:3001
+
+### Build Commands
+
+```bash
+# Install dependencies
+npm install
+
+# Run development servers
+npm run dev
+
+# Build for production
+npm run build
+
+# Run linter
+npm run lint
+
+# Build Docker image
+docker-compose up --build
+```
+
+## Music Assistant Integration
+
+This application connects to Music Assistant via WebSocket to:
+- Search your music library for tracks
+- Retrieve your favorite artists (used as context for AI)
+- Create playlists
+- Add tracks to playlists
+
+**Note**: No authentication is required as Music Assistant is designed for local network use.
+
+## AI Integration
+
+### Supported Providers
+
+1. **Claude (Anthropic)**
+   - Model: Claude 3.5 Sonnet
+   - Requires: Anthropic API key
+
+2. **OpenAI**
+   - Model: GPT-4
+   - Requires: OpenAI API key
+   - Supports custom base URLs for compatible endpoints
+
+### How AI Generates Playlists
+
+The AI receives:
+- Your natural language prompt
+- Your favorite artists from Music Assistant (for context)
+- Custom system prompt (if configured)
+
+The AI returns a structured JSON list of tracks with:
+- Track title
+- Artist name
+- Album name (optional)
+
+## Updating
+
+```bash
+docker-compose down
+docker-compose pull
+docker-compose up -d
+```
+
+## Troubleshooting
+
+### Connection Issues
+
+- Use the "Test Connection" buttons in Settings to verify connectivity
+- Ensure Music Assistant is running and accessible on your network
+- Check that your AI API key is valid
+
+### No Tracks Found
+
+- Verify your Music Assistant library contains the suggested tracks
+- Try refining your prompt to be more specific to your library
+- Check that favorite artists are set in Music Assistant for better context
 
 ## License
 
