@@ -1,33 +1,16 @@
 version: '3.8'
 
 services:
-  backend:
+  app:
     build:
       context: .
-      dockerfile: backend/Dockerfile
-    container_name: playlist-creator-backend
+      dockerfile: Dockerfile
+    container_name: playlist-creator
     ports:
-      - '3001:3001'
+      - '80:80'
     environment:
       - PORT=3001
-      - FRONTEND_URL=http://localhost
       - DATABASE_PATH=/app/data/playlists.db
     volumes:
       - ./data:/app/data
     restart: unless-stopped
-
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-      args:
-        - VITE_API_URL=http://localhost:3001/api
-    container_name: playlist-creator-frontend
-    ports:
-      - '80:80'
-    depends_on:
-      - backend
-    restart: unless-stopped
-
-volumes:
-  data:

@@ -110,16 +110,14 @@ This builds both the frontend and backend for production.
 docker-compose up -d
 ```
 
-The application will be available at:
-- Frontend: http://localhost
-- Backend API: http://localhost:3001/api
+The application will be available at http://localhost
 
 ### Data Persistence
 
-The SQLite database is stored in a Docker volume mapped to `./data` on your host machine. This directory will be created automatically and contains:
+The SQLite database is stored in a volume mapped to `./data` in your current directory. This directory is created automatically and contains:
 - `playlists.db` - SQLite database with settings, prompt history, and presets
 
-To specify a different data directory, edit `docker-compose.yml`:
+To use a different data directory, edit the `volumes` section in `docker-compose.yml`:
 
 ```yaml
 volumes:
@@ -128,18 +126,11 @@ volumes:
 
 ### Configuration
 
-All settings are configured through the web UI after starting the containers. Navigate to Settings and configure:
-- Music Assistant URL
+All settings are configured through the web UI. Navigate to Settings and configure:
+- Music Assistant URL (e.g., `http://192.168.1.100:8095`)
 - AI Provider (Claude or OpenAI)
 - API keys
 - Temperature and custom system prompts
-
-Alternatively, you can set environment variables in `docker-compose.yml`:
-
-```yaml
-environment:
-  - DATABASE_PATH=/app/data/playlists.db
-```
 
 ### Rebuilding
 
