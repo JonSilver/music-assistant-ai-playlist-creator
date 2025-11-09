@@ -5,9 +5,9 @@
   "main": "dist/server.js",
   "type": "module",
   "scripts": {
-    "dev": "tsc-watch --onSuccess \"node dist/backend/src/server.js\"",
+    "dev": "tsc-watch --onSuccess \"node dist/server.js\"",
     "build": "tsc",
-    "start": "node dist/backend/src/server.js",
+    "start": "node dist/server.js",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
