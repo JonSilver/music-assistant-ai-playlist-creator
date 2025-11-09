@@ -83,8 +83,6 @@ npm run dev
 Frontend: http://localhost:5173
 Backend: http://localhost:3001
 
-See `claude.md` for technical documentation.
-
 ## License
 
 ISC
