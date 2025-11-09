@@ -9,7 +9,7 @@ import type {
   RefinePlaylistRequest,
   TrackMatch,
   TrackSuggestion
-} from '@shared/types'
+} from '../../../shared/types.js'
 
 const matchTrack = async (
   suggestion: TrackSuggestion,

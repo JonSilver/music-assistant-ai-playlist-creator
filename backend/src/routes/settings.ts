@@ -3,7 +3,7 @@ import { attempt } from '@jfdi/attempt'
 import { MusicAssistantClient } from '../services/musicAssistant.js'
 import { AIService } from '../services/ai.js'
 import type { PlaylistDatabase } from '../db/schema.js'
-import type { UpdateSettingsRequest, GetSettingsResponse } from '@shared/types'
+import type { UpdateSettingsRequest, GetSettingsResponse } from '../../../shared/types.js'
 
 export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void => {
   // Get settings

@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import OpenAI from 'openai'
 import { attempt } from '@jfdi/attempt'
-import type { AIProvider, TrackSuggestion } from '@shared/types'
+import type { AIProvider, TrackSuggestion } from '../../../shared/types.js'
 
 interface AIPlaylistRequest {
   prompt: string
