@@ -10,16 +10,17 @@ This project provides an AI-assisted playlist creation interface for Music Assis
 - **Framework**: React 19.2
 - **Language**: TypeScript (strict mode)
 - **Build Tool**: Vite
-- **State Management**: TBD (React Context, Zustand, or Redux Toolkit)
-- **Styling**: TBD (Tailwind CSS, CSS Modules, or styled-components)
-- **API Communication**: TBD (fetch, axios, or React Query)
+- **State Management**: React Context
+- **Styling**: Tailwind CSS
+- **API Communication**: Native fetch API
 
 ### Backend
 - **Runtime**: Node.js with Express
 - **Language**: TypeScript (strict mode)
 - **Database**: SQLite (for storing prompts, history, settings if needed)
-- **AI Integration**: Claude API or OpenAI API (user-configured)
-- **Music Assistant Integration**: WebSocket API (also available as REST)
+- **AI Integration**: Claude API and OpenAI API (user selects via config)
+- **Music Assistant Integration**: WebSocket API using `ws` library
+- **WebSocket Library**: `ws` for MA connection
 
 ### Music Assistant Details
 - **What it is**: Open-source media library manager (Python-based)
@@ -203,23 +204,24 @@ Response to Frontend (with match results)
   }
   ```
 
-## Configuration & Decisions Needed
+## Technology Stack (Finalized)
 
-### Technology Choices
+### Decided Stack
+1. ✅ **Frontend**: React 19.2 + Vite + TypeScript
+2. ✅ **State Management**: React Context
+3. ✅ **Styling**: Tailwind CSS
+4. ✅ **Backend**: Node.js/Express with TypeScript
+5. ✅ **Database**: SQLite (for optional features like history, settings)
+6. ✅ **AI Integration**: Both Claude API and OpenAI API (user-configured)
+7. ✅ **WebSocket**: `ws` library for Music Assistant connection
+8. ✅ **Development Approach**: Start with MVP, iterate with enhancements
 
-**Decided:**
-1. ✅ **Backend Stack**: Node.js/Express with TypeScript
-2. ✅ **Database**: SQLite (for optional features like history, settings)
-
-**To Decide:**
-3. **State Management**: React Context, Zustand, or Redux Toolkit?
-   - Simple Context likely sufficient for this app
-
-4. **Styling Solution**: Tailwind CSS, CSS Modules, or styled-components?
-
-5. **WebSocket Library**:
-   - Frontend: native WebSocket API, ws library, or socket.io-client?
-   - Backend: ws, socket.io for MA connection?
+### MVP Feature Set
+- Text input for playlist prompt
+- AI generates track list (structured JSON)
+- Search Music Assistant library for tracks
+- Match and create playlist
+- Display results with match status
 
 ### Deployment & Configuration
 5. **Deployment Target**:
@@ -309,5 +311,13 @@ npm run build
 
 ---
 
-**Status**: Initial planning phase
+**Status**: Implementation phase - Project setup
 **Last Updated**: 2025-11-09
+
+## Next Steps
+1. Initialize frontend with Vite + React 19.2 + TypeScript
+2. Initialize backend with Express + TypeScript
+3. Set up Tailwind CSS
+4. Create shared types
+5. Set up environment configuration
+6. Implement MVP features
