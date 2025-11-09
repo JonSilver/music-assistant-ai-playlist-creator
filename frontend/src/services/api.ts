@@ -1,4 +1,4 @@
-import { attempt } from '../utils/safeAttempt'
+import { attemptPromise } from '@jfdi/attempt'
 import type {
   GetSettingsResponse,
   UpdateSettingsRequest,
@@ -25,11 +25,9 @@ const fetchJSON = async <T>(url: string, options?: RequestInit): Promise<T> => {
   })
 
   if (!response.ok) {
-    const errorResult = await attempt<ErrorResponse>(async () => response.json())
+    const [err, errorBody] = await attemptPromise<ErrorResponse>(async () => response.json())
     const message =
-      errorResult.ok && errorResult.value.error !== undefined
-        ? errorResult.value.error
-        : response.statusText
+      err === undefined && errorBody.error !== undefined ? errorBody.error : response.statusText
     throw new Error(message)
   }
 
@@ -38,10 +36,10 @@ const fetchJSON = async <T>(url: string, options?: RequestInit): Promise<T> => {
 
 export const api = {
   // Settings
-  getSettings: async () => attempt<GetSettingsResponse>(async () => fetchJSON('/settings')),
+  getSettings: async () => attemptPromise<GetSettingsResponse>(async () => fetchJSON('/settings')),
 
   updateSettings: async (updates: UpdateSettingsRequest) =>
-    attempt<{ success: boolean }>(async () =>
+    attemptPromise<{ success: boolean }>(async () =>
       fetchJSON('/settings', {
         method: 'PUT',
         body: JSON.stringify(updates)
@@ -50,7 +48,7 @@ export const api = {
 
   // Playlist operations
   generatePlaylist: async (request: CreatePlaylistRequest) =>
-    attempt<CreatePlaylistResponse>(async () =>
+    attemptPromise<CreatePlaylistResponse>(async () =>
       fetchJSON('/playlist/generate', {
         method: 'POST',
         body: JSON.stringify(request)
@@ -61,7 +59,7 @@ export const api = {
     playlistName: string
     tracks: CreatePlaylistResponse['tracks']
   }) =>
-    attempt<{ success: boolean; playlistId: string; tracksAdded: number }>(async () =>
+    attemptPromise<{ success: boolean; playlistId: string; tracksAdded: number }>(async () =>
       fetchJSON('/playlist/create', {
         method: 'POST',
         body: JSON.stringify(data)
@@ -69,7 +67,7 @@ export const api = {
     ),
 
   refinePlaylist: async (request: RefinePlaylistRequest) =>
-    attempt<{
+    attemptPromise<{
       success: boolean
       tracks: CreatePlaylistResponse['tracks']
       totalSuggested: number
@@ -83,8 +81,8 @@ export const api = {
 
   // Prompts
   getPromptHistory: async () =>
-    attempt<{ history: PromptHistory[] }>(async () => fetchJSON('/prompts/history')),
+    attemptPromise<{ history: PromptHistory[] }>(async () => fetchJSON('/prompts/history')),
 
   getPresetPrompts: async () =>
-    attempt<{ presets: PresetPrompt[] }>(async () => fetchJSON('/prompts/presets'))
+    attemptPromise<{ presets: PresetPrompt[] }>(async () => fetchJSON('/prompts/presets'))
 }

@@ -1,11 +1,16 @@
-import { useState, useEffect, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import type { GetSettingsResponse, UpdateSettingsRequest } from '@shared/types'
 import { api } from '../services/api'
-import type { Result } from '../utils/safeAttempt'
-import { AppContext } from './createAppContext'
 
-export type { AppContextType } from './createAppContext'
-export { AppContext } from './createAppContext'
+interface AppContextType {
+  settings: GetSettingsResponse | null
+  loading: boolean
+  error: string | null
+  updateSettings: (updates: UpdateSettingsRequest) => Promise<Error | undefined>
+  refreshSettings: () => Promise<void>
+}
+
+const AppContext = createContext<AppContextType | undefined>(undefined)
 
 export const AppProvider = ({ children }: { children: ReactNode }): JSX.Element => {
   const [settings, setSettings] = useState<GetSettingsResponse | null>(null)
@@ -16,27 +21,27 @@ export const AppProvider = ({ children }: { children: ReactNode }): JSX.Element 
     setLoading(true)
     setError(null)
 
-    const result = await api.getSettings()
+    const [err, result] = await api.getSettings()
 
-    if (result.ok) {
-      setSettings(result.value)
+    if (err !== undefined) {
+      setError(err.message)
     } else {
-      setError(result.error.message)
+      setSettings(result)
     }
 
     setLoading(false)
   }
 
-  const updateSettings = async (updates: UpdateSettingsRequest): Promise<Result<void>> => {
-    const result = await api.updateSettings(updates)
+  const updateSettings = async (updates: UpdateSettingsRequest): Promise<Error | undefined> => {
+    const [err] = await api.updateSettings(updates)
 
-    if (!result.ok) {
-      setError(result.error.message)
-      return result
+    if (err !== undefined) {
+      setError(err.message)
+      return err
     }
 
     await refreshSettings()
-    return { ok: true, value: undefined }
+    return undefined
   }
 
   useEffect(() => {
@@ -48,4 +53,12 @@ export const AppProvider = ({ children }: { children: ReactNode }): JSX.Element 
       {children}
     </AppContext.Provider>
   )
+}
+
+export const useApp = (): AppContextType => {
+  const context = useContext(AppContext)
+  if (context === undefined) {
+    throw new Error('useApp must be used within AppProvider')
+  }
+  return context
 }

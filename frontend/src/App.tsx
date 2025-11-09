@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useApp } from './hooks/useApp'
+import { useApp } from './contexts/AppContext'
 import { api } from './services/api'
 import type {
   CreatePlaylistRequest,
@@ -45,21 +45,21 @@ const App = (): JSX.Element => {
   }, [settings])
 
   const loadHistory = async (): Promise<void> => {
-    const result = await api.getPromptHistory()
-    if (!result.ok) {
-      setError(`Failed to load history: ${result.error.message}`)
+    const [err, result] = await api.getPromptHistory()
+    if (err !== undefined) {
+      setError(`Failed to load history: ${err.message}`)
       return
     }
-    setHistory(result.value.history)
+    setHistory(result.history)
   }
 
   const loadPresets = async (): Promise<void> => {
-    const result = await api.getPresetPrompts()
-    if (!result.ok) {
-      setError(`Failed to load presets: ${result.error.message}`)
+    const [err, result] = await api.getPresetPrompts()
+    if (err !== undefined) {
+      setError(`Failed to load presets: ${err.message}`)
       return
     }
-    setPresets(result.value.presets)
+    setPresets(result.presets)
   }
 
   const handleGeneratePlaylist = async (): Promise<void> => {
@@ -76,15 +76,15 @@ const App = (): JSX.Element => {
       playlistName: playlistName.trim()
     }
 
-    const result = await api.generatePlaylist(request)
+    const [err, result] = await api.generatePlaylist(request)
     setGenerating(false)
 
-    if (!result.ok) {
-      setError(`Failed to generate playlist: ${result.error.message}`)
+    if (err !== undefined) {
+      setError(`Failed to generate playlist: ${err.message}`)
       return
     }
 
-    setGeneratedTracks(result.value.tracks)
+    setGeneratedTracks(result.tracks)
     void loadHistory()
   }
 
@@ -97,20 +97,20 @@ const App = (): JSX.Element => {
     setCreating(true)
     setError(null)
 
-    const result = await api.createPlaylist({
+    const [err, result] = await api.createPlaylist({
       playlistName: playlistName.trim(),
       tracks: generatedTracks
     })
 
     setCreating(false)
 
-    if (!result.ok) {
-      setError(`Failed to create playlist: ${result.error.message}`)
+    if (err !== undefined) {
+      setError(`Failed to create playlist: ${err.message}`)
       return
     }
 
     setSuccessMessage(
-      `Playlist created successfully! Added ${result.value.tracksAdded.toString()} tracks.`
+      `Playlist created successfully! Added ${result.tracksAdded.toString()} tracks.`
     )
     setPrompt('')
     setPlaylistName('')
@@ -122,7 +122,7 @@ const App = (): JSX.Element => {
   }
 
   const handleSaveSettings = async (): Promise<void> => {
-    const result = await updateSettings({
+    const err = await updateSettings({
       musicAssistantUrl: musicAssistantUrl.length > 0 ? musicAssistantUrl : undefined,
       aiProvider,
       anthropicApiKey: anthropicApiKey.length > 0 ? anthropicApiKey : undefined,
@@ -130,8 +130,8 @@ const App = (): JSX.Element => {
       openaiBaseUrl: openaiBaseUrl.length > 0 ? openaiBaseUrl : undefined
     })
 
-    if (!result.ok) {
-      setError(`Failed to save settings: ${result.error.message}`)
+    if (err !== undefined) {
+      setError(`Failed to save settings: ${err.message}`)
       return
     }
 
@@ -335,9 +335,7 @@ const App = (): JSX.Element => {
                 onClick={() => {
                   void handleGeneratePlaylist()
                 }}
-                disabled={
-                  generating || prompt.trim().length === 0 || playlistName.trim().length === 0
-                }
+                disabled={generating || prompt.trim().length === 0 || playlistName.trim().length === 0}
               >
                 {generating && <span className="loading loading-spinner"></span>}
                 {generating ? 'Generating...' : 'Generate Playlist'}
