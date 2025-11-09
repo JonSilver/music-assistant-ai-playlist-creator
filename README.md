@@ -71,24 +71,10 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 
 ### Development Setup (Local)
 
-**Linux/macOS:**
 ```bash
 git clone <repo-url>
 cd music-assistant-ai-playlist-creator
 npm install
-npm run dev
-```
-
-**Windows:**
-```powershell
-git clone <repo-url>
-cd music-assistant-ai-playlist-creator
-npm install
-cd frontend
-Remove-Item package-lock.json -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
-npm install
-cd ..
 npm run dev
 ```
 
