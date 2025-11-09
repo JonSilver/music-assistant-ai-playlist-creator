@@ -4,13 +4,28 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 
 ## Features
 
-- **AI-Powered Suggestions**: Uses Claude or OpenAI to generate playlist suggestions
-- **Smart Matching**: Intelligently matches AI suggestions to your Music Assistant library
-- **Prompt History**: Keep track of previously used prompts
+### Current Features
+
+- **AI-Powered Suggestions**: Uses Claude or OpenAI to generate playlist suggestions based on natural language descriptions
+- **Smart Library Matching**: Intelligently matches AI suggestions to your Music Assistant library across multiple streaming services (Spotify, Apple Music, etc.)
+- **Iterative Refinement**: Refine generated playlists with additional instructions (e.g., "add more upbeat tracks", "remove slow songs")
+- **Enhanced Visualization**:
+  - Match statistics showing success rate
+  - Progress bar for match percentage
+  - Filter tracks by All/Found/Not Found
+  - Color-coded badges with icons
+  - Shows which music provider matched each track
+- **Customizable AI Behavior**:
+  - Adjustable temperature (0-2) for creativity control
+  - Custom system prompts to change AI curation style
+  - Choice between Claude and OpenAI
+- **Prompt History**: Keep track of previously used prompts and reuse them
 - **Preset Prompts**: Quick access to common playlist types (workout, chill, party, focus)
-- **Playlist Preview**: Review and edit AI suggestions before creating the playlist
-- **Iterative Refinement**: Request AI to refine the playlist based on feedback
-- **Modern UI**: Built with React 19, shadcn-ui components, and Tailwind CSS
+- **Track Management**:
+  - Review generated tracks before creating playlist
+  - Remove unwanted tracks individually
+  - See which tracks matched vs. not found
+- **Modern UI**: Built with React 19, daisyUI components, and Tailwind CSS
 
 ## Tech Stack
 
@@ -18,15 +33,17 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 - React 19.2 with TypeScript (strict mode)
 - Vite for build tooling
 - Tailwind CSS for styling
-- shadcn-ui for UI components
+- daisyUI for UI components
 - React Context for state management
+- @jfdi/attempt for error handling
 
 ### Backend
 - Node.js with Express
 - TypeScript (strict mode)
 - WebSocket client (`ws`) for Music Assistant connection
-- SQLite for storing prompt history and settings
-- Support for both Claude and OpenAI APIs
+- SQLite (better-sqlite3) for storing settings, prompt history, and presets
+- @jfdi/attempt for error handling (no try/catch)
+- Support for both Claude (Anthropic) and OpenAI APIs
 
 ## Prerequisites
 
@@ -130,9 +147,12 @@ This builds both the frontend and backend for production.
 
 ### Backend API
 
-- `GET /health` - Health check
-- `POST /api/playlist/create` - Create playlist from prompt
-- `POST /api/playlist/refine` - Refine existing suggestions
+- `GET /api/health` - Health check
+- `GET /api/settings` - Get application settings
+- `PUT /api/settings` - Update application settings
+- `POST /api/playlist/generate` - Generate playlist suggestions from prompt
+- `POST /api/playlist/create` - Create playlist in Music Assistant
+- `POST /api/playlist/refine` - Refine existing playlist suggestions
 - `GET /api/prompts/history` - Get prompt history
 - `GET /api/prompts/presets` - Get preset prompts
 
@@ -155,7 +175,32 @@ This project maintains high code quality standards:
 - **Strict TypeScript**: No `any` types, full type safety
 - **No React Anti-patterns**: Follows React 19 best practices
 - **Well-tested Libraries**: Uses battle-hardened, well-maintained packages
-- **Consistent Formatting**: Enforced via ESLint
+- **Consistent Formatting**: Enforced via ESLint and Prettier
+- **Error Handling**: Consistent use of @jfdi/attempt (no try/catch)
+
+## Roadmap / Potential Features
+
+### High Priority
+- **Better Fuzzy Matching**: Implement proper fuzzy matching library (fuse.js or Levenshtein distance) to catch misspellings and variations
+- **Manual Track Addition**: Search Music Assistant library and manually add tracks to generated playlist
+- **Save Custom Prompts as Templates**: Allow users to save their custom system prompts as reusable templates
+- **Match Confidence Scores**: Show low/medium/high confidence for each matched track
+
+### Medium Priority
+- **Playlist Preview/Editing**:
+  - Drag and drop to reorder tracks
+  - See track duration and album art
+  - Search library to add tracks manually
+- **Multiple Playlist Generation**: Generate 3-5 variations at once with different temperatures and pick the best
+- **Smart Context**: Auto-populate prompts based on time of day, day of week, or listening history
+- **Unmatched Track Suggestions**: When tracks aren't found, suggest similar tracks from your library
+
+### Lower Priority
+- **Track Preview**: Play 30-second previews before creating playlist
+- **Music Assistant Player Integration**: Start playing generated playlist immediately
+- **Export/Share**: Export track lists as text, CSV, or share to Spotify/Apple Music
+- **Analytics**: Track playlist creation stats and preferences over time
+- **Batch Operations**: Create multiple playlists from a list of prompts
 
 ## Contributing
 
@@ -173,6 +218,7 @@ ISC
 ## Acknowledgments
 
 - [Music Assistant](https://music-assistant.io) - Open-source music library manager
-- [shadcn-ui](https://ui.shadcn.com) - Re-usable components
+- [daisyUI](https://daisyui.com) - Tailwind CSS component library
 - [Anthropic Claude](https://anthropic.com) - AI language model
 - [OpenAI](https://openai.com) - AI language model
+- [@jfdi/attempt](https://github.com/jfdi-dev/iffyjs) - Type-safe error handling
