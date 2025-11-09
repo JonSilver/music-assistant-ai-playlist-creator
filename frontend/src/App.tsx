@@ -25,6 +25,7 @@ const App = (): React.JSX.Element => {
   const [showRefine, setShowRefine] = useState(false)
   const [refinementPrompt, setRefinementPrompt] = useState('')
   const [refining, setRefining] = useState(false)
+  const [trackFilter, setTrackFilter] = useState<'all' | 'matched' | 'unmatched'>('all')
 
   // Form state for settings
   const [musicAssistantUrl, setMusicAssistantUrl] = useState('')
@@ -198,6 +199,15 @@ const App = (): React.JSX.Element => {
   }
 
   const hasMatchedTracks = generatedTracks.filter(t => t.matched).length > 0
+  const matchedCount = generatedTracks.filter(t => t.matched).length
+  const totalCount = generatedTracks.length
+  const matchPercentage = totalCount > 0 ? Math.round((matchedCount / totalCount) * 100) : 0
+
+  const filteredTracks = generatedTracks.filter(track => {
+    if (trackFilter === 'matched') return track.matched
+    if (trackFilter === 'unmatched') return !track.matched
+    return true
+  })
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -389,7 +399,60 @@ const App = (): React.JSX.Element => {
         {generatedTracks.length > 0 && (
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
-              <h2 className="card-title">Generated Tracks ({generatedTracks.length})</h2>
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="card-title mb-2">Generated Tracks</h2>
+                  <div className="text-sm space-y-1">
+                    <p>
+                      <span className="font-semibold">{matchedCount}</span> of{' '}
+                      <span className="font-semibold">{totalCount}</span> tracks found in your library
+                      {matchPercentage > 0 && (
+                        <span className="ml-2 badge badge-sm badge-info">{matchPercentage}%</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="btn-group">
+                  <button
+                    className={`btn btn-sm ${trackFilter === 'all' ? 'btn-active' : ''}`}
+                    onClick={() => {
+                      setTrackFilter('all')
+                    }}
+                  >
+                    All ({totalCount})
+                  </button>
+                  <button
+                    className={`btn btn-sm ${trackFilter === 'matched' ? 'btn-active' : ''}`}
+                    onClick={() => {
+                      setTrackFilter('matched')
+                    }}
+                  >
+                    Found ({matchedCount})
+                  </button>
+                  <button
+                    className={`btn btn-sm ${trackFilter === 'unmatched' ? 'btn-active' : ''}`}
+                    onClick={() => {
+                      setTrackFilter('unmatched')
+                    }}
+                  >
+                    Not Found ({totalCount - matchedCount})
+                  </button>
+                </div>
+              </div>
+
+              {matchPercentage < 100 && matchPercentage > 0 && (
+                <div className="mb-4">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span>Match Rate</span>
+                    <span>{matchPercentage}%</span>
+                  </div>
+                  <progress
+                    className="progress progress-success w-full"
+                    value={matchPercentage}
+                    max="100"
+                  ></progress>
+                </div>
+              )}
 
               <div className="overflow-x-auto">
                 <table className="table">
@@ -403,30 +466,76 @@ const App = (): React.JSX.Element => {
                     </tr>
                   </thead>
                   <tbody>
-                    {generatedTracks.map((track, index) => (
-                      <tr key={index} className={track.matched ? '' : 'opacity-50'}>
-                        <td>{track.suggestion.title}</td>
-                        <td>{track.suggestion.artist}</td>
-                        <td>{track.suggestion.album ?? '-'}</td>
-                        <td>
-                          {track.matched ? (
-                            <span className="badge badge-success">Found</span>
-                          ) : (
-                            <span className="badge badge-error">Not Found</span>
-                          )}
-                        </td>
-                        <td>
-                          <button
-                            className="btn btn-ghost btn-xs"
-                            onClick={() => {
-                              handleRemoveTrack(index)
-                            }}
-                          >
-                            Remove
-                          </button>
+                    {filteredTracks.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-8 opacity-50">
+                          No tracks match the current filter
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      filteredTracks.map(track => {
+                        const actualIndex = generatedTracks.indexOf(track)
+                        return (
+                          <tr key={actualIndex} className={track.matched ? '' : 'opacity-50'}>
+                            <td>
+                              <div className="font-medium">{track.suggestion.title}</div>
+                              {track.maTrack !== undefined && (
+                                <div className="text-xs opacity-60">{track.maTrack.provider}</div>
+                              )}
+                            </td>
+                            <td>{track.suggestion.artist}</td>
+                            <td>{track.suggestion.album ?? '-'}</td>
+                            <td>
+                              {track.matched ? (
+                                <span className="badge badge-success gap-1">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    className="inline-block w-4 h-4 stroke-current"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth="2"
+                                      d="M5 13l4 4L19 7"
+                                    ></path>
+                                  </svg>
+                                  Found
+                                </span>
+                              ) : (
+                                <span className="badge badge-error gap-1">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    className="inline-block w-4 h-4 stroke-current"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth="2"
+                                      d="M6 18L18 6M6 6l12 12"
+                                    ></path>
+                                  </svg>
+                                  Not Found
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              <button
+                                className="btn btn-ghost btn-xs"
+                                onClick={() => {
+                                  handleRemoveTrack(actualIndex)
+                                }}
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>
