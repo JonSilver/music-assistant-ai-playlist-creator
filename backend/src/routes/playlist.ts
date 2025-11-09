@@ -21,8 +21,7 @@ const matchTrack = async (suggestion: TrackSuggestion, maClient: MusicAssistantC
     return {
       suggestion,
       matched: true,
-      maTrack: searchResults[0],
-      confidence: 1.0
+      maTrack: searchResults[0]
     }
   }
 
