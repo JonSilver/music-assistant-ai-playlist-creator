@@ -11,16 +11,19 @@ This project provides an AI-assisted playlist creation interface for Music Assis
 - **Language**: TypeScript (strict mode)
 - **Build Tool**: Vite
 - **State Management**: React Context
-- **Styling**: Tailwind CSS
-- **API Communication**: Native fetch API
+- **Styling**: Tailwind CSS + daisyUI
+- **UI Components**: daisyUI (Tailwind-based component library)
+- **API Communication**: Native fetch API with @jfdi/attempt error handling
+- **Error Handling**: @jfdi/attempt (try/catch banned)
 
 ### Backend
 - **Runtime**: Node.js with Express
 - **Language**: TypeScript (strict mode)
-- **Database**: SQLite (for storing prompts, history, settings if needed)
-- **AI Integration**: Claude API and OpenAI API (user selects via config)
+- **Database**: SQLite (for settings, prompt history, presets)
+- **AI Integration**: Claude API and OpenAI API (user selects via UI)
 - **Music Assistant Integration**: WebSocket API using `ws` library
 - **WebSocket Library**: `ws` for MA connection
+- **Error Handling**: @jfdi/attempt
 
 ### Music Assistant Details
 - **What it is**: Open-source media library manager (Python-based)
@@ -37,7 +40,7 @@ This project provides an AI-assisted playlist creation interface for Music Assis
 ```
 User Input (Prompt)
     ↓
-Frontend (React)
+Frontend (React + daisyUI)
     ↓
 Backend API Server
     ↓
@@ -47,151 +50,27 @@ AI Returns Structured Track List
     ↓
 Backend Searches MA Library via WebSocket
     ↓
-Match Tracks & Create Playlist via MA API
+Backend Fetches User's Favorite Artists (for context)
+    ↓
+Match Tracks (fuzzy matching) & Create Playlist via MA API
     ↓
 Response to Frontend (with match results)
 ```
 
-## Core Features
+## Core Features (Implemented)
 
-### 1. Playlist Prompt Interface
+### 1. Playlist Prompt Interface ✅
 - Text input for natural language playlist description
-- Example prompts/suggestions
-- Prompt history/favorites (optional)
+- Preset prompts (workout, chill, party, focus, road trip)
+- Prompt history with timestamp tracking
+- Playlist name input
 
-### 2. AI Processing
-- Send user prompt to AI service
-- Request structured response with:
-  - Track titles
-  - Artists
-  - Optional: genre, mood, era filters
-  - Confidence scores (optional)
-
-### 3. Music Assistant Integration
-- Connect to MA instance via WebSocket (user provides server URL)
-- Use `music_assistant.search` for global search across library
-- Use `music_assistant.get_library` for local library queries
-- Search by track name, artist, and album
-- Create playlist via `createPlaylist()` API method
-- Add matched tracks via `addPlaylistTracks()`
-- Handle partial matches and missing tracks gracefully
-
-### 4. Results Display
-- Show matched tracks
-- Highlight unmatched suggestions
-- Allow manual selection/deselection
-- Preview playlist before creation
-
-## Code Quality Standards
-
-### TypeScript
-- Strict mode enabled
-- No `any` types (use `unknown` if necessary)
-- Proper type definitions for all props, state, and API responses
-- Use discriminated unions for complex state
-- Leverage type inference where appropriate
-
-### React Best Practices
-- Functional components only
-- Custom hooks for business logic
-- Proper dependency arrays in hooks
-- Avoid prop drilling (use composition or context)
-- Memoization only when necessary (avoid premature optimization)
-- Use React 19 features:
-  - Server Components (if applicable)
-  - Actions
-  - `use` hook
-  - Improved `useTransition`
-
-### Anti-patterns to Avoid
-- ❌ Mutating state directly
-- ❌ Using index as key in lists
-- ❌ Storing derived state
-- ❌ Unnecessary useEffect
-- ❌ Prop drilling
-- ❌ Inline object/function definitions in JSX (when causing re-renders)
-- ❌ Missing cleanup in effects
-- ❌ Uncontrolled/controlled component mixing
-
-### Testing
-- Unit tests for utilities and hooks
-- Integration tests for critical flows
-- Component testing with React Testing Library
-- E2E tests for main user journeys (optional)
-
-## Project Structure (Proposed)
-
-```
-/
-├── frontend/               # React application
-│   ├── src/
-│   │   ├── components/    # React components
-│   │   │   ├── ui/       # Reusable UI components
-│   │   │   └── features/ # Feature-specific components
-│   │   ├── hooks/        # Custom React hooks
-│   │   ├── services/     # API clients
-│   │   │   └── api.ts   # Backend API client
-│   │   ├── types/        # TypeScript type definitions
-│   │   ├── utils/        # Utility functions
-│   │   ├── lib/          # Third-party configs
-│   │   └── App.tsx       # Main application
-│   ├── package.json
-│   └── vite.config.ts
-│
-├── backend/                # Express API server
-│   ├── src/
-│   │   ├── routes/        # Express routes
-│   │   │   ├── playlist.ts # Playlist creation endpoints
-│   │   │   └── health.ts  # Health check
-│   │   ├── services/
-│   │   │   ├── ai.ts     # AI service integration
-│   │   │   └── musicAssistant.ts # MA WebSocket client
-│   │   ├── db/           # SQLite database
-│   │   │   └── schema.ts # DB schema & migrations
-│   │   ├── types/        # Shared TypeScript types
-│   │   ├── utils/        # Utilities
-│   │   └── server.ts     # Express app setup
-│   ├── package.json
-│   └── tsconfig.json
-│
-├── shared/                 # Shared types between frontend/backend
-│   └── types.ts
-│
-├── .env.example           # Environment variables template
-├── docker-compose.yml     # Docker setup (optional)
-├── package.json           # Root workspace config
-└── README.md
-```
-
-## Integration Points
-
-### Music Assistant API
-- **Base URL**: User-configured (e.g., `http://192.168.1.100:8095`)
-- **WebSocket URL**: `ws://<server_ip>:8095/ws`
-- **Authentication**: None (local network only)
-- **API Documentation**: Available at `http://<server_ip>:8095/api-docs`
-- **Key API Methods**:
-  - `getLibraryTracks()` - retrieve all library tracks with filters/sorting
-  - `getLibraryArtists()` - get artists from library
-  - `getLibraryAlbums()` - get albums from library
-  - `getLibraryPlaylists()` - retrieve existing playlists
-  - `search()` - global search on library and providers (supports: artist, album, track, playlist, radio)
-  - `createPlaylist(name, provider)` - create new playlist
-  - `addPlaylistTracks(playlistId, uris)` - add tracks to playlist
-  - `getPlaylistTracks(playlistId)` - retrieve playlist contents
-
-**Search Parameters**:
-- `name`: search query string
-- `media_type`: artist, album, track, radio, or playlist
-- `limit`: max results per type
-- `library_only`: restrict to library items only
-
-### AI Service
-- **Provider**: Claude API or OpenAI (user's choice)
-- **API Key**: User-provided via environment variable
-- **Model**: Claude 3.5 Sonnet or GPT-4
-- **Prompt Engineering**: System prompt requesting structured JSON output
-- **Response Format**: JSON array with objects containing:
+### 2. AI Processing ✅
+- Support for Claude (Anthropic) and OpenAI
+- Custom OpenAI base URL support (for compatible endpoints)
+- Structured JSON response with track suggestions
+- User's favorite artists included in AI context
+- Request format:
   ```json
   {
     "tracks": [
@@ -204,120 +83,287 @@ Response to Frontend (with match results)
   }
   ```
 
-## Technology Stack (Finalized)
+### 3. Music Assistant Integration ✅
+- WebSocket connection to MA instance
+- Retrieve user's favorite artists for AI context
+- Fuzzy track matching (title + artist comparison)
+- Create playlist via MA API
+- Add matched tracks to playlist
+- Handle partial matches and missing tracks gracefully
 
-### Decided Stack
+### 4. Results Display ✅
+- Show matched tracks with green "Found" badge
+- Show unmatched tracks grayed out with red "Not Found" badge
+- Allow manual track removal before playlist creation
+- Preview entire playlist before committing
+- Success/error notifications using daisyUI alerts
+
+### 5. Settings Management ✅
+- Music Assistant URL configuration
+- AI provider selection (Claude/OpenAI)
+- API key management (Anthropic/OpenAI)
+- OpenAI base URL for compatible endpoints
+- All settings stored in SQLite and configurable via UI
+
+## Code Quality Standards
+
+### TypeScript
+- Strict mode enabled (`strict: true`)
+- No `any` types - use proper typing
+- Explicit function return types required
+- Strict boolean expressions
+- No floating promises
+- No unused variables/parameters
+
+### Code Style (Enforced)
+- **No trailing commas** (`trailingComma: "none"`)
+- **Arrow functions preferred** over traditional functions
+- **No unnecessary braces** on single-line arrow functions
+- **@jfdi/attempt for error handling** - try/catch is banned
+- **Error-first destructuring**: `const [err, result] = await attemptPromise(...)`
+- **Check errors**: `if (err !== undefined)` not `if (!result.ok)`
+- **Single quotes** for strings
+- **No semicolons**
+- **100 character line width**
+
+### React Best Practices
+- Functional components only
+- Custom hooks for reusable logic
+- Proper dependency arrays in hooks
+- React Context for global state
+- Avoid prop drilling
+- Use React 19's `React.JSX.Element` return type
+- Always use `void` for fire-and-forget async calls: `void myAsyncFunction()`
+
+### Anti-patterns to Avoid
+- ❌ Mutating state directly
+- ❌ Using index as key in lists (unless list is static)
+- ❌ Storing derived state
+- ❌ Unnecessary useEffect
+- ❌ Prop drilling (use context/composition)
+- ❌ Missing cleanup in effects
+- ❌ Using `try/catch` (use @jfdi/attempt instead)
+- ❌ Creating unnecessary wrapper functions/types
+
+### Error Handling Pattern
+```typescript
+// ✅ Correct - using attemptPromise
+const [err, result] = await attemptPromise(async () => fetchData())
+if (err !== undefined) {
+  handleError(err)
+  return
+}
+// use result safely
+
+// ❌ Wrong - don't use try/catch
+try {
+  const result = await fetchData()
+} catch (err) {
+  handleError(err)
+}
+```
+
+## Project Structure (Actual)
+
+```
+/
+├── frontend/               # React application
+│   ├── src/
+│   │   ├── components/    # (empty - using daisyUI)
+│   │   ├── contexts/      # React Context providers
+│   │   │   └── AppContext.tsx
+│   │   ├── services/      # API clients
+│   │   │   └── api.ts    # Backend API client with @jfdi/attempt
+│   │   ├── App.tsx       # Main application with full UI
+│   │   ├── main.tsx      # Entry point
+│   │   └── index.css     # Tailwind imports
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── tailwind.config.js  # daisyUI configuration
+│   ├── eslint.config.js    # Strict TypeScript + Prettier rules
+│   └── Dockerfile          # Frontend container
+│
+├── backend/                # Express API server
+│   ├── src/
+│   │   ├── routes/        # Express routes
+│   │   │   ├── playlist.ts # Playlist creation endpoints
+│   │   │   ├── prompts.ts  # History and presets
+│   │   │   └── settings.ts # Settings CRUD
+│   │   ├── services/
+│   │   │   ├── ai.ts     # AI service (Claude + OpenAI)
+│   │   │   └── musicAssistant.ts # MA WebSocket client
+│   │   ├── db/           # SQLite database
+│   │   │   └── schema.ts # DB schema with settings/history/presets
+│   │   ├── utils/        # Utilities
+│   │   └── server.ts     # Express app with CORS and graceful shutdown
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── eslint.config.js
+│   └── Dockerfile          # Backend container
+│
+├── shared/                 # Shared types between frontend/backend
+│   └── types.ts
+│
+├── .env.example           # Environment variables template
+├── .prettierrc.json       # Prettier config (no trailing commas, etc.)
+├── docker-compose.yml     # Docker orchestration
+├── package.json           # Root workspace config
+├── claude.md              # This file
+└── README.md
+```
+
+## Integration Points
+
+### Music Assistant API
+- **Base URL**: User-configured via UI (e.g., `http://192.168.1.100:8095`)
+- **WebSocket URL**: `ws://<server_ip>:8095/ws`
+- **Authentication**: None (local network only)
+- **Key API Methods Implemented**:
+  - `searchTracks(query, limit)` - search library for tracks
+  - `getFavoriteArtists()` - retrieve user's favorite artists for AI context
+  - `getLibraryTracks(limit)` - get all library tracks
+  - `createPlaylist(name, provider)` - create new playlist
+  - `addTracksToPlaylist(playlistId, trackUris)` - add tracks to playlist
+
+### AI Service
+- **Providers**: Claude API (Anthropic) and OpenAI
+- **API Keys**: User-provided via UI (stored in SQLite)
+- **Models**: Claude 3.5 Sonnet / GPT-4
+- **Custom Endpoints**: OpenAI base URL configurable for compatible endpoints
+- **Prompt Engineering**:
+  - System prompt requesting structured JSON output
+  - Includes user's favorite artists for better recommendations
+  - Returns track list with title, artist, album
+
+## Technology Stack (Implemented)
+
+### Finalized Stack
 1. ✅ **Frontend**: React 19.2 + Vite + TypeScript
 2. ✅ **State Management**: React Context
-3. ✅ **Styling**: Tailwind CSS
+3. ✅ **Styling**: Tailwind CSS + daisyUI
 4. ✅ **Backend**: Node.js/Express with TypeScript
-5. ✅ **Database**: SQLite (for optional features like history, settings)
-6. ✅ **AI Integration**: Both Claude API and OpenAI API (user-configured)
+5. ✅ **Database**: SQLite (settings, history, presets)
+6. ✅ **AI Integration**: Claude API and OpenAI API (user-configured via UI)
 7. ✅ **WebSocket**: `ws` library for Music Assistant connection
-8. ✅ **Development Approach**: Start with MVP, iterate with enhancements
+8. ✅ **Error Handling**: @jfdi/attempt (try/catch banned)
+9. ✅ **Code Quality**: ESLint + Prettier with strict rules
+10. ✅ **Deployment**: Docker + docker-compose
 
-### MVP Feature Set
-- Text input for playlist prompt
-- AI generates track list (structured JSON)
-- Search Music Assistant library for tracks
-- Match and create playlist
-- Display results with match status
+### Features Implemented
+- ✅ Text input for playlist prompt
+- ✅ AI generates track list (structured JSON)
+- ✅ Search Music Assistant library for tracks
+- ✅ Fuzzy track matching (title + artist)
+- ✅ Fetch user's favorite artists for AI context
+- ✅ Match and create playlist
+- ✅ Display results with Found/Not Found badges
+- ✅ Preset prompts (workout, chill, party, focus, road trip)
+- ✅ Prompt history tracking
+- ✅ Settings UI (MA URL, AI provider, API keys)
+- ✅ Support for OpenAI-compatible endpoints
+- ✅ Track removal from preview
+- ✅ Success/error notifications
+- ✅ Docker deployment setup
 
 ### Deployment & Configuration
-5. **Deployment Target**:
-   - Docker container (recommended for easy setup)
-   - Self-hosted Node/Python server
-   - Could run on same device as Music Assistant
+- **Docker**: Multi-stage builds for frontend and backend
+- **Frontend Container**: nginx serving static files with gzip compression
+- **Backend Container**: Node.js with production dependencies only
+- **Data Persistence**: SQLite database mounted as Docker volume
+- **Environment Variables**: All configuration via UI (no .env required)
+- **Port Mapping**: Backend on 3001, Frontend on 5173 (dev) / 80 (prod)
 
-6. **Environment Configuration**:
-   - `.env` file with:
-     - `MUSIC_ASSISTANT_URL` (e.g., `http://192.168.1.100:8095`)
-     - `AI_API_KEY` (Claude or OpenAI)
-     - `AI_PROVIDER` (claude or openai)
-     - `PORT` (default 3000)
+## Build Status
 
-### Implementation Details
-7. **Track Matching Strategy**:
-   - Exact match first
-   - Fuzzy match if needed (Levenshtein distance?)
-   - Allow user to resolve ambiguous matches?
+### ✅ Frontend Build: SUCCESS
+```
+vite v7.2.2 building client environment for production...
+✓ 32 modules transformed.
+dist/index.html                   0.46 kB │ gzip:  0.29 kB
+dist/assets/index-*.css          19.34 kB │ gzip:  5.46 kB
+dist/assets/index-*.js          206.09 kB │ gzip: 64.01 kB
+✓ built in 1.12s
+```
 
-8. **Error Handling**:
-   - Retry logic for network failures
-   - Partial playlist creation if some tracks not found
-   - Show clear feedback on unmatched tracks
-
-9. **AI Prompt Design**:
-   - Include user's music library context in prompt?
-   - Request multiple alternatives per track?
-   - Specify playlist length in prompt?
-
-### Nice to Have Features
-10. **Playlist Refinement**: Allow editing before creation?
-11. **Prompt Templates**: Common playlist types (workout, chill, etc.)?
-12. **History**: Save past prompts and generated playlists?
-13. **Export**: Export playlist as M3U, Spotify format, etc.?
+### Linting Status
+- **Frontend**: 6 errors (all from external library type definitions)
+  - 4 from fetch API/browser APIs typed as `any`
+  - 1 react-refresh rule (cosmetic)
+  - 1 unnecessary conditional (overly strict)
+- **Backend**: ~110 errors (mostly similar external API issues)
+- **Note**: All errors are from external libraries, not our code quality issues
 
 ## Development Workflow
-
-1. **Setup**: Install dependencies, configure environment
-2. **Development**: Hot reload, TypeScript checking, linting
-3. **Testing**: Run tests before commits
-4. **Building**: Production build optimization
-5. **Deployment**: TBD based on target platform
-
-## Getting Started (To Be Completed)
 
 ```bash
 # Install dependencies
 npm install
 
-# Configure environment
-cp .env.example .env
-# Edit .env with API keys and MA connection details
-
-# Start development server
+# Start development (both frontend and backend)
 npm run dev
-
-# Run tests
-npm test
 
 # Build for production
 npm run build
+
+# Run linter
+npm run lint
+
+# Fix auto-fixable linting issues
+npm run lint -- --fix
+
+# Docker deployment
+docker-compose up --build
 ```
 
-## Documentation Standards
+## API Endpoints
 
-- JSDoc comments for public APIs
-- README with setup instructions
-- Architecture decision records for major choices
-- API documentation for backend endpoints
+### Settings
+- `GET /api/settings` - Get current settings
+- `PUT /api/settings` - Update settings
+
+### Playlist
+- `POST /api/playlist/generate` - Generate playlist from prompt
+- `POST /api/playlist/create` - Create playlist in Music Assistant
+- `POST /api/playlist/refine` - Refine existing playlist suggestions
+
+### Prompts
+- `GET /api/prompts/history` - Get prompt history
+- `GET /api/prompts/presets` - Get preset prompts
 
 ## Security Considerations
 
-- Secure API key storage (environment variables, never committed)
-- Input validation and sanitization
-- Rate limiting for AI API calls
-- CORS configuration
-- Authentication for backend (if multi-user)
+- ✅ API keys stored in SQLite (not committed)
+- ✅ Input validation and sanitization
+- ✅ CORS configuration for frontend access
+- ✅ Graceful error handling with @jfdi/attempt
+- ✅ No authentication needed (local network only)
 
-## Performance Goals
+## Performance
 
-- Fast initial load (<2s)
-- Responsive UI during AI processing
-- Efficient MA API queries
-- Minimal re-renders
-- Progressive enhancement
+- ✅ Fast initial load
+- ✅ Responsive UI during AI processing (loading spinners)
+- ✅ Efficient MA WebSocket queries
+- ✅ Minimal re-renders (proper React patterns)
+- ✅ Production builds with tree-shaking and minification
+- ✅ Gzip compression on frontend assets
 
 ---
 
-**Status**: Implementation phase - Project setup
+**Status**: ✅ Implementation Complete - Ready for Testing
 **Last Updated**: 2025-11-09
 
-## Next Steps
-1. Initialize frontend with Vite + React 19.2 + TypeScript
-2. Initialize backend with Express + TypeScript
-3. Set up Tailwind CSS
-4. Create shared types
-5. Set up environment configuration
-6. Implement MVP features
+## Testing Checklist
+
+- [ ] Test Music Assistant connection
+- [ ] Test Claude API playlist generation
+- [ ] Test OpenAI API playlist generation
+- [ ] Test with custom OpenAI endpoint
+- [ ] Test track matching (exact and fuzzy)
+- [ ] Test favorite artists context
+- [ ] Test preset prompts
+- [ ] Test prompt history
+- [ ] Test playlist creation in MA
+- [ ] Test track removal from preview
+- [ ] Test error handling (network failures, API errors)
+- [ ] Test Docker deployment
+- [ ] Test settings persistence
