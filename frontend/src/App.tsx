@@ -44,28 +44,27 @@ const App = (): React.JSX.Element => {
     openai?: { success: boolean; error?: string }
   }>({})
 
-  const loadHistory = async (): Promise<void> => {
-    const [err, result] = await api.getPromptHistory()
-    if (err !== undefined) {
-      setError(`Failed to load history: ${err.message}`)
-      return
-    }
-    setHistory(result.history)
-  }
-
-  const loadPresets = async (): Promise<void> => {
-    const [err, result] = await api.getPresetPrompts()
-    if (err !== undefined) {
-      setError(`Failed to load presets: ${err.message}`)
-      return
-    }
-    setPresets(result.presets)
-  }
-
   useEffect(() => {
+    const loadHistory = async (): Promise<void> => {
+      const [err, result] = await api.getPromptHistory()
+      if (err !== undefined) {
+        setError(`Failed to load history: ${err.message}`)
+        return
+      }
+      setHistory(result.history)
+    }
+
+    const loadPresets = async (): Promise<void> => {
+      const [err, result] = await api.getPresetPrompts()
+      if (err !== undefined) {
+        setError(`Failed to load presets: ${err.message}`)
+        return
+      }
+      setPresets(result.presets)
+    }
+
     void loadHistory()
     void loadPresets()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
