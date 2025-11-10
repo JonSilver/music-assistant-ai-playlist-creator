@@ -8,6 +8,14 @@ import type {
   PresetPrompt,
   TrackMatch
 } from '../../shared/types'
+import { Navbar } from './components/Navbar'
+import { AlertMessage } from './components/AlertMessage'
+import { PresetPrompts } from './components/PresetPrompts'
+import { PlaylistCreatorForm } from './components/PlaylistCreatorForm'
+import { GeneratedTracksDisplay } from './components/GeneratedTracksDisplay'
+import { SettingsModal } from './components/SettingsModal'
+import { HistoryModal } from './components/HistoryModal'
+import { RefinePlaylistModal } from './components/RefinePlaylistModal'
 
 const App = (): React.JSX.Element => {
   const { settings, updateSettings, loading: settingsLoading } = useApp()
@@ -266,706 +274,121 @@ const App = (): React.JSX.Element => {
     )
   }
 
-  const hasMatchedTracks = generatedTracks.filter(t => t.matched).length > 0
-  const matchedCount = generatedTracks.filter(t => t.matched).length
-  const totalCount = generatedTracks.length
-  const matchPercentage = totalCount > 0 ? Math.round((matchedCount / totalCount) * 100) : 0
-
-  const filteredTracks = generatedTracks.filter(track => {
-    if (trackFilter === 'matched') return track.matched
-    if (trackFilter === 'unmatched') return !track.matched
-    return true
-  })
-
   return (
     <div className="min-h-screen bg-base-200">
-      {/* Navbar */}
-      <div className="navbar bg-base-100 shadow-lg">
-        <div className="flex-1">
-          <a className="btn btn-ghost text-xl">AI Playlist Creator</a>
-        </div>
-        <div className="flex-none gap-2">
-          <button
-            className="btn btn-ghost"
-            onClick={() => {
-              setShowHistory(true)
-            }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              className="inline-block w-5 h-5 stroke-current"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              ></path>
-            </svg>
-            History
-          </button>
-          <button
-            className="btn btn-ghost"
-            onClick={() => {
-              setShowSettings(true)
-            }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              className="inline-block w-5 h-5 stroke-current"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-              ></path>
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              ></path>
-            </svg>
-            Settings
-          </button>
-        </div>
-      </div>
+      <Navbar
+        onShowHistory={() => {
+          setShowHistory(true)
+        }}
+        onShowSettings={() => {
+          setShowSettings(true)
+        }}
+      />
 
-      {/* Main Content */}
       <div className="container mx-auto p-4 max-w-6xl">
         {error !== null && (
-          <div className="alert alert-error mb-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="stroke-current shrink-0 h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span>{error}</span>
-            <button
-              className="btn btn-sm btn-ghost"
-              onClick={() => {
-                setError(null)
-              }}
-            >
-              ✕
-            </button>
-          </div>
+          <AlertMessage type="error" message={error} onDismiss={() => setError(null)} />
         )}
 
         {successMessage !== null && (
-          <div className="alert alert-success mb-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="stroke-current shrink-0 h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span>{successMessage}</span>
-            <button
-              className="btn btn-sm btn-ghost"
-              onClick={() => {
-                setSuccessMessage(null)
-              }}
-            >
-              ✕
-            </button>
-          </div>
+          <AlertMessage
+            type="success"
+            message={successMessage}
+            onDismiss={() => setSuccessMessage(null)}
+          />
         )}
 
-        {/* Preset Prompts */}
-        <div className="card bg-base-100 shadow-xl mb-4">
-          <div className="card-body">
-            <h2 className="card-title">Quick Presets</h2>
-            <div className="flex flex-wrap gap-2">
-              {presets.map(preset => (
-                <button
-                  key={preset.id}
-                  className="btn btn-sm btn-outline"
-                  onClick={() => {
-                    handleUsePreset(preset)
-                  }}
-                >
-                  {preset.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+        <PresetPrompts presets={presets} onSelectPreset={handleUsePreset} />
 
-        {/* Playlist Creator Form */}
-        <div className="card bg-base-100 shadow-xl mb-4">
-          <div className="card-body">
-            <h2 className="card-title">Create Playlist</h2>
+        <PlaylistCreatorForm
+          playlistName={playlistName}
+          prompt={prompt}
+          generating={generating}
+          onPlaylistNameChange={setPlaylistName}
+          onPromptChange={setPrompt}
+          onGenerate={() => {
+            void handleGeneratePlaylist()
+          }}
+        />
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Playlist Name</span>
-              </label>
-              <input
-                type="text"
-                placeholder="My Awesome Playlist"
-                className="input input-bordered"
-                value={playlistName}
-                onChange={e => {
-                  setPlaylistName(e.target.value)
-                }}
-              />
-            </div>
-
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Describe your playlist</span>
-              </label>
-              <textarea
-                className="textarea textarea-bordered h-24"
-                placeholder="e.g., Upbeat workout music with rock and electronic tracks"
-                value={prompt}
-                onChange={e => {
-                  setPrompt(e.target.value)
-                }}
-              ></textarea>
-            </div>
-
-            <div className="card-actions justify-end">
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  void handleGeneratePlaylist()
-                }}
-                disabled={
-                  generating || prompt.trim().length === 0 || playlistName.trim().length === 0
-                }
-              >
-                {generating && <span className="loading loading-spinner"></span>}
-                {generating ? 'Generating...' : 'Generate Playlist'}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Generated Tracks */}
         {generatedTracks.length > 0 && (
-          <div className="card bg-base-100 shadow-xl">
-            <div className="card-body">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h2 className="card-title mb-2">Generated Tracks</h2>
-                  <div className="text-sm space-y-1">
-                    <p>
-                      <span className="font-semibold">{matchedCount}</span> of{' '}
-                      <span className="font-semibold">{totalCount}</span> tracks found in your
-                      library
-                      {matchPercentage > 0 && (
-                        <span className="ml-2 badge badge-sm badge-info">{matchPercentage}%</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-                <div className="btn-group">
-                  <button
-                    className={`btn btn-sm ${trackFilter === 'all' ? 'btn-active' : ''}`}
-                    onClick={() => {
-                      setTrackFilter('all')
-                    }}
-                  >
-                    All ({totalCount})
-                  </button>
-                  <button
-                    className={`btn btn-sm ${trackFilter === 'matched' ? 'btn-active' : ''}`}
-                    onClick={() => {
-                      setTrackFilter('matched')
-                    }}
-                  >
-                    Found ({matchedCount})
-                  </button>
-                  <button
-                    className={`btn btn-sm ${trackFilter === 'unmatched' ? 'btn-active' : ''}`}
-                    onClick={() => {
-                      setTrackFilter('unmatched')
-                    }}
-                  >
-                    Not Found ({totalCount - matchedCount})
-                  </button>
-                </div>
-              </div>
-
-              {matchPercentage < 100 && matchPercentage > 0 && (
-                <div className="mb-4">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span>Match Rate</span>
-                    <span>{matchPercentage}%</span>
-                  </div>
-                  <progress
-                    className="progress progress-success w-full"
-                    value={matchPercentage}
-                    max="100"
-                  ></progress>
-                </div>
-              )}
-
-              <div className="overflow-x-auto">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Title</th>
-                      <th>Artist</th>
-                      <th>Album</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredTracks.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="text-center py-8 opacity-50">
-                          No tracks match the current filter
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredTracks.map(track => {
-                        const actualIndex = generatedTracks.indexOf(track)
-                        return (
-                          <tr key={actualIndex} className={track.matched ? '' : 'opacity-50'}>
-                            <td>
-                              <div className="font-medium">{track.suggestion.title}</div>
-                              {track.maTrack !== undefined && (
-                                <div className="text-xs opacity-60">{track.maTrack.provider}</div>
-                              )}
-                            </td>
-                            <td>{track.suggestion.artist}</td>
-                            <td>{track.suggestion.album ?? '-'}</td>
-                            <td>
-                              {track.matched ? (
-                                <span className="badge badge-success gap-1">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    className="inline-block w-4 h-4 stroke-current"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth="2"
-                                      d="M5 13l4 4L19 7"
-                                    ></path>
-                                  </svg>
-                                  Found
-                                </span>
-                              ) : (
-                                <span className="badge badge-error gap-1">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    className="inline-block w-4 h-4 stroke-current"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth="2"
-                                      d="M6 18L18 6M6 6l12 12"
-                                    ></path>
-                                  </svg>
-                                  Not Found
-                                </span>
-                              )}
-                            </td>
-                            <td>
-                              <button
-                                className="btn btn-ghost btn-xs"
-                                onClick={() => {
-                                  handleRemoveTrack(actualIndex)
-                                }}
-                              >
-                                Remove
-                              </button>
-                            </td>
-                          </tr>
-                        )
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="card-actions justify-end mt-4">
-                <button
-                  className="btn btn-outline"
-                  onClick={() => {
-                    setGeneratedTracks([])
-                  }}
-                >
-                  Clear
-                </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setShowRefine(true)
-                  }}
-                >
-                  Refine Playlist
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    void handleCreatePlaylist()
-                  }}
-                  disabled={creating || !hasMatchedTracks}
-                >
-                  {creating && <span className="loading loading-spinner"></span>}
-                  {creating ? 'Creating...' : 'Create Playlist in Music Assistant'}
-                </button>
-              </div>
-            </div>
-          </div>
+          <GeneratedTracksDisplay
+            tracks={generatedTracks}
+            creating={creating}
+            trackFilter={trackFilter}
+            onTrackFilterChange={setTrackFilter}
+            onRemoveTrack={handleRemoveTrack}
+            onClear={() => {
+              setGeneratedTracks([])
+            }}
+            onRefine={() => {
+              setShowRefine(true)
+            }}
+            onCreate={() => {
+              void handleCreatePlaylist()
+            }}
+          />
         )}
       </div>
 
-      {/* Settings Modal */}
-      {showSettings && (
-        <div className="modal modal-open">
-          <div className="modal-box max-w-2xl">
-            <h3 className="font-bold text-lg mb-4">Settings</h3>
+      <SettingsModal
+        show={showSettings}
+        onClose={() => {
+          setShowSettings(false)
+        }}
+        musicAssistantUrl={musicAssistantUrl}
+        onMusicAssistantUrlChange={setMusicAssistantUrl}
+        aiProvider={aiProvider}
+        onAiProviderChange={setAiProvider}
+        anthropicApiKey={anthropicApiKey}
+        onAnthropicApiKeyChange={setAnthropicApiKey}
+        openaiApiKey={openaiApiKey}
+        onOpenaiApiKeyChange={setOpenaiApiKey}
+        openaiBaseUrl={openaiBaseUrl}
+        onOpenaiBaseUrlChange={setOpenaiBaseUrl}
+        customSystemPrompt={customSystemPrompt}
+        onCustomSystemPromptChange={setCustomSystemPrompt}
+        temperature={temperature}
+        onTemperatureChange={setTemperature}
+        testingMA={testingMA}
+        testingAnthropic={testingAnthropic}
+        testingOpenAI={testingOpenAI}
+        testResults={testResults}
+        onTestMA={() => {
+          void handleTestMA()
+        }}
+        onTestAnthropic={() => {
+          void handleTestAnthropic()
+        }}
+        onTestOpenAI={() => {
+          void handleTestOpenAI()
+        }}
+        onSave={() => {
+          void handleSaveSettings()
+        }}
+      />
 
-            <div className="form-control mb-4">
-              <label className="label">
-                <span className="label-text">Music Assistant URL</span>
-              </label>
-              <input
-                type="text"
-                placeholder="http://192.168.1.100:8095"
-                className="input input-bordered"
-                value={musicAssistantUrl}
-                onChange={e => {
-                  setMusicAssistantUrl(e.target.value)
-                }}
-              />
-              <label className="label">
-                <span className="label-text-alt">WebSocket URL of your Music Assistant server</span>
-              </label>
-              <button
-                className="btn btn-sm btn-outline mt-2"
-                onClick={() => {
-                  void handleTestMA()
-                }}
-                disabled={testingMA || musicAssistantUrl.trim().length === 0}
-              >
-                {testingMA && <span className="loading loading-spinner loading-xs"></span>}
-                {testingMA ? 'Testing...' : 'Test Connection'}
-              </button>
-              {testResults.ma !== undefined && (
-                <div
-                  className={`alert ${testResults.ma.success ? 'alert-success' : 'alert-error'} mt-2`}
-                >
-                  <span className="text-sm">
-                    {testResults.ma.success
-                      ? 'Connection successful!'
-                      : `Connection failed: ${testResults.ma.error ?? 'Unknown error'}`}
-                  </span>
-                </div>
-              )}
-            </div>
+      <HistoryModal
+        show={showHistory}
+        onClose={() => {
+          setShowHistory(false)
+        }}
+        history={history}
+        onSelectHistory={handleUseHistory}
+      />
 
-            <div className="form-control mb-4">
-              <label className="label">
-                <span className="label-text">AI Provider</span>
-              </label>
-              <select
-                className="select select-bordered"
-                value={aiProvider}
-                onChange={e => {
-                  setAiProvider(e.target.value as 'claude' | 'openai')
-                }}
-              >
-                <option value="claude">Claude (Anthropic)</option>
-                <option value="openai">OpenAI</option>
-              </select>
-            </div>
-
-            {aiProvider === 'claude' && (
-              <div className="form-control mb-4">
-                <label className="label">
-                  <span className="label-text">Anthropic API Key</span>
-                </label>
-                <input
-                  type="password"
-                  placeholder="sk-ant-..."
-                  className="input input-bordered"
-                  value={anthropicApiKey}
-                  onChange={e => {
-                    setAnthropicApiKey(e.target.value)
-                  }}
-                />
-                <button
-                  className="btn btn-sm btn-outline mt-2"
-                  onClick={() => {
-                    void handleTestAnthropic()
-                  }}
-                  disabled={testingAnthropic || anthropicApiKey.trim().length === 0}
-                >
-                  {testingAnthropic && <span className="loading loading-spinner loading-xs"></span>}
-                  {testingAnthropic ? 'Testing...' : 'Test API Key'}
-                </button>
-                {testResults.anthropic !== undefined && (
-                  <div
-                    className={`alert ${testResults.anthropic.success ? 'alert-success' : 'alert-error'} mt-2`}
-                  >
-                    <span className="text-sm">
-                      {testResults.anthropic.success
-                        ? 'API key valid!'
-                        : `API key test failed: ${testResults.anthropic.error ?? 'Unknown error'}`}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {aiProvider === 'openai' && (
-              <>
-                <div className="form-control mb-4">
-                  <label className="label">
-                    <span className="label-text">OpenAI API Key</span>
-                  </label>
-                  <input
-                    type="password"
-                    placeholder="sk-..."
-                    className="input input-bordered"
-                    value={openaiApiKey}
-                    onChange={e => {
-                      setOpenaiApiKey(e.target.value)
-                    }}
-                  />
-                </div>
-
-                <div className="form-control mb-4">
-                  <label className="label">
-                    <span className="label-text">OpenAI Base URL (Optional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="https://api.openai.com/v1"
-                    className="input input-bordered"
-                    value={openaiBaseUrl}
-                    onChange={e => {
-                      setOpenaiBaseUrl(e.target.value)
-                    }}
-                  />
-                  <label className="label">
-                    <span className="label-text-alt">For OpenAI-compatible endpoints</span>
-                  </label>
-                </div>
-
-                <button
-                  className="btn btn-sm btn-outline mb-4"
-                  onClick={() => {
-                    void handleTestOpenAI()
-                  }}
-                  disabled={testingOpenAI || openaiApiKey.trim().length === 0}
-                >
-                  {testingOpenAI && <span className="loading loading-spinner loading-xs"></span>}
-                  {testingOpenAI ? 'Testing...' : 'Test API Key'}
-                </button>
-                {testResults.openai !== undefined && (
-                  <div
-                    className={`alert ${testResults.openai.success ? 'alert-success' : 'alert-error'} mb-4`}
-                  >
-                    <span className="text-sm">
-                      {testResults.openai.success
-                        ? 'API key valid!'
-                        : `API key test failed: ${testResults.openai.error ?? 'Unknown error'}`}
-                    </span>
-                  </div>
-                )}
-              </>
-            )}
-
-            <div className="divider"></div>
-
-            <div className="form-control mb-4">
-              <label className="label">
-                <span className="label-text">Temperature</span>
-              </label>
-              <input
-                type="number"
-                min="0"
-                max="2"
-                step="0.1"
-                placeholder="1.0"
-                className="input input-bordered"
-                value={temperature}
-                onChange={e => {
-                  setTemperature(e.target.value)
-                }}
-              />
-              <label className="label">
-                <span className="label-text-alt">
-                  Controls randomness (0 = focused, 2 = creative). Default: 1.0
-                </span>
-              </label>
-            </div>
-
-            <div className="form-control mb-4">
-              <label className="label">
-                <span className="label-text">Custom System Prompt (Optional)</span>
-              </label>
-              <textarea
-                className="textarea textarea-bordered h-32"
-                placeholder="Override the default AI system prompt. Leave empty to use default."
-                value={customSystemPrompt}
-                onChange={e => {
-                  setCustomSystemPrompt(e.target.value)
-                }}
-              ></textarea>
-              <label className="label">
-                <span className="label-text-alt">
-                  Customize how the AI curates playlists. Must return JSON format.
-                </span>
-              </label>
-            </div>
-
-            <div className="modal-action">
-              <button
-                className="btn btn-ghost"
-                onClick={() => {
-                  setShowSettings(false)
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  void handleSaveSettings()
-                }}
-              >
-                Save Settings
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* History Modal */}
-      {showHistory && (
-        <div className="modal modal-open">
-          <div className="modal-box max-w-2xl">
-            <h3 className="font-bold text-lg mb-4">Prompt History</h3>
-
-            {history.length === 0 ? (
-              <p className="text-center py-8 text-base-content/50">
-                No history yet. Create your first playlist!
-              </p>
-            ) : (
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {history.map(item => (
-                  <div
-                    key={item.id}
-                    className="card bg-base-200 cursor-pointer hover:bg-base-300"
-                    onClick={() => {
-                      handleUseHistory(item)
-                    }}
-                  >
-                    <div className="card-body p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <p className="font-semibold">{item.playlistName ?? 'Untitled'}</p>
-                          <p className="text-sm opacity-75 mt-1">{item.prompt}</p>
-                        </div>
-                        <div className="text-xs opacity-50 ml-4">
-                          {new Date(item.timestamp).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div className="text-xs opacity-50">{item.trackCount} tracks</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="modal-action">
-              <button
-                className="btn"
-                onClick={() => {
-                  setShowHistory(false)
-                }}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Refine Playlist Modal */}
-      {showRefine && (
-        <div className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg mb-4">Refine Playlist</h3>
-
-            <p className="text-sm opacity-75 mb-4">
-              Describe how you want to modify the current playlist. The AI will generate a new
-              version based on your refinement instructions.
-            </p>
-
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Refinement Instructions</span>
-              </label>
-              <textarea
-                className="textarea textarea-bordered h-32"
-                placeholder="e.g., Add more upbeat tracks, Remove anything slower than 120 BPM, Include more Beatles songs, Make it more energetic"
-                value={refinementPrompt}
-                onChange={e => {
-                  setRefinementPrompt(e.target.value)
-                }}
-              ></textarea>
-            </div>
-
-            <div className="modal-action">
-              <button
-                className="btn btn-ghost"
-                onClick={() => {
-                  setShowRefine(false)
-                  setRefinementPrompt('')
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  void handleRefinePlaylist()
-                }}
-                disabled={refining || refinementPrompt.trim().length === 0}
-              >
-                {refining && <span className="loading loading-spinner"></span>}
-                {refining ? 'Refining...' : 'Refine Playlist'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <RefinePlaylistModal
+        show={showRefine}
+        onClose={() => {
+          setShowRefine(false)
+        }}
+        refinementPrompt={refinementPrompt}
+        onRefinementPromptChange={setRefinementPrompt}
+        refining={refining}
+        onRefine={() => {
+          void handleRefinePlaylist()
+        }}
+      />
     </div>
   )
 }
