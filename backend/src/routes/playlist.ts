@@ -255,17 +255,20 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         temperature
       })
 
-      const matches: TrackMatch[] = await Promise.all(
-        aiResponse.tracks.map(suggestion => matchTrack(suggestion, maClient))
-      )
-
       maClient.disconnect()
+
+      // Return unmatched tracks immediately - let frontend handle progressive matching
+      const matches: TrackMatch[] = aiResponse.tracks.map(suggestion => ({
+        suggestion,
+        matched: false,
+        maTrack: undefined
+      }))
 
       const response: RefinePlaylistResponse = {
         success: true,
         matches,
         totalSuggested: matches.length,
-        totalMatched: matches.filter(m => m.matched).length
+        totalMatched: 0
       }
       return response
     })

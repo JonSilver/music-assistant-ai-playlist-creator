@@ -161,10 +161,13 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
       return
     }
 
+    // Show tracks immediately (all unmatched)
     setGeneratedTracks(result.matches)
     setRefinementPrompt('')
-    setSuccess(`Playlist refined! ${result.totalMatched.toString()} tracks matched.`)
-  }, [refinementPrompt, prompt, generatedTracks, setError, setSuccess])
+
+    // Match tracks progressively in the background
+    void matchTracksProgressively(result.matches)
+  }, [refinementPrompt, prompt, generatedTracks, setError, matchTracksProgressively])
 
   const removeTrack = useCallback((index: number): void => {
     setGeneratedTracks(prev => prev.filter((_, i) => i !== index))
