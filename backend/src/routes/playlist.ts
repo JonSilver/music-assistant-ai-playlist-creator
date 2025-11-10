@@ -99,6 +99,13 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         matching: true
       }))
 
+      // Save to history
+      db.addPromptHistory(
+        request.prompt,
+        request.playlistName ?? null,
+        matches.length
+      )
+
       const response: CreatePlaylistResponse = {
         success: true,
         playlistName: request.playlistName ?? 'AI Generated Playlist',

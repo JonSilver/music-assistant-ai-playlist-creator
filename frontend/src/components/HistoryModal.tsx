@@ -42,10 +42,12 @@ export const HistoryModal = ({
                       <p className="text-sm opacity-75 mt-1">{item.prompt}</p>
                     </div>
                     <div className="text-xs opacity-50 ml-4">
-                      {new Date(item.timestamp).toLocaleDateString()}
+                      {new Date(item.timestamp).toLocaleString()}
                     </div>
                   </div>
-                  <div className="text-xs opacity-50">{item.trackCount} tracks</div>
+                  <div className="text-xs opacity-50">
+                    {item.trackCount !== undefined ? `${item.trackCount} tracks` : 'Track count unknown'}
+                  </div>
                 </div>
               </div>
             ))}

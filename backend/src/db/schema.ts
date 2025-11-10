@@ -171,7 +171,7 @@ export class PlaylistDatabase {
       const rows = this.db
         .prepare(
           `
-        SELECT id, prompt, playlist_name, track_count, timestamp
+        SELECT id, prompt, playlist_name as playlistName, track_count as trackCount, timestamp
         FROM prompt_history
         ORDER BY id DESC
         LIMIT ?
