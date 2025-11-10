@@ -18,8 +18,12 @@ import { RefinePlaylistModal } from './components/RefinePlaylistModal'
 const App = (): React.JSX.Element => {
   const { settings, updateSettings, loading: settingsLoading } = useApp()
   const { error, successMessage, setError, clearError, clearSuccess } = useAlerts()
-  const { history, presets, loadHistory, loadPresets } = useHistoryAndPresets()
+  const historyAndPresetsResult = useHistoryAndPresets()
   const { showSettings, showHistory, showRefine, openSettings, closeSettings, openHistory, closeHistory, openRefine, closeRefine } = useModals()
+
+  console.log('historyAndPresetsResult:', historyAndPresetsResult)
+
+  const { history, presets, loadHistory, loadPresets } = historyAndPresetsResult
 
   const playlist = usePlaylist(loadHistory)
   const settingsForm = useSettingsForm(settings)
