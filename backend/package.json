@@ -2,12 +2,12 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "AI Playlist Creator Backend API",
-  "main": "dist/server.js",
+  "main": "dist/backend/src/server.js",
   "type": "module",
   "scripts": {
-    "dev": "tsc-watch --onSuccess \"node dist/server.js\"",
+    "dev": "tsc-watch --onSuccess \"node dist/backend/src/server.js\"",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/backend/src/server.js",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"

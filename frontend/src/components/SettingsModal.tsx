@@ -9,19 +9,19 @@ interface SettingsModalProps {
   show: boolean
   onClose: () => void
   musicAssistantUrl: string
-  onMusicAssistantUrlChange: (value: string) => void
+  setMusicAssistantUrl: (value: string) => void
   aiProvider: 'claude' | 'openai'
-  onAiProviderChange: (value: 'claude' | 'openai') => void
+  setAiProvider: (value: 'claude' | 'openai') => void
   anthropicApiKey: string
-  onAnthropicApiKeyChange: (value: string) => void
+  setAnthropicApiKey: (value: string) => void
   openaiApiKey: string
-  onOpenaiApiKeyChange: (value: string) => void
+  setOpenaiApiKey: (value: string) => void
   openaiBaseUrl: string
-  onOpenaiBaseUrlChange: (value: string) => void
+  setOpenaiBaseUrl: (value: string) => void
   customSystemPrompt: string
-  onCustomSystemPromptChange: (value: string) => void
+  setCustomSystemPrompt: (value: string) => void
   temperature: string
-  onTemperatureChange: (value: string) => void
+  setTemperature: (value: string) => void
   testingMA: boolean
   testingAnthropic: boolean
   testingOpenAI: boolean
@@ -30,9 +30,9 @@ interface SettingsModalProps {
     anthropic?: TestResult
     openai?: TestResult
   }
-  onTestMA: () => void
-  onTestAnthropic: () => void
-  onTestOpenAI: () => void
+  testMA: () => Promise<void>
+  testAnthropic: () => Promise<void>
+  testOpenAI: () => Promise<void>
   onSave: () => void
 }
 
@@ -40,26 +40,26 @@ export const SettingsModal = ({
   show,
   onClose,
   musicAssistantUrl,
-  onMusicAssistantUrlChange,
+  setMusicAssistantUrl,
   aiProvider,
-  onAiProviderChange,
+  setAiProvider,
   anthropicApiKey,
-  onAnthropicApiKeyChange,
+  setAnthropicApiKey,
   openaiApiKey,
-  onOpenaiApiKeyChange,
+  setOpenaiApiKey,
   openaiBaseUrl,
-  onOpenaiBaseUrlChange,
+  setOpenaiBaseUrl,
   customSystemPrompt,
-  onCustomSystemPromptChange,
+  setCustomSystemPrompt,
   temperature,
-  onTemperatureChange,
+  setTemperature,
   testingMA,
   testingAnthropic,
   testingOpenAI,
   testResults,
-  onTestMA,
-  onTestAnthropic,
-  onTestOpenAI,
+  testMA,
+  testAnthropic,
+  testOpenAI,
   onSave
 }: SettingsModalProps): React.JSX.Element | null => {
   if (!show) return null
@@ -79,7 +79,7 @@ export const SettingsModal = ({
             className="input input-bordered"
             value={musicAssistantUrl}
             onChange={e => {
-              onMusicAssistantUrlChange(e.target.value)
+              setMusicAssistantUrl(e.target.value)
             }}
           />
           <label className="label">
@@ -87,7 +87,7 @@ export const SettingsModal = ({
           </label>
           <button
             className="btn btn-sm btn-outline mt-2"
-            onClick={onTestMA}
+            onClick={() => { void testMA() }}
             disabled={testingMA || musicAssistantUrl.trim().length === 0}
           >
             {testingMA && <span className="loading loading-spinner loading-xs"></span>}
@@ -114,7 +114,7 @@ export const SettingsModal = ({
             className="select select-bordered"
             value={aiProvider}
             onChange={e => {
-              onAiProviderChange(e.target.value as 'claude' | 'openai')
+              setAiProvider(e.target.value as 'claude' | 'openai')
             }}
           >
             <option value="claude">Claude (Anthropic)</option>
@@ -133,12 +133,12 @@ export const SettingsModal = ({
               className="input input-bordered"
               value={anthropicApiKey}
               onChange={e => {
-                onAnthropicApiKeyChange(e.target.value)
+                setAnthropicApiKey(e.target.value)
               }}
             />
             <button
               className="btn btn-sm btn-outline mt-2"
-              onClick={onTestAnthropic}
+              onClick={() => { void testAnthropic() }}
               disabled={testingAnthropic || anthropicApiKey.trim().length === 0}
             >
               {testingAnthropic && <span className="loading loading-spinner loading-xs"></span>}
@@ -170,7 +170,7 @@ export const SettingsModal = ({
                 className="input input-bordered"
                 value={openaiApiKey}
                 onChange={e => {
-                  onOpenaiApiKeyChange(e.target.value)
+                  setOpenaiApiKey(e.target.value)
                 }}
               />
             </div>
@@ -185,7 +185,7 @@ export const SettingsModal = ({
                 className="input input-bordered"
                 value={openaiBaseUrl}
                 onChange={e => {
-                  onOpenaiBaseUrlChange(e.target.value)
+                  setOpenaiBaseUrl(e.target.value)
                 }}
               />
               <label className="label">
@@ -195,7 +195,7 @@ export const SettingsModal = ({
 
             <button
               className="btn btn-sm btn-outline mb-4"
-              onClick={onTestOpenAI}
+              onClick={() => { void testOpenAI() }}
               disabled={testingOpenAI || openaiApiKey.trim().length === 0}
             >
               {testingOpenAI && <span className="loading loading-spinner loading-xs"></span>}
@@ -230,7 +230,7 @@ export const SettingsModal = ({
             className="input input-bordered"
             value={temperature}
             onChange={e => {
-              onTemperatureChange(e.target.value)
+              setTemperature(e.target.value)
             }}
           />
           <label className="label">
@@ -249,7 +249,7 @@ export const SettingsModal = ({
             placeholder="Override the default AI system prompt. Leave empty to use default."
             value={customSystemPrompt}
             onChange={e => {
-              onCustomSystemPromptChange(e.target.value)
+              setCustomSystemPrompt(e.target.value)
             }}
           ></textarea>
           <label className="label">
