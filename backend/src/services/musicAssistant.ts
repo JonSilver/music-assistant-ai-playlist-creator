@@ -1,5 +1,5 @@
 import WebSocket from 'ws'
-import { attempt } from '@jfdi/attempt'
+import { attempt, attemptPromise } from '@jfdi/attempt'
 import type { MATrack } from '../../../shared/types.js'
 
 interface MAMessage {
@@ -37,7 +37,7 @@ export class MusicAssistantClient {
   async connect(): Promise<void> {
     const wsUrl = this.url.replace(/^http/, 'ws') + '/ws'
 
-    const [err] = await attempt(async () => {
+    const [err] = await attemptPromise(async () => {
       this.ws = new WebSocket(wsUrl)
 
       return new Promise<void>((resolve, reject) => {
@@ -129,7 +129,7 @@ export class MusicAssistantClient {
   }
 
   async getFavoriteArtists(): Promise<string[]> {
-    const [err, result] = await attempt(async () => {
+    const [err, result] = await attemptPromise(async () => {
       const response = await this.sendCommand<{ items: { name: string }[] }>('music/favorites', {
         media_type: 'artist'
       })

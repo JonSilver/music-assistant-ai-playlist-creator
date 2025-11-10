@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import OpenAI from 'openai'
-import { attempt } from '@jfdi/attempt'
+import { attempt, attemptPromise } from '@jfdi/attempt'
 import type { AIProvider, TrackSuggestion } from '../../../shared/types.js'
 
 interface AIPlaylistRequest {
@@ -93,7 +93,7 @@ When appropriate, consider including tracks from these artists or similar artist
       throw new Error('Claude API key not configured')
     }
 
-    const [err, result] = await attempt(async () => {
+    const [err, result] = await attemptPromise(async () => {
       const response = await this.anthropic!.messages.create({
         model: 'claude-3-5-sonnet-20241022',
         max_tokens: 4096,
@@ -131,7 +131,7 @@ When appropriate, consider including tracks from these artists or similar artist
       throw new Error('OpenAI API key not configured')
     }
 
-    const [err, result] = await attempt(async () => {
+    const [err, result] = await attemptPromise(async () => {
       const response = await this.openai!.chat.completions.create({
         model: 'gpt-4-turbo-preview',
         temperature,
