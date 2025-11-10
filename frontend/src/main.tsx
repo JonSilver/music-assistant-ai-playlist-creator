@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { AppProvider } from './contexts/AppContext'
+import { AlertsProvider } from './contexts/AlertsContext'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 const rootElement = document.getElementById('root')
 
@@ -12,8 +14,12 @@ if (rootElement === null) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <AppProvider>
-      <App />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <AlertsProvider>
+          <App />
+        </AlertsProvider>
+      </AppProvider>
+    </ErrorBoundary>
   </StrictMode>
 )
