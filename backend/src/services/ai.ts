@@ -9,6 +9,7 @@ interface AIPlaylistRequest {
   provider: AIProvider
   customSystemPrompt?: string
   temperature?: number
+  trackCount?: number
 }
 
 interface AIPlaylistResponse {
@@ -36,7 +37,11 @@ export class AIService {
     }
   }
 
-  private buildSystemPrompt(favoriteArtists?: string[], customPrompt?: string): string {
+  private buildSystemPrompt(
+    favoriteArtists?: string[],
+    customPrompt?: string,
+    trackCount?: number
+  ): string {
     let prompt =
       customPrompt ??
       `You are a music playlist curator assistant. Your job is to create thoughtful, cohesive playlists based on user descriptions.
@@ -62,8 +67,12 @@ When appropriate, consider including tracks from these artists or similar artist
 
     // Only add guidelines if using default prompt
     if (!customPrompt) {
+      const countGuideline = trackCount
+        ? `- Create exactly ${trackCount} tracks`
+        : '- Create 15-30 tracks unless user specifies otherwise'
+
       prompt += `\n\nGuidelines:
-- Create 15-30 tracks unless user specifies otherwise
+${countGuideline}
 - Ensure good flow and cohesion
 - Match the mood, genre, and era requested
 - Include artist and album information for better matching
@@ -75,7 +84,11 @@ When appropriate, consider including tracks from these artists or similar artist
   }
 
   async generatePlaylist(request: AIPlaylistRequest): Promise<AIPlaylistResponse> {
-    const systemPrompt = this.buildSystemPrompt(request.favoriteArtists, request.customSystemPrompt)
+    const systemPrompt = this.buildSystemPrompt(
+      request.favoriteArtists,
+      request.customSystemPrompt,
+      request.trackCount
+    )
     const temperature = request.temperature ?? 1.0
 
     if (request.provider === 'claude') {

@@ -42,6 +42,7 @@ export interface CreatePlaylistRequest {
   prompt: string;
   playlistName?: string;
   provider?: AIProvider;
+  trackCount?: number;
 }
 
 // Playlist creation response

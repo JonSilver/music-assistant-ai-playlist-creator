@@ -79,7 +79,8 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         favoriteArtists,
         provider: request.provider ?? aiProvider,
         customSystemPrompt: customSystemPrompt ?? undefined,
-        temperature
+        temperature,
+        trackCount: request.trackCount
       })
 
       // Return unmatched tracks immediately with matching state

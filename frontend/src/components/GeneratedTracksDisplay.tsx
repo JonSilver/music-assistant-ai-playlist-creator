@@ -28,6 +28,7 @@ export const GeneratedTracksDisplay = ({
   const totalCount = tracks.length
   const matchPercentage = totalCount > 0 ? Math.round((matchedCount / totalCount) * 100) : 0
   const hasMatchedTracks = matchedCount > 0
+  const isMatching = tracks.some(t => t.matching === true)
 
   const filteredTracks = tracks.filter(track => {
     if (trackFilter === 'matched') return track.matched
@@ -194,7 +195,7 @@ export const GeneratedTracksDisplay = ({
           <button
             className="btn btn-primary"
             onClick={onCreate}
-            disabled={creating || !hasMatchedTracks}
+            disabled={creating || !hasMatchedTracks || isMatching}
           >
             {creating && <span className="loading loading-spinner"></span>}
             {creating ? 'Creating...' : 'Create Playlist in Music Assistant'}

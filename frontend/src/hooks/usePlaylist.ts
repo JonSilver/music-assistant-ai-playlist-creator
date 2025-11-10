@@ -12,6 +12,8 @@ interface UsePlaylistReturn {
   setPrompt: (value: string) => void
   playlistName: string
   setPlaylistName: (value: string) => void
+  trackCount: string
+  setTrackCount: (value: string) => void
   generating: boolean
   creating: boolean
   refining: boolean
@@ -32,6 +34,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
   const { setError, setSuccess } = useAlerts()
   const [prompt, setPrompt] = useState('')
   const [playlistName, setPlaylistName] = useState('')
+  const [trackCount, setTrackCount] = useState('25')
   const [generating, setGenerating] = useState(false)
   const [creating, setCreating] = useState(false)
   const [refining, setRefining] = useState(false)
@@ -49,9 +52,11 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
     setGeneratedTracks([])
     setGenerating(true)
 
+    const parsedTrackCount = parseInt(trackCount, 10)
     const request: CreatePlaylistRequest = {
       prompt: prompt.trim(),
-      playlistName: playlistName.trim()
+      playlistName: playlistName.trim(),
+      trackCount: !isNaN(parsedTrackCount) && parsedTrackCount > 0 ? parsedTrackCount : undefined
     }
 
     // Get AI suggestions (fast, no matching yet)
@@ -172,6 +177,8 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
     setPrompt,
     playlistName,
     setPlaylistName,
+    trackCount,
+    setTrackCount,
     generating,
     creating,
     refining,

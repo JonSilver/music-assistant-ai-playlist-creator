@@ -170,9 +170,12 @@ const App = (): React.JSX.Element => {
         <PlaylistCreatorForm
           playlistName={playlist.playlistName}
           prompt={playlist.prompt}
+          trackCount={playlist.trackCount}
           generating={playlist.generating}
+          aiProvider={settings?.aiProvider ?? 'claude'}
           onPlaylistNameChange={playlist.setPlaylistName}
           onPromptChange={playlist.setPrompt}
+          onTrackCountChange={playlist.setTrackCount}
           onGenerate={() => {
             void playlist.generatePlaylist()
           }}
