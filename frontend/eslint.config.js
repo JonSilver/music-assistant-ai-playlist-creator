@@ -92,6 +92,9 @@ export default tseslint.config(
       'prefer-arrow-callback': 'error',
       'no-param-reassign': 'error',
 
+      // Code quality enforcement
+      'max-lines': ['error', { max: 200, skipBlankLines: true, skipComments: true }],
+
       // No try/catch - use @jfdi/attempt
       'no-restricted-syntax': [
         'error',
