@@ -3,7 +3,12 @@ import { attempt } from '@jfdi/attempt'
 import { MusicAssistantClient } from '../services/musicAssistant.js'
 import { AIService } from '../services/ai.js'
 import type { PlaylistDatabase } from '../db/schema.js'
-import type { UpdateSettingsRequest, GetSettingsResponse } from '../../../shared/types.js'
+import type {
+  UpdateSettingsRequest,
+  GetSettingsResponse,
+  TestConnectionResponse,
+  SuccessResponse
+} from '../../../shared/types.js'
 
 export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void => {
   // Get settings
@@ -62,7 +67,8 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
       db.setSetting('temperature', updates.temperature.toString())
     }
 
-    res.json({ success: true })
+    const response: SuccessResponse = { success: true }
+    res.json(response)
   })
 
   // Test Music Assistant connection
@@ -70,11 +76,12 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
     const { url } = req.body as { url: string }
 
     if (!url) {
-      res.status(400).json({ success: false, error: 'URL is required' })
+      const errorResponse: TestConnectionResponse = { success: false, error: 'URL is required' }
+      res.status(400).json(errorResponse)
       return
     }
 
-    const [err, result] = await attempt(async () => {
+    const [err, result] = await attempt(async (): Promise<TestConnectionResponse> => {
       const client = new MusicAssistantClient(url)
       await client.connect()
       client.disconnect()
@@ -82,7 +89,8 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
     })
 
     if (err !== undefined) {
-      res.json({ success: false, error: err.message })
+      const errorResponse: TestConnectionResponse = { success: false, error: err.message }
+      res.json(errorResponse)
       return
     }
 
@@ -94,11 +102,12 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
     const { apiKey } = req.body as { apiKey: string }
 
     if (!apiKey) {
-      res.status(400).json({ success: false, error: 'API key is required' })
+      const errorResponse: TestConnectionResponse = { success: false, error: 'API key is required' }
+      res.status(400).json(errorResponse)
       return
     }
 
-    const [err, result] = await attempt(async () => {
+    const [err, result] = await attempt(async (): Promise<TestConnectionResponse> => {
       const aiService = new AIService(apiKey, undefined, undefined)
       // Simple test prompt
       await aiService.generatePlaylist({
@@ -109,7 +118,8 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
     })
 
     if (err !== undefined) {
-      res.json({ success: false, error: err.message })
+      const errorResponse: TestConnectionResponse = { success: false, error: err.message }
+      res.json(errorResponse)
       return
     }
 
@@ -121,11 +131,12 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
     const { apiKey, baseUrl } = req.body as { apiKey: string; baseUrl?: string }
 
     if (!apiKey) {
-      res.status(400).json({ success: false, error: 'API key is required' })
+      const errorResponse: TestConnectionResponse = { success: false, error: 'API key is required' }
+      res.status(400).json(errorResponse)
       return
     }
 
-    const [err, result] = await attempt(async () => {
+    const [err, result] = await attempt(async (): Promise<TestConnectionResponse> => {
       const aiService = new AIService(undefined, apiKey, baseUrl)
       // Simple test prompt
       await aiService.generatePlaylist({
@@ -136,7 +147,8 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
     })
 
     if (err !== undefined) {
-      res.json({ success: false, error: err.message })
+      const errorResponse: TestConnectionResponse = { success: false, error: err.message }
+      res.json(errorResponse)
       return
     }
 

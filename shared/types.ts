@@ -112,3 +112,39 @@ export interface GetSettingsResponse extends AppSettings {
   hasAnthropicKey: boolean;
   hasOpenAIKey: boolean;
 }
+
+// Prompt history response
+export interface GetPromptHistoryResponse {
+  history: PromptHistory[];
+}
+
+// Preset prompts response
+export interface GetPresetPromptsResponse {
+  presets: PresetPrompt[];
+}
+
+// Create playlist in MA response
+export interface CreatePlaylistInMAResponse {
+  success: boolean;
+  playlistId: string;
+  tracksAdded: number;
+}
+
+// Refine playlist response
+export interface RefinePlaylistResponse {
+  success: boolean;
+  matches: TrackMatch[];
+  totalSuggested: number;
+  totalMatched: number;
+}
+
+// Test connection response
+export interface TestConnectionResponse {
+  success: boolean;
+  error?: string;
+}
+
+// Generic success response
+export interface SuccessResponse {
+  success: boolean;
+}

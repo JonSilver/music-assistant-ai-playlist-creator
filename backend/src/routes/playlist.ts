@@ -6,7 +6,9 @@ import type { PlaylistDatabase } from '../db/schema.js'
 import type {
   CreatePlaylistRequest,
   CreatePlaylistResponse,
+  CreatePlaylistInMAResponse,
   RefinePlaylistRequest,
+  RefinePlaylistResponse,
   TrackMatch,
   TrackSuggestion
 } from '../../../shared/types.js'
@@ -136,7 +138,12 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       const promptFromBody = req.body.prompt as string | undefined
       db.addPromptHistory(promptFromBody ?? 'Unknown', playlistName, trackUris.length)
 
-      return { playlistId, tracksAdded: trackUris.length }
+      const response: CreatePlaylistInMAResponse = {
+        success: true,
+        playlistId,
+        tracksAdded: trackUris.length
+      }
+      return response
     })
 
     if (err !== undefined) {
@@ -147,7 +154,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       return
     }
 
-    res.json({ success: true, ...result })
+    res.json(result)
   })
 
   // Refine playlist
@@ -198,11 +205,13 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
 
       maClient.disconnect()
 
-      return {
+      const response: RefinePlaylistResponse = {
+        success: true,
         matches,
         totalSuggested: matches.length,
         totalMatched: matches.filter(m => m.matched).length
       }
+      return response
     })
 
     if (err !== undefined) {
@@ -213,6 +222,6 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       return
     }
 
-    res.json({ success: true, ...result })
+    res.json(result)
   })
 }
