@@ -39,7 +39,7 @@ export const RefinePlaylistModal = ({
             <span className="label-text">Refinement Instructions</span>
           </label>
           <textarea
-            className="textarea textarea-bordered h-32"
+            className="textarea textarea-bordered h-32 w-full"
             placeholder="e.g., Add more upbeat tracks, Remove anything slower than 120 BPM, Include more Beatles songs, Make it more energetic"
             value={refinementPrompt}
             onChange={e => {

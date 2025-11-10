@@ -33,7 +33,7 @@ export const OpenAISettings = ({
       <input
         type="password"
         placeholder="sk-..."
-        className="input input-bordered"
+        className="input input-bordered w-full"
         value={openaiApiKey}
         onChange={e => {
           setOpenaiApiKey(e.target.value)
@@ -48,7 +48,7 @@ export const OpenAISettings = ({
       <input
         type="text"
         placeholder="https://api.openai.com/v1"
-        className="input input-bordered"
+        className="input input-bordered w-full"
         value={openaiBaseUrl}
         onChange={e => {
           setOpenaiBaseUrl(e.target.value)

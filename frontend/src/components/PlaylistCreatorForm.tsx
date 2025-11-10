@@ -28,7 +28,7 @@ export const PlaylistCreatorForm = ({
         <input
           type="text"
           placeholder="My Awesome Playlist"
-          className="input input-bordered"
+          className="input input-bordered w-full"
           value={playlistName}
           onChange={e => {
             onPlaylistNameChange(e.target.value)
@@ -41,7 +41,7 @@ export const PlaylistCreatorForm = ({
           <span className="label-text">Describe your playlist</span>
         </label>
         <textarea
-          className="textarea textarea-bordered h-24"
+          className="textarea textarea-bordered h-24 w-full"
           placeholder="e.g., Upbeat workout music with rock and electronic tracks"
           value={prompt}
           onChange={e => {

@@ -79,7 +79,7 @@ export const SettingsModal = ({
           <input
             type="text"
             placeholder="http://192.168.1.100:8095"
-            className="input input-bordered"
+            className="input input-bordered w-full"
             value={musicAssistantUrl}
             onChange={e => {
               setMusicAssistantUrl(e.target.value)
@@ -110,7 +110,7 @@ export const SettingsModal = ({
             <span className="label-text">AI Provider</span>
           </label>
           <select
-            className="select select-bordered"
+            className="select select-bordered w-full"
             value={aiProvider}
             onChange={e => {
               setAiProvider(e.target.value as 'claude' | 'openai')
@@ -155,7 +155,7 @@ export const SettingsModal = ({
             max="2"
             step="0.1"
             placeholder="1.0"
-            className="input input-bordered"
+            className="input input-bordered w-full"
             value={temperature}
             onChange={e => {
               setTemperature(e.target.value)
@@ -173,7 +173,7 @@ export const SettingsModal = ({
             <span className="label-text">Custom System Prompt (Optional)</span>
           </label>
           <textarea
-            className="textarea textarea-bordered h-32"
+            className="textarea textarea-bordered h-32 w-full"
             placeholder="Override the default AI system prompt. Leave empty to use default."
             value={customSystemPrompt}
             onChange={e => {

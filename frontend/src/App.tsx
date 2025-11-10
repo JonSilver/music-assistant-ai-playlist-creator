@@ -11,7 +11,7 @@ import { AlertMessage } from './components/AlertMessage'
 import { PresetPrompts } from './components/PresetPrompts'
 import { PlaylistCreatorForm } from './components/PlaylistCreatorForm'
 import { GeneratedTracksDisplay } from './components/GeneratedTracksDisplay'
-import { SettingsModal } from './components/SettingsModal'
+import { SettingsPage } from './components/SettingsPage'
 import { HistoryModal } from './components/HistoryModal'
 import { RefinePlaylistModal } from './components/RefinePlaylistModal'
 
@@ -43,7 +43,36 @@ const App = (): React.JSX.Element => {
     void loadPresets()
   }, [loadHistory, loadPresets])
 
+  // Check if settings are complete
+  const settingsComplete =
+    settings !== null &&
+    settings.musicAssistantUrl.trim().length > 0 &&
+    ((settings.aiProvider === 'claude' &&
+      settings.anthropicApiKey !== undefined &&
+      settings.anthropicApiKey.trim().length > 0) ||
+      (settings.aiProvider === 'openai' &&
+        settings.openaiApiKey !== undefined &&
+        settings.openaiApiKey.trim().length > 0))
+
+  // Show settings page if settings incomplete OR user opened settings
+  const showSettingsPage = !settingsComplete || showSettings
+
   const handleSaveSettings = useCallback(async (): Promise<void> => {
+    if (settingsForm.musicAssistantUrl.trim().length === 0) {
+      setError('Music Assistant URL is required')
+      return
+    }
+
+    if (settingsForm.aiProvider === 'claude' && settingsForm.anthropicApiKey.trim().length === 0) {
+      setError('Anthropic API Key is required when using Claude')
+      return
+    }
+
+    if (settingsForm.aiProvider === 'openai' && settingsForm.openaiApiKey.trim().length === 0) {
+      setError('OpenAI API Key is required when using OpenAI')
+      return
+    }
+
     const err = await updateSettings({
       musicAssistantUrl:
         settingsForm.musicAssistantUrl.length > 0 ? settingsForm.musicAssistantUrl : undefined,
@@ -66,6 +95,14 @@ const App = (): React.JSX.Element => {
     closeSettings()
   }, [settingsForm, updateSettings, setError, closeSettings])
 
+  const handleCancelSettings = useCallback((): void => {
+    if (!settingsComplete) {
+      setError('Please complete required settings')
+      return
+    }
+    closeSettings()
+  }, [settingsComplete, setError, closeSettings])
+
   const handleUsePreset = useCallback(
     (preset: PresetPrompt): void => {
       playlist.setPrompt(preset.prompt)
@@ -84,10 +121,6 @@ const App = (): React.JSX.Element => {
     [playlist, closeHistory]
   )
 
-  const handleRefineComplete = useCallback((): void => {
-    closeRefine()
-  }, [closeRefine])
-
   if (settingsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -96,6 +129,28 @@ const App = (): React.JSX.Element => {
     )
   }
 
+  // Show settings page if needed
+  if (showSettingsPage) {
+    return (
+      <>
+        {error !== null && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4">
+            <AlertMessage type="error" message={error} onDismiss={clearError} />
+          </div>
+        )}
+        <SettingsPage
+          {...settingsForm}
+          onSave={() => {
+            void handleSaveSettings()
+          }}
+          onCancel={handleCancelSettings}
+          showCancel={settingsComplete}
+        />
+      </>
+    )
+  }
+
+  // Show main UI
   return (
     <div className="min-h-screen bg-base-200">
       <Navbar onShowHistory={openHistory} onShowSettings={openSettings} />
@@ -135,15 +190,6 @@ const App = (): React.JSX.Element => {
         )}
       </div>
 
-      <SettingsModal
-        show={showSettings}
-        onClose={closeSettings}
-        {...settingsForm}
-        onSave={() => {
-          void handleSaveSettings()
-        }}
-      />
-
       <HistoryModal
         show={showHistory}
         onClose={closeHistory}
@@ -161,7 +207,7 @@ const App = (): React.JSX.Element => {
         onRefinementPromptChange={playlist.setRefinementPrompt}
         refining={playlist.refining}
         onRefine={() => {
-          void playlist.refinePlaylist().then(handleRefineComplete)
+          void playlist.refinePlaylist()
         }}
       />
     </div>

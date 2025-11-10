@@ -28,7 +28,7 @@ export const AnthropicSettings = ({
     <input
       type="password"
       placeholder="sk-ant-..."
-      className="input input-bordered"
+      className="input input-bordered w-full"
       value={anthropicApiKey}
       onChange={e => {
         setAnthropicApiKey(e.target.value)
