@@ -2,7 +2,7 @@ import React from 'react'
 import type { PresetPrompt } from '../../../shared/types'
 
 interface PresetPromptsProps {
-  presets: PresetPrompt[]
+  presets: PresetPrompt[] | undefined
   onSelectPreset: (preset: PresetPrompt) => void
 }
 

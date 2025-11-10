@@ -4,7 +4,7 @@ import type { PromptHistory } from '../../../shared/types'
 interface HistoryModalProps {
   show: boolean
   onClose: () => void
-  history: PromptHistory[]
+  history: PromptHistory[] | undefined
   onSelectHistory: (item: PromptHistory) => void
 }
 
