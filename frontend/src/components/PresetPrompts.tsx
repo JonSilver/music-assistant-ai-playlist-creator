@@ -6,7 +6,10 @@ interface PresetPromptsProps {
   onSelectPreset: (preset: PresetPrompt) => void
 }
 
-export const PresetPrompts = ({ presets, onSelectPreset }: PresetPromptsProps): React.JSX.Element => (
+export const PresetPrompts = ({
+  presets,
+  onSelectPreset
+}: PresetPromptsProps): React.JSX.Element => (
   <div className="card bg-base-100 shadow-xl mb-4">
     <div className="card-body">
       <h2 className="card-title">Quick Presets</h2>

@@ -1,7 +1,11 @@
 import { useState, useCallback } from 'react'
 import { api } from '../services/api'
-import { useAlerts } from '../contexts/AlertsContext'
-import type { TrackMatch, CreatePlaylistRequest, RefinePlaylistRequest } from '../../../shared/types'
+import { useAlerts } from './useAlerts'
+import type {
+  TrackMatch,
+  CreatePlaylistRequest,
+  RefinePlaylistRequest
+} from '../../../shared/types'
 
 interface UsePlaylistReturn {
   prompt: string

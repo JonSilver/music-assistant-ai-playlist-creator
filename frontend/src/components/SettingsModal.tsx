@@ -1,4 +1,7 @@
 import React from 'react'
+import { TestResultDisplay } from './TestResultDisplay'
+import { AnthropicSettings } from './AnthropicSettings'
+import { OpenAISettings } from './OpenAISettings'
 
 interface TestResult {
   success: boolean
@@ -87,23 +90,19 @@ export const SettingsModal = ({
           </label>
           <button
             className="btn btn-sm btn-outline mt-2"
-            onClick={() => { void testMA() }}
+            onClick={() => {
+              void testMA()
+            }}
             disabled={testingMA || musicAssistantUrl.trim().length === 0}
           >
             {testingMA && <span className="loading loading-spinner loading-xs"></span>}
             {testingMA ? 'Testing...' : 'Test Connection'}
           </button>
-          {testResults.ma !== undefined && (
-            <div
-              className={`alert ${testResults.ma.success ? 'alert-success' : 'alert-error'} mt-2`}
-            >
-              <span className="text-sm">
-                {testResults.ma.success
-                  ? 'Connection successful!'
-                  : `Connection failed: ${testResults.ma.error ?? 'Unknown error'}`}
-              </span>
-            </div>
-          )}
+          <TestResultDisplay
+            result={testResults.ma}
+            successMessage="Connection successful!"
+            errorPrefix="Connection failed"
+          />
         </div>
 
         <div className="form-control mb-4">
@@ -123,96 +122,25 @@ export const SettingsModal = ({
         </div>
 
         {aiProvider === 'claude' && (
-          <div className="form-control mb-4">
-            <label className="label">
-              <span className="label-text">Anthropic API Key</span>
-            </label>
-            <input
-              type="password"
-              placeholder="sk-ant-..."
-              className="input input-bordered"
-              value={anthropicApiKey}
-              onChange={e => {
-                setAnthropicApiKey(e.target.value)
-              }}
-            />
-            <button
-              className="btn btn-sm btn-outline mt-2"
-              onClick={() => { void testAnthropic() }}
-              disabled={testingAnthropic || anthropicApiKey.trim().length === 0}
-            >
-              {testingAnthropic && <span className="loading loading-spinner loading-xs"></span>}
-              {testingAnthropic ? 'Testing...' : 'Test API Key'}
-            </button>
-            {testResults.anthropic !== undefined && (
-              <div
-                className={`alert ${testResults.anthropic.success ? 'alert-success' : 'alert-error'} mt-2`}
-              >
-                <span className="text-sm">
-                  {testResults.anthropic.success
-                    ? 'API key valid!'
-                    : `API key test failed: ${testResults.anthropic.error ?? 'Unknown error'}`}
-                </span>
-              </div>
-            )}
-          </div>
+          <AnthropicSettings
+            anthropicApiKey={anthropicApiKey}
+            setAnthropicApiKey={setAnthropicApiKey}
+            testingAnthropic={testingAnthropic}
+            testResults={testResults}
+            testAnthropic={testAnthropic}
+          />
         )}
 
         {aiProvider === 'openai' && (
-          <>
-            <div className="form-control mb-4">
-              <label className="label">
-                <span className="label-text">OpenAI API Key</span>
-              </label>
-              <input
-                type="password"
-                placeholder="sk-..."
-                className="input input-bordered"
-                value={openaiApiKey}
-                onChange={e => {
-                  setOpenaiApiKey(e.target.value)
-                }}
-              />
-            </div>
-
-            <div className="form-control mb-4">
-              <label className="label">
-                <span className="label-text">OpenAI Base URL (Optional)</span>
-              </label>
-              <input
-                type="text"
-                placeholder="https://api.openai.com/v1"
-                className="input input-bordered"
-                value={openaiBaseUrl}
-                onChange={e => {
-                  setOpenaiBaseUrl(e.target.value)
-                }}
-              />
-              <label className="label">
-                <span className="label-text-alt">For OpenAI-compatible endpoints</span>
-              </label>
-            </div>
-
-            <button
-              className="btn btn-sm btn-outline mb-4"
-              onClick={() => { void testOpenAI() }}
-              disabled={testingOpenAI || openaiApiKey.trim().length === 0}
-            >
-              {testingOpenAI && <span className="loading loading-spinner loading-xs"></span>}
-              {testingOpenAI ? 'Testing...' : 'Test API Key'}
-            </button>
-            {testResults.openai !== undefined && (
-              <div
-                className={`alert ${testResults.openai.success ? 'alert-success' : 'alert-error'} mb-4`}
-              >
-                <span className="text-sm">
-                  {testResults.openai.success
-                    ? 'API key valid!'
-                    : `API key test failed: ${testResults.openai.error ?? 'Unknown error'}`}
-                </span>
-              </div>
-            )}
-          </>
+          <OpenAISettings
+            openaiApiKey={openaiApiKey}
+            setOpenaiApiKey={setOpenaiApiKey}
+            openaiBaseUrl={openaiBaseUrl}
+            setOpenaiBaseUrl={setOpenaiBaseUrl}
+            testingOpenAI={testingOpenAI}
+            testResults={testResults}
+            testOpenAI={testOpenAI}
+          />
         )}
 
         <div className="divider"></div>

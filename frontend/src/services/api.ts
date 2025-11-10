@@ -11,7 +11,8 @@ import type {
 } from '@shared/types'
 
 const backendPort = (import.meta.env.VITE_BACKEND_PORT as string | undefined) ?? '3333'
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? `http://localhost:${backendPort}/api`
+const API_BASE =
+  (import.meta.env.VITE_API_URL as string | undefined) ?? `http://localhost:${backendPort}/api`
 
 interface ErrorResponse {
   error?: string

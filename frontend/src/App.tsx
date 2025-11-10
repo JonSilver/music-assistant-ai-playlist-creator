@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react'
 import { useApp } from './contexts/AppContext'
-import { useAlerts } from './contexts/AlertsContext'
+import { useAlerts } from './hooks/useAlerts'
 import { usePlaylist } from './hooks/usePlaylist'
 import { useSettingsForm } from './hooks/useSettingsForm'
 import { useHistoryAndPresets } from './hooks/useHistoryAndPresets'
@@ -19,13 +19,23 @@ const App = (): React.JSX.Element => {
   const { settings, updateSettings, loading: settingsLoading } = useApp()
   const { error, successMessage, setError, clearError, clearSuccess } = useAlerts()
   const historyAndPresetsResult = useHistoryAndPresets()
-  const { showSettings, showHistory, showRefine, openSettings, closeSettings, openHistory, closeHistory, openRefine, closeRefine } = useModals()
-
-  console.log('historyAndPresetsResult:', historyAndPresetsResult)
+  const {
+    showSettings,
+    showHistory,
+    showRefine,
+    openSettings,
+    closeSettings,
+    openHistory,
+    closeHistory,
+    openRefine,
+    closeRefine
+  } = useModals()
 
   const { history, presets, loadHistory, loadPresets } = historyAndPresetsResult
 
-  const playlist = usePlaylist(loadHistory)
+  const playlist = usePlaylist(() => {
+    void loadHistory()
+  })
   const settingsForm = useSettingsForm(settings)
 
   useEffect(() => {
@@ -35,13 +45,17 @@ const App = (): React.JSX.Element => {
 
   const handleSaveSettings = useCallback(async (): Promise<void> => {
     const err = await updateSettings({
-      musicAssistantUrl: settingsForm.musicAssistantUrl.length > 0 ? settingsForm.musicAssistantUrl : undefined,
+      musicAssistantUrl:
+        settingsForm.musicAssistantUrl.length > 0 ? settingsForm.musicAssistantUrl : undefined,
       aiProvider: settingsForm.aiProvider,
-      anthropicApiKey: settingsForm.anthropicApiKey.length > 0 ? settingsForm.anthropicApiKey : undefined,
+      anthropicApiKey:
+        settingsForm.anthropicApiKey.length > 0 ? settingsForm.anthropicApiKey : undefined,
       openaiApiKey: settingsForm.openaiApiKey.length > 0 ? settingsForm.openaiApiKey : undefined,
       openaiBaseUrl: settingsForm.openaiBaseUrl.length > 0 ? settingsForm.openaiBaseUrl : undefined,
-      customSystemPrompt: settingsForm.customSystemPrompt.length > 0 ? settingsForm.customSystemPrompt : undefined,
-      temperature: settingsForm.temperature.length > 0 ? parseFloat(settingsForm.temperature) : undefined
+      customSystemPrompt:
+        settingsForm.customSystemPrompt.length > 0 ? settingsForm.customSystemPrompt : undefined,
+      temperature:
+        settingsForm.temperature.length > 0 ? parseFloat(settingsForm.temperature) : undefined
     })
 
     if (err !== undefined) {
@@ -52,17 +66,23 @@ const App = (): React.JSX.Element => {
     closeSettings()
   }, [settingsForm, updateSettings, setError, closeSettings])
 
-  const handleUsePreset = useCallback((preset: PresetPrompt): void => {
-    playlist.setPrompt(preset.prompt)
-  }, [playlist])
+  const handleUsePreset = useCallback(
+    (preset: PresetPrompt): void => {
+      playlist.setPrompt(preset.prompt)
+    },
+    [playlist]
+  )
 
-  const handleUseHistory = useCallback((item: PromptHistory): void => {
-    playlist.setPrompt(item.prompt)
-    if (item.playlistName !== undefined) {
-      playlist.setPlaylistName(item.playlistName)
-    }
-    closeHistory()
-  }, [playlist, closeHistory])
+  const handleUseHistory = useCallback(
+    (item: PromptHistory): void => {
+      playlist.setPrompt(item.prompt)
+      if (item.playlistName !== undefined) {
+        playlist.setPlaylistName(item.playlistName)
+      }
+      closeHistory()
+    },
+    [playlist, closeHistory]
+  )
 
   const handleRefineComplete = useCallback((): void => {
     closeRefine()
@@ -82,7 +102,9 @@ const App = (): React.JSX.Element => {
 
       <div className="container mx-auto p-4 max-w-6xl">
         {error !== null && <AlertMessage type="error" message={error} onDismiss={clearError} />}
-        {successMessage !== null && <AlertMessage type="success" message={successMessage} onDismiss={clearSuccess} />}
+        {successMessage !== null && (
+          <AlertMessage type="success" message={successMessage} onDismiss={clearSuccess} />
+        )}
 
         <PresetPrompts presets={presets} onSelectPreset={handleUsePreset} />
 
@@ -92,7 +114,9 @@ const App = (): React.JSX.Element => {
           generating={playlist.generating}
           onPlaylistNameChange={playlist.setPlaylistName}
           onPromptChange={playlist.setPrompt}
-          onGenerate={() => { void playlist.generatePlaylist() }}
+          onGenerate={() => {
+            void playlist.generatePlaylist()
+          }}
         />
 
         {playlist.generatedTracks.length > 0 && (
@@ -104,7 +128,9 @@ const App = (): React.JSX.Element => {
             onRemoveTrack={playlist.removeTrack}
             onClear={playlist.clearTracks}
             onRefine={openRefine}
-            onCreate={() => { void playlist.createPlaylist() }}
+            onCreate={() => {
+              void playlist.createPlaylist()
+            }}
           />
         )}
       </div>
@@ -113,7 +139,9 @@ const App = (): React.JSX.Element => {
         show={showSettings}
         onClose={closeSettings}
         {...settingsForm}
-        onSave={() => { void handleSaveSettings() }}
+        onSave={() => {
+          void handleSaveSettings()
+        }}
       />
 
       <HistoryModal

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { api } from '../services/api'
-import { useAlerts } from '../contexts/AlertsContext'
+import { useAlerts } from './useAlerts'
 import type { PromptHistory, PresetPrompt } from '../../../shared/types'
 
 interface UseHistoryAndPresetsReturn {

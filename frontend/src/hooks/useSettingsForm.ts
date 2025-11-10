@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../services/api'
-import { useAlerts } from '../contexts/AlertsContext'
+import { useAlerts } from './useAlerts'
 import type { AppSettings } from '../../../shared/types'
 
 interface TestResult {

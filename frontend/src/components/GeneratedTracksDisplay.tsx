@@ -186,7 +186,11 @@ export const GeneratedTracksDisplay = ({
           <button className="btn btn-secondary" onClick={onRefine}>
             Refine Playlist
           </button>
-          <button className="btn btn-primary" onClick={onCreate} disabled={creating || !hasMatchedTracks}>
+          <button
+            className="btn btn-primary"
+            onClick={onCreate}
+            disabled={creating || !hasMatchedTracks}
+          >
             {creating && <span className="loading loading-spinner"></span>}
             {creating ? 'Creating...' : 'Create Playlist in Music Assistant'}
           </button>

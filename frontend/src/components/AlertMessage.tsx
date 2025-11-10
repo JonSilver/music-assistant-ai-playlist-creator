@@ -6,7 +6,11 @@ interface AlertMessageProps {
   onDismiss: () => void
 }
 
-export const AlertMessage = ({ type, message, onDismiss }: AlertMessageProps): React.JSX.Element => (
+export const AlertMessage = ({
+  type,
+  message,
+  onDismiss
+}: AlertMessageProps): React.JSX.Element => (
   <div className={`alert ${type === 'error' ? 'alert-error' : 'alert-success'} mb-4`}>
     <svg
       xmlns="http://www.w3.org/2000/svg"

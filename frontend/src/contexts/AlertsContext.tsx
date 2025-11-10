@@ -1,15 +1,8 @@
-import React, { createContext, useContext, useState, useCallback } from 'react'
+import React, { createContext, useState, useCallback } from 'react'
+import type { AlertsContextValue } from '../hooks/useAlerts'
 
-interface AlertsContextValue {
-  error: string | null
-  successMessage: string | null
-  setError: (message: string) => void
-  setSuccess: (message: string) => void
-  clearError: () => void
-  clearSuccess: () => void
-}
-
-const AlertsContext = createContext<AlertsContextValue | null>(null)
+// eslint-disable-next-line react-refresh/only-export-components
+export const AlertsContext = createContext<AlertsContextValue | null>(null)
 
 export const AlertsProvider = ({ children }: { children: React.ReactNode }): React.JSX.Element => {
   const [error, setErrorState] = useState<string | null>(null)
@@ -47,12 +40,4 @@ export const AlertsProvider = ({ children }: { children: React.ReactNode }): Rea
       {children}
     </AlertsContext.Provider>
   )
-}
-
-export const useAlerts = (): AlertsContextValue => {
-  const context = useContext(AlertsContext)
-  if (context === null) {
-    throw new Error('useAlerts must be used within AlertsProvider')
-  }
-  return context
 }
