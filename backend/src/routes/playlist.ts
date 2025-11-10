@@ -1,5 +1,5 @@
 import type { Router, Request, Response } from 'express'
-import { attempt } from '@jfdi/attempt'
+import { attemptPromise } from '@jfdi/attempt'
 import { MusicAssistantClient } from '../services/musicAssistant.js'
 import { AIService } from '../services/ai.js'
 import type { PlaylistDatabase } from '../db/schema.js'
@@ -42,7 +42,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
   router.post('/playlist/generate', async (req: Request, res: Response) => {
     const request = req.body as CreatePlaylistRequest
 
-    const [err, result] = await attempt(async () => {
+    const [err, result] = await attemptPromise(async () => {
       // Get settings
       const maUrl = db.getSetting('musicAssistantUrl')
       const aiProvider = (db.getSetting('aiProvider') ?? 'claude') as 'claude' | 'openai'
@@ -111,7 +111,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
   router.post('/playlist/create', async (req: Request, res: Response) => {
     const { playlistName, tracks } = req.body as { playlistName: string; tracks: TrackMatch[] }
 
-    const [err, result] = await attempt(async () => {
+    const [err, result] = await attemptPromise(async () => {
       const maUrl = db.getSetting('musicAssistantUrl')
       if (maUrl === null || maUrl.length === 0) {
         throw new Error('Music Assistant URL not configured')
@@ -161,7 +161,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
   router.post('/playlist/refine', async (req: Request, res: Response) => {
     const request = req.body as RefinePlaylistRequest
 
-    const [err, result] = await attempt(async () => {
+    const [err, result] = await attemptPromise(async () => {
       const maUrl = db.getSetting('musicAssistantUrl')
       const aiProvider = (db.getSetting('aiProvider') ?? 'claude') as 'claude' | 'openai'
       const anthropicKey = db.getSetting('anthropicApiKey')

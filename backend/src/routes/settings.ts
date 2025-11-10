@@ -1,5 +1,5 @@
 import type { Router, Request, Response } from 'express'
-import { attempt } from '@jfdi/attempt'
+import { attemptPromise } from '@jfdi/attempt'
 import { MusicAssistantClient } from '../services/musicAssistant.js'
 import { AIService } from '../services/ai.js'
 import type { PlaylistDatabase } from '../db/schema.js'
@@ -81,7 +81,7 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
       return
     }
 
-    const [err, result] = await attempt(async (): Promise<TestConnectionResponse> => {
+    const [err, result] = await attemptPromise(async (): Promise<TestConnectionResponse> => {
       const client = new MusicAssistantClient(url)
       await client.connect()
       client.disconnect()
@@ -107,7 +107,7 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
       return
     }
 
-    const [err, result] = await attempt(async (): Promise<TestConnectionResponse> => {
+    const [err, result] = await attemptPromise(async (): Promise<TestConnectionResponse> => {
       const aiService = new AIService(apiKey, undefined, undefined)
       // Simple test prompt
       await aiService.generatePlaylist({
@@ -136,7 +136,7 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
       return
     }
 
-    const [err, result] = await attempt(async (): Promise<TestConnectionResponse> => {
+    const [err, result] = await attemptPromise(async (): Promise<TestConnectionResponse> => {
       const aiService = new AIService(undefined, apiKey, baseUrl)
       // Simple test prompt
       await aiService.generatePlaylist({
