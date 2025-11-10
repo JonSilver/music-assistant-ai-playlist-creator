@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useApp } from './contexts/AppContext'
 import { api } from './services/api'
 import type {
@@ -44,28 +44,28 @@ const App = (): React.JSX.Element => {
     openai?: { success: boolean; error?: string }
   }>({})
 
+  const loadHistory = useCallback(async (): Promise<void> => {
+    const [err, result] = await api.getPromptHistory()
+    if (err !== undefined) {
+      setError(`Failed to load history: ${err.message}`)
+      return
+    }
+    setHistory(result.history)
+  }, [])
+
+  const loadPresets = useCallback(async (): Promise<void> => {
+    const [err, result] = await api.getPresetPrompts()
+    if (err !== undefined) {
+      setError(`Failed to load presets: ${err.message}`)
+      return
+    }
+    setPresets(result.presets)
+  }, [])
+
   useEffect(() => {
-    const loadHistory = async (): Promise<void> => {
-      const [err, result] = await api.getPromptHistory()
-      if (err !== undefined) {
-        setError(`Failed to load history: ${err.message}`)
-        return
-      }
-      setHistory(result.history)
-    }
-
-    const loadPresets = async (): Promise<void> => {
-      const [err, result] = await api.getPresetPrompts()
-      if (err !== undefined) {
-        setError(`Failed to load presets: ${err.message}`)
-        return
-      }
-      setPresets(result.presets)
-    }
-
     void loadHistory()
     void loadPresets()
-  }, [])
+  }, [loadHistory, loadPresets])
 
   useEffect(() => {
     if (settings !== null) {
