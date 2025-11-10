@@ -5,6 +5,8 @@
 **READ THIS FIRST. FOLLOW STRICTLY.**
 
 ### DO NOT:
+
+- ❌ **Create Massive Modules** - decompose, tiny modules only, single responsibility
 - ❌ **Overcomplicate solutions** - Use existing APIs, don't write custom logic
 - ❌ **Add features not requested** - Stick to what the user asked for
 - ❌ **Assume implementation details** - Read documentation first
@@ -17,7 +19,9 @@
 - ❌ **Use try/catch** - Use @jfdi/attempt with tuple destructuring
 - ❌ **Use .ok/.value pattern** - Use `[err, result]` destructuring
 
+
 ### DO:
+- ✅ **Decompose into small modules** - Single responsibility, tiny functions
 - ✅ **Use existing APIs** - Music Assistant has search, use it
 - ✅ **Read the documentation** - Check what APIs exist before writing code
 - ✅ **Follow user instructions exactly** - Don't interpret, follow literally
