@@ -28,7 +28,8 @@ shared/*.d.ts.map
 data/
 
 # IDE
-.vscode/
+.vscode/*
+!.vscode/settings.json
 .idea/
 *.swp
 *.swo
