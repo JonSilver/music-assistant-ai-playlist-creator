@@ -5,12 +5,12 @@ export const setupPromptsRoutes = (router: Router, db: PlaylistDatabase): void =
   // Get prompt history
   router.get('/prompts/history', (_req: Request, res: Response) => {
     const history = db.getPromptHistory(50)
-    res.json(history)
+    res.json({ history })
   })
 
   // Get preset prompts
   router.get('/prompts/presets', (_req: Request, res: Response) => {
     const presets = db.getPresetPrompts()
-    res.json(presets)
+    res.json({ presets })
   })
 }
