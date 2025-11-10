@@ -7,6 +7,7 @@ interface AIPlaylistRequest {
   prompt: string
   favoriteArtists?: string[]
   provider: AIProvider
+  model?: string
   customSystemPrompt?: string
   temperature?: number
   trackCount?: number
@@ -21,11 +22,7 @@ export class AIService {
   private anthropic: Anthropic | null = null
   private openai: OpenAI | null = null
 
-  constructor(
-    anthropicKey?: string,
-    openaiKey?: string,
-    openaiBaseUrl?: string
-  ) {
+  constructor(anthropicKey?: string, openaiKey?: string, openaiBaseUrl?: string) {
     if (anthropicKey !== undefined) {
       this.anthropic = new Anthropic({ apiKey: anthropicKey })
     }
@@ -90,17 +87,19 @@ ${countGuideline}
       request.trackCount
     )
     const temperature = request.temperature ?? 1.0
+    const model = request.model
 
     if (request.provider === 'claude') {
-      return this.generateWithClaude(request.prompt, systemPrompt, temperature)
+      return this.generateWithClaude(request.prompt, systemPrompt, temperature, model)
     }
-    return this.generateWithOpenAI(request.prompt, systemPrompt, temperature)
+    return this.generateWithOpenAI(request.prompt, systemPrompt, temperature, model)
   }
 
   private async generateWithClaude(
     userPrompt: string,
     systemPrompt: string,
-    temperature: number
+    temperature: number,
+    model?: string
   ): Promise<AIPlaylistResponse> {
     if (this.anthropic === null) {
       throw new Error('Claude API key not configured')
@@ -108,7 +107,7 @@ ${countGuideline}
 
     const [err, result] = await attemptPromise(async () => {
       const response = await this.anthropic!.messages.create({
-        model: 'claude-sonnet-4-5-20250929',
+        model: model ?? 'claude-sonnet-4-5-20250929',
         max_tokens: 4096,
         temperature,
         system: systemPrompt,
@@ -138,7 +137,8 @@ ${countGuideline}
   private async generateWithOpenAI(
     userPrompt: string,
     systemPrompt: string,
-    temperature: number
+    temperature: number,
+    model?: string
   ): Promise<AIPlaylistResponse> {
     if (this.openai === null) {
       throw new Error('OpenAI API key not configured')
@@ -146,7 +146,7 @@ ${countGuideline}
 
     const [err, result] = await attemptPromise(async () => {
       const response = await this.openai!.chat.completions.create({
-        model: 'gpt-4-turbo-preview',
+        model: model ?? 'gpt-4-turbo-preview',
         temperature,
         messages: [
           { role: 'system', content: systemPrompt },
@@ -173,7 +173,7 @@ ${countGuideline}
   private parseAIResponse(content: string): AIPlaylistResponse {
     // Try to extract JSON from markdown code blocks if present
     let jsonContent = content.trim()
-    const jsonMatch = jsonContent.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/)
+    const jsonMatch = /```(?:json)?\s*(\{[\s\S]*\})\s*```/.exec(jsonContent)
     if (jsonMatch !== null) {
       jsonContent = jsonMatch[1]
     }

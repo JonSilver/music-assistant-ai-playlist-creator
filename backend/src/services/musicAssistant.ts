@@ -24,7 +24,7 @@ interface MASearchResults {
 interface MAFavoritesResponse {
   count: number
   total: number
-  items: Array<{ name: string }>
+  items: { name: string }[]
 }
 
 interface MAPlaylist {

@@ -16,7 +16,9 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
     const musicAssistantUrl = db.getSetting('musicAssistantUrl') ?? ''
     const aiProvider = (db.getSetting('aiProvider') ?? 'claude') as 'claude' | 'openai'
     const anthropicKey = db.getSetting('anthropicApiKey')
+    const anthropicModel = db.getSetting('anthropicModel')
     const openaiKey = db.getSetting('openaiApiKey')
+    const openaiModel = db.getSetting('openaiModel')
     const openaiBaseUrl = db.getSetting('openaiBaseUrl')
     const customSystemPrompt = db.getSetting('customSystemPrompt')
     const temperatureStr = db.getSetting('temperature')
@@ -26,7 +28,9 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
       musicAssistantUrl,
       aiProvider,
       anthropicApiKey: anthropicKey ?? undefined,
+      anthropicModel: anthropicModel ?? undefined,
       openaiApiKey: openaiKey ?? undefined,
+      openaiModel: openaiModel ?? undefined,
       openaiBaseUrl: openaiBaseUrl ?? undefined,
       customSystemPrompt: customSystemPrompt ?? undefined,
       temperature,
@@ -53,8 +57,16 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
       db.setSetting('anthropicApiKey', updates.anthropicApiKey)
     }
 
+    if (updates.anthropicModel !== undefined) {
+      db.setSetting('anthropicModel', updates.anthropicModel)
+    }
+
     if (updates.openaiApiKey !== undefined) {
       db.setSetting('openaiApiKey', updates.openaiApiKey)
+    }
+
+    if (updates.openaiModel !== undefined) {
+      db.setSetting('openaiModel', updates.openaiModel)
     }
 
     if (updates.openaiBaseUrl !== undefined) {

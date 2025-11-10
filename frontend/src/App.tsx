@@ -79,7 +79,10 @@ const App = (): React.JSX.Element => {
       aiProvider: settingsForm.aiProvider,
       anthropicApiKey:
         settingsForm.anthropicApiKey.length > 0 ? settingsForm.anthropicApiKey : undefined,
+      anthropicModel:
+        settingsForm.anthropicModel.length > 0 ? settingsForm.anthropicModel : undefined,
       openaiApiKey: settingsForm.openaiApiKey.length > 0 ? settingsForm.openaiApiKey : undefined,
+      openaiModel: settingsForm.openaiModel.length > 0 ? settingsForm.openaiModel : undefined,
       openaiBaseUrl: settingsForm.openaiBaseUrl.length > 0 ? settingsForm.openaiBaseUrl : undefined,
       customSystemPrompt:
         settingsForm.customSystemPrompt.length > 0 ? settingsForm.customSystemPrompt : undefined,
@@ -172,7 +175,7 @@ const App = (): React.JSX.Element => {
           prompt={playlist.prompt}
           trackCount={playlist.trackCount}
           generating={playlist.generating}
-          aiProvider={settings?.aiProvider ?? 'claude'}
+          aiProvider={settings !== null ? settings.aiProvider : 'claude'}
           onPlaylistNameChange={playlist.setPlaylistName}
           onPromptChange={playlist.setPrompt}
           onTrackCountChange={playlist.setTrackCount}

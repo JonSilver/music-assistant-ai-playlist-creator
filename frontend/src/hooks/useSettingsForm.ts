@@ -15,8 +15,12 @@ interface UseSettingsFormReturn {
   setAiProvider: (value: 'claude' | 'openai') => void
   anthropicApiKey: string
   setAnthropicApiKey: (value: string) => void
+  anthropicModel: string
+  setAnthropicModel: (value: string) => void
   openaiApiKey: string
   setOpenaiApiKey: (value: string) => void
+  openaiModel: string
+  setOpenaiModel: (value: string) => void
   openaiBaseUrl: string
   setOpenaiBaseUrl: (value: string) => void
   customSystemPrompt: string
@@ -41,7 +45,9 @@ export const useSettingsForm = (settings: AppSettings | null): UseSettingsFormRe
   const [musicAssistantUrl, setMusicAssistantUrl] = useState('')
   const [aiProvider, setAiProvider] = useState<'claude' | 'openai'>('claude')
   const [anthropicApiKey, setAnthropicApiKey] = useState('')
+  const [anthropicModel, setAnthropicModel] = useState('claude-sonnet-4-5-20250929')
   const [openaiApiKey, setOpenaiApiKey] = useState('')
+  const [openaiModel, setOpenaiModel] = useState('gpt-4-turbo-preview')
   const [openaiBaseUrl, setOpenaiBaseUrl] = useState('')
   const [customSystemPrompt, setCustomSystemPrompt] = useState('')
   const [temperature, setTemperature] = useState('1.0')
@@ -59,7 +65,9 @@ export const useSettingsForm = (settings: AppSettings | null): UseSettingsFormRe
       setMusicAssistantUrl(settings.musicAssistantUrl)
       setAiProvider(settings.aiProvider)
       setAnthropicApiKey(settings.anthropicApiKey ?? '')
+      setAnthropicModel(settings.anthropicModel ?? 'claude-sonnet-4-5-20250929')
       setOpenaiApiKey(settings.openaiApiKey ?? '')
+      setOpenaiModel(settings.openaiModel ?? 'gpt-4-turbo-preview')
       setOpenaiBaseUrl(settings.openaiBaseUrl ?? '')
       setCustomSystemPrompt(settings.customSystemPrompt ?? '')
       setTemperature(settings.temperature?.toString() ?? '1.0')
@@ -133,8 +141,12 @@ export const useSettingsForm = (settings: AppSettings | null): UseSettingsFormRe
     setAiProvider,
     anthropicApiKey,
     setAnthropicApiKey,
+    anthropicModel,
+    setAnthropicModel,
     openaiApiKey,
     setOpenaiApiKey,
+    openaiModel,
+    setOpenaiModel,
     openaiBaseUrl,
     setOpenaiBaseUrl,
     customSystemPrompt,

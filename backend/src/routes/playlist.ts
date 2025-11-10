@@ -52,7 +52,9 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       const maUrl = db.getSetting('musicAssistantUrl')
       const aiProvider = (db.getSetting('aiProvider') ?? 'claude') as 'claude' | 'openai'
       const anthropicKey = db.getSetting('anthropicApiKey')
+      const anthropicModel = db.getSetting('anthropicModel')
       const openaiKey = db.getSetting('openaiApiKey')
+      const openaiModel = db.getSetting('openaiModel')
       const openaiBaseUrl = db.getSetting('openaiBaseUrl')
       const customSystemPrompt = db.getSetting('customSystemPrompt')
       const temperatureStr = db.getSetting('temperature')
@@ -74,10 +76,17 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         openaiKey ?? undefined,
         openaiBaseUrl ?? undefined
       )
+      // Select model based on provider
+      const model =
+        (request.provider ?? aiProvider) === 'claude'
+          ? (anthropicModel ?? undefined)
+          : (openaiModel ?? undefined)
+
       const aiResponse = await aiService.generatePlaylist({
         prompt: request.prompt,
         favoriteArtists,
         provider: request.provider ?? aiProvider,
+        model,
         customSystemPrompt: customSystemPrompt ?? undefined,
         temperature,
         trackCount: request.trackCount
@@ -203,7 +212,9 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       const maUrl = db.getSetting('musicAssistantUrl')
       const aiProvider = (db.getSetting('aiProvider') ?? 'claude') as 'claude' | 'openai'
       const anthropicKey = db.getSetting('anthropicApiKey')
+      const anthropicModel = db.getSetting('anthropicModel')
       const openaiKey = db.getSetting('openaiApiKey')
+      const openaiModel = db.getSetting('openaiModel')
       const openaiBaseUrl = db.getSetting('openaiBaseUrl')
       const customSystemPrompt = db.getSetting('customSystemPrompt')
       const temperatureStr = db.getSetting('temperature')
@@ -224,6 +235,12 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       )
       const refinementContext = `Current playlist:\n${currentTracks.join('\n')}\n\nRefinement request: ${request.refinementPrompt}`
 
+      // Select model based on provider
+      const model =
+        (request.provider ?? aiProvider) === 'claude'
+          ? (anthropicModel ?? undefined)
+          : (openaiModel ?? undefined)
+
       const aiService = new AIService(
         anthropicKey ?? undefined,
         openaiKey ?? undefined,
@@ -233,6 +250,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         prompt: refinementContext,
         favoriteArtists,
         provider: request.provider ?? aiProvider,
+        model,
         customSystemPrompt: customSystemPrompt ?? undefined,
         temperature
       })

@@ -15,8 +15,12 @@ interface SettingsPageProps {
   setAiProvider: (value: 'claude' | 'openai') => void
   anthropicApiKey: string
   setAnthropicApiKey: (value: string) => void
+  anthropicModel: string
+  setAnthropicModel: (value: string) => void
   openaiApiKey: string
   setOpenaiApiKey: (value: string) => void
+  openaiModel: string
+  setOpenaiModel: (value: string) => void
   openaiBaseUrl: string
   setOpenaiBaseUrl: (value: string) => void
   customSystemPrompt: string
@@ -46,8 +50,12 @@ export const SettingsPage = ({
   setAiProvider,
   anthropicApiKey,
   setAnthropicApiKey,
+  anthropicModel,
+  setAnthropicModel,
   openaiApiKey,
   setOpenaiApiKey,
+  openaiModel,
+  setOpenaiModel,
   openaiBaseUrl,
   setOpenaiBaseUrl,
   customSystemPrompt,
@@ -69,7 +77,10 @@ export const SettingsPage = ({
     <div className="container mx-auto px-4 max-w-2xl">
       <div className="card bg-base-100 shadow-xl">
         <div className="card-body">
-          <h1 className="card-title text-2xl mb-6">Settings</h1>
+          <div className="mb-6">
+            <h1 className="card-title text-2xl mb-0">AI Playlist Creator</h1>
+            <p className="text-sm opacity-70 mt-1">for Music Assistant</p>
+          </div>
 
           <div className="form-control mb-4">
             <label className="label">
@@ -124,6 +135,8 @@ export const SettingsPage = ({
             <AnthropicSettings
               anthropicApiKey={anthropicApiKey}
               setAnthropicApiKey={setAnthropicApiKey}
+              anthropicModel={anthropicModel}
+              setAnthropicModel={setAnthropicModel}
               testingAnthropic={testingAnthropic}
               testResults={testResults}
               testAnthropic={testAnthropic}
@@ -134,6 +147,8 @@ export const SettingsPage = ({
             <OpenAISettings
               openaiApiKey={openaiApiKey}
               setOpenaiApiKey={setOpenaiApiKey}
+              openaiModel={openaiModel}
+              setOpenaiModel={setOpenaiModel}
               openaiBaseUrl={openaiBaseUrl}
               setOpenaiBaseUrl={setOpenaiBaseUrl}
               testingOpenAI={testingOpenAI}

@@ -17,8 +17,12 @@ interface SettingsModalProps {
   setAiProvider: (value: 'claude' | 'openai') => void
   anthropicApiKey: string
   setAnthropicApiKey: (value: string) => void
+  anthropicModel: string
+  setAnthropicModel: (value: string) => void
   openaiApiKey: string
   setOpenaiApiKey: (value: string) => void
+  openaiModel: string
+  setOpenaiModel: (value: string) => void
   openaiBaseUrl: string
   setOpenaiBaseUrl: (value: string) => void
   customSystemPrompt: string
@@ -48,8 +52,12 @@ export const SettingsModal = ({
   setAiProvider,
   anthropicApiKey,
   setAnthropicApiKey,
+  anthropicModel,
+  setAnthropicModel,
   openaiApiKey,
   setOpenaiApiKey,
+  openaiModel,
+  setOpenaiModel,
   openaiBaseUrl,
   setOpenaiBaseUrl,
   customSystemPrompt,
@@ -125,6 +133,8 @@ export const SettingsModal = ({
           <AnthropicSettings
             anthropicApiKey={anthropicApiKey}
             setAnthropicApiKey={setAnthropicApiKey}
+            anthropicModel={anthropicModel}
+            setAnthropicModel={setAnthropicModel}
             testingAnthropic={testingAnthropic}
             testResults={testResults}
             testAnthropic={testAnthropic}
@@ -135,6 +145,8 @@ export const SettingsModal = ({
           <OpenAISettings
             openaiApiKey={openaiApiKey}
             setOpenaiApiKey={setOpenaiApiKey}
+            openaiModel={openaiModel}
+            setOpenaiModel={setOpenaiModel}
             openaiBaseUrl={openaiBaseUrl}
             setOpenaiBaseUrl={setOpenaiBaseUrl}
             testingOpenAI={testingOpenAI}

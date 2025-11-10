@@ -93,7 +93,9 @@ export interface AppSettings {
   musicAssistantUrl: string;
   aiProvider: AIProvider;
   anthropicApiKey?: string;
+  anthropicModel?: string;
   openaiApiKey?: string;
+  openaiModel?: string;
   openaiBaseUrl?: string;
   customSystemPrompt?: string;
   temperature?: number;
@@ -104,7 +106,9 @@ export interface UpdateSettingsRequest {
   musicAssistantUrl?: string;
   aiProvider?: AIProvider;
   anthropicApiKey?: string;
+  anthropicModel?: string;
   openaiApiKey?: string;
+  openaiModel?: string;
   openaiBaseUrl?: string;
   customSystemPrompt?: string;
   temperature?: number;

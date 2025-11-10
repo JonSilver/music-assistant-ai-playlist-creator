@@ -42,6 +42,43 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
   const [trackFilter, setTrackFilter] = useState<'all' | 'matched' | 'unmatched'>('all')
   const [refinementPrompt, setRefinementPrompt] = useState('')
 
+  const matchTracksProgressively = useCallback(async (tracks: TrackMatch[]): Promise<void> => {
+    // Match tracks in parallel batches for better performance
+    const BATCH_SIZE = 5 // Match 5 tracks at a time
+
+    for (let batchStart = 0; batchStart < tracks.length; batchStart += BATCH_SIZE) {
+      const batchEnd = Math.min(batchStart + BATCH_SIZE, tracks.length)
+      const batchPromises: Promise<void>[] = []
+
+      for (let i = batchStart; i < batchEnd; i++) {
+        const track = tracks[i]
+
+        // Mark as actively matching
+        setGeneratedTracks(prev => prev.map((t, idx) => (idx === i ? { ...t, matching: true } : t)))
+
+        // Create promise for this track's matching
+        const matchPromise = api.matchTrack(track.suggestion).then(([err, matchedTrack]) => {
+          if (err === undefined && matchedTrack !== undefined) {
+            // Update this specific track with result and clear matching flag
+            setGeneratedTracks(prev =>
+              prev.map((t, idx) => (idx === i ? { ...matchedTrack, matching: false } : t))
+            )
+          } else {
+            // Mark as done matching even if error
+            setGeneratedTracks(prev =>
+              prev.map((t, idx) => (idx === i ? { ...t, matching: false } : t))
+            )
+          }
+        })
+
+        batchPromises.push(matchPromise)
+      }
+
+      // Wait for entire batch to complete before starting next batch
+      await Promise.all(batchPromises)
+    }
+  }, [])
+
   const generatePlaylist = useCallback(async (): Promise<void> => {
     if (prompt.trim().length === 0 || playlistName.trim().length === 0) {
       setError('Please provide both a prompt and playlist name')
@@ -74,42 +111,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
 
     // Match tracks progressively in the background
     void matchTracksProgressively(result.matches)
-  }, [prompt, playlistName, setError, onHistoryUpdate])
-
-  const matchTracksProgressively = useCallback(async (tracks: TrackMatch[]): Promise<void> => {
-    // Match tracks in parallel batches for better performance
-    const BATCH_SIZE = 5 // Match 5 tracks at a time
-
-    for (let batchStart = 0; batchStart < tracks.length; batchStart += BATCH_SIZE) {
-      const batchEnd = Math.min(batchStart + BATCH_SIZE, tracks.length)
-      const batchPromises: Array<Promise<void>> = []
-
-      for (let i = batchStart; i < batchEnd; i++) {
-        const track = tracks[i]
-
-        // Mark as actively matching
-        setGeneratedTracks(prev => prev.map((t, idx) => (idx === i ? { ...t, matching: true } : t)))
-
-        // Create promise for this track's matching
-        const matchPromise = api.matchTrack(track.suggestion).then(([err, matchedTrack]) => {
-          if (err === undefined && matchedTrack !== undefined) {
-            // Update this specific track with result and clear matching flag
-            setGeneratedTracks(prev =>
-              prev.map((t, idx) => (idx === i ? { ...matchedTrack, matching: false } : t))
-            )
-          } else {
-            // Mark as done matching even if error
-            setGeneratedTracks(prev => prev.map((t, idx) => (idx === i ? { ...t, matching: false } : t)))
-          }
-        })
-
-        batchPromises.push(matchPromise)
-      }
-
-      // Wait for entire batch to complete before starting next batch
-      await Promise.all(batchPromises)
-    }
-  }, [])
+  }, [prompt, playlistName, trackCount, setError, onHistoryUpdate, matchTracksProgressively])
 
   const createPlaylist = useCallback(async (): Promise<void> => {
     if (generatedTracks.length === 0) {
