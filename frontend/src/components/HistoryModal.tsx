@@ -21,13 +21,13 @@ export const HistoryModal = ({
       <div className="modal-box max-w-2xl">
         <h3 className="font-bold text-lg mb-4">Prompt History</h3>
 
-        {history.length === 0 ? (
+        {(history ?? []).length === 0 ? (
           <p className="text-center py-8 text-base-content/50">
             No history yet. Create your first playlist!
           </p>
         ) : (
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {history.map(item => (
+            {(history ?? []).map(item => (
               <div
                 key={item.id}
                 className="card bg-base-200 cursor-pointer hover:bg-base-300"
