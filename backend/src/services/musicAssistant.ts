@@ -2,12 +2,6 @@ import WebSocket from 'ws'
 import { attempt, attemptPromise } from '@jfdi/attempt'
 import type { MATrack } from '../../../shared/types.js'
 
-interface MAMessage {
-  message_id: string
-  command: string
-  [key: string]: unknown
-}
-
 interface MAResponse {
   message_id: string
   result?: unknown
@@ -17,8 +11,27 @@ interface MAResponse {
   }
 }
 
-interface MASearchResult {
-  items: MATrack[]
+interface MASearchResults {
+  artists: unknown[]
+  albums: unknown[]
+  tracks: MATrack[]
+  playlists: unknown[]
+  radio: unknown[]
+  podcasts?: unknown[]
+  audiobooks?: unknown[]
+}
+
+interface MAFavoritesResponse {
+  count: number
+  total: number
+  items: Array<{ name: string }>
+}
+
+interface MAPlaylist {
+  item_id: string
+  provider: string
+  name: string
+  uri: string
 }
 
 export class MusicAssistantClient {
@@ -71,13 +84,19 @@ export class MusicAssistantClient {
       return
     }
 
+    // Log the raw message to see actual structure
+    console.log('Raw MA message:', data.substring(0, 1000))
+
     const pending = this.pendingRequests.get(message.message_id)
 
     if (pending === undefined) return
 
     if (message.error !== undefined && message.error !== null) {
+      console.error('MA Error response:', message.error)
       pending.reject(new Error(message.error.message))
     } else {
+      const resultStr = message.result !== undefined ? JSON.stringify(message.result) : 'undefined'
+      console.log('MA Response for', message.message_id, ':', resultStr.substring(0, 500))
       pending.resolve(message.result)
     }
 
@@ -90,11 +109,13 @@ export class MusicAssistantClient {
     }
 
     const messageId = `msg_${this.messageId++}`
-    const message: MAMessage = {
+    const message = {
       message_id: messageId,
       command,
-      ...params
+      args: params ?? {}
     }
+
+    console.log('MA Command:', command, 'Full message:', JSON.stringify(message))
 
     return new Promise((resolve, reject) => {
       this.pendingRequests.set(messageId, { resolve: resolve as (value: unknown) => void, reject })
@@ -119,18 +140,28 @@ export class MusicAssistantClient {
   }
 
   async searchTracks(query: string, limit = 50): Promise<MATrack[]> {
-    const result = await this.sendCommand<MASearchResult>('music/search', {
+    const result = await this.sendCommand<MASearchResults>('music/search', {
       search_query: query,
       media_types: ['track'],
       limit
     })
 
-    return result.items
+    if (result === undefined || result === null) {
+      console.error('Search returned undefined/null result for query:', query)
+      return []
+    }
+
+    if (!result.tracks || !Array.isArray(result.tracks)) {
+      console.error('Search result missing tracks array. Result:', JSON.stringify(result))
+      return []
+    }
+
+    return result.tracks
   }
 
   async getFavoriteArtists(): Promise<string[]> {
     const [err, result] = await attemptPromise(async () => {
-      const response = await this.sendCommand<{ items: { name: string }[] }>('music/favorites', {
+      const response = await this.sendCommand<MAFavoritesResponse>('music/favorites', {
         media_type: 'artist'
       })
       return response.items.map(item => item.name)
@@ -150,17 +181,18 @@ export class MusicAssistantClient {
   }
 
   async createPlaylist(name: string, providerInstance?: string): Promise<string> {
-    const result = await this.sendCommand<{ playlist_id: string }>('music/playlist/create', {
+    const result = await this.sendCommand<MAPlaylist>('music/playlists/create_playlist', {
       name,
       provider_instance: providerInstance
     })
 
-    return result.playlist_id
+    // The response is a full Playlist object with item_id, uri, etc.
+    return result.item_id
   }
 
   async addTracksToPlaylist(playlistId: string, trackUris: string[]): Promise<void> {
-    await this.sendCommand('music/playlist/add_tracks', {
-      playlist_id: playlistId,
+    await this.sendCommand('music/playlists/add_playlist_tracks', {
+      db_playlist_id: playlistId,
       uris: trackUris
     })
   }

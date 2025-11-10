@@ -125,7 +125,12 @@ export const GeneratedTracksDisplay = ({
                       <td>{track.suggestion.artist}</td>
                       <td>{track.suggestion.album ?? '-'}</td>
                       <td>
-                        {track.matched ? (
+                        {track.matching === true ? (
+                          <span className="badge badge-warning gap-1">
+                            <span className="loading loading-spinner loading-xs"></span>
+                            Searching...
+                          </span>
+                        ) : track.matched ? (
                           <span className="badge badge-success gap-1">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"

@@ -42,14 +42,8 @@ export class PlaylistDatabase {
       )
     `)
 
-    // Insert default presets if table is empty
-    const count = this.db.prepare('SELECT COUNT(*) as count FROM preset_prompts').get() as {
-      count: number
-    }
-
-    if (count.count === 0) {
-      this.insertDefaultPresets()
-    }
+    // Always ensure default presets exist (insert or ignore)
+    this.insertDefaultPresets()
   }
 
   private insertDefaultPresets(): void {
@@ -93,11 +87,27 @@ export class PlaylistDatabase {
         prompt:
           'Create an epic road trip playlist with classic rock, alternative, and sing-along anthems. Mix of decades, feel-good vibes, great for long drives.',
         category: 'other'
+      },
+      {
+        id: 'peppy-classical',
+        name: 'Peppy Classical',
+        description: 'Upbeat and energetic classical pieces',
+        prompt:
+          'Create a lively classical playlist with energetic, upbeat orchestral pieces. Include fast movements from symphonies, concertos, and overtures. Think Vivaldi, Mozart, Rossini - bright, cheerful, and invigorating classical music.',
+        category: 'other'
+      },
+      {
+        id: 'dinner-party',
+        name: 'Dinner Party',
+        description: 'Sophisticated background music for entertaining',
+        prompt:
+          'Create an elegant dinner party playlist with sophisticated, conversation-friendly music. Include jazz standards, bossa nova, light classical, and smooth vocals. Classy and refined, perfect background ambiance for entertaining guests.',
+        category: 'other'
       }
     ]
 
     const stmt = this.db.prepare(`
-      INSERT INTO preset_prompts (id, name, description, prompt, category)
+      INSERT OR IGNORE INTO preset_prompts (id, name, description, prompt, category)
       VALUES (?, ?, ?, ?, ?)
     `)
 

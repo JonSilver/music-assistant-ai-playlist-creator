@@ -16,6 +16,7 @@ const API_BASE =
 
 interface ErrorResponse {
   error?: string
+  details?: string
 }
 
 const fetchJSON = async <T>(url: string, options?: RequestInit): Promise<T> => {
@@ -31,8 +32,10 @@ const fetchJSON = async <T>(url: string, options?: RequestInit): Promise<T> => {
     const [err, errorBody] = await attemptPromise<ErrorResponse>(
       async () => (await response.json()) as ErrorResponse
     )
-    const message =
-      err === undefined && errorBody.error !== undefined ? errorBody.error : response.statusText
+    let message = response.statusText
+    if (err === undefined && errorBody.error !== undefined) {
+      message = errorBody.details !== undefined ? errorBody.details : errorBody.error
+    }
     throw new Error(message)
   }
 
@@ -57,6 +60,14 @@ export const api = {
       fetchJSON('/playlist/generate', {
         method: 'POST',
         body: JSON.stringify(request)
+      })
+    ),
+
+  matchTrack: async (suggestion: { title: string; artist: string; album?: string }) =>
+    attemptPromise<TrackMatch>(async () =>
+      fetchJSON('/playlist/match-track', {
+        method: 'POST',
+        body: JSON.stringify({ suggestion })
       })
     ),
 

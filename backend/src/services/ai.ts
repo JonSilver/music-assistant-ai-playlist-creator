@@ -41,9 +41,9 @@ export class AIService {
       customPrompt ??
       `You are a music playlist curator assistant. Your job is to create thoughtful, cohesive playlists based on user descriptions.
 
-IMPORTANT: Return ONLY valid JSON in the exact format specified below. No other text.
+CRITICAL INSTRUCTION: You MUST respond with ONLY valid JSON. Do not include any text before or after the JSON. Do not use markdown code blocks. Do not add explanations. Start your response with { and end with }.
 
-Format your response as JSON:
+Required JSON format:
 {
   "tracks": [
     {
@@ -95,7 +95,7 @@ When appropriate, consider including tracks from these artists or similar artist
 
     const [err, result] = await attemptPromise(async () => {
       const response = await this.anthropic!.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-sonnet-4-5-20250929',
         max_tokens: 4096,
         temperature,
         system: systemPrompt,
@@ -158,10 +158,18 @@ When appropriate, consider including tracks from these artists or similar artist
   }
 
   private parseAIResponse(content: string): AIPlaylistResponse {
-    const [err, data] = attempt(() => JSON.parse(content) as AIPlaylistResponse)
+    // Try to extract JSON from markdown code blocks if present
+    let jsonContent = content.trim()
+    const jsonMatch = jsonContent.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/)
+    if (jsonMatch !== null) {
+      jsonContent = jsonMatch[1]
+    }
+
+    const [err, data] = attempt(() => JSON.parse(jsonContent) as AIPlaylistResponse)
 
     if (err !== undefined) {
-      throw new Error('Failed to parse AI response as JSON')
+      const preview = content.substring(0, 200)
+      throw new Error(`Failed to parse AI response as JSON. Response start: ${preview}`)
     }
 
     // Validate response structure

@@ -106,6 +106,10 @@ const App = (): React.JSX.Element => {
   const handleUsePreset = useCallback(
     (preset: PresetPrompt): void => {
       playlist.setPrompt(preset.prompt)
+      // Only set playlist name if it's currently empty
+      if (playlist.playlistName.trim().length === 0) {
+        playlist.setPlaylistName(preset.name)
+      }
     },
     [playlist]
   )

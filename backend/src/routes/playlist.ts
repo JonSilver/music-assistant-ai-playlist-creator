@@ -17,20 +17,25 @@ const matchTrack = async (
   suggestion: TrackSuggestion,
   maClient: MusicAssistantClient
 ): Promise<TrackMatch> => {
-  // Use Music Assistant's search to find the track
+  // Use Music Assistant's search - it's excellent, trust it
   const searchQuery = `${suggestion.title} ${suggestion.artist}`
+  console.log(`Searching for: "${searchQuery}"`)
   const searchResults = await maClient.searchTracks(searchQuery, 5)
 
+  console.log(`Search returned ${searchResults.length} results`)
   if (searchResults.length > 0) {
-    // Take the first result as the best match
+    const firstTrack = searchResults[0]
+    console.log(
+      `Matched: "${suggestion.title}" by "${suggestion.artist}" -> "${firstTrack.name}" by "${firstTrack.artists?.[0]?.name || 'unknown'}"`
+    )
     return {
       suggestion,
       matched: true,
-      maTrack: searchResults[0]
+      maTrack: firstTrack
     }
   }
 
-  // No match found
+  console.log(`No match found for: "${suggestion.title}" by "${suggestion.artist}"`)
   return {
     suggestion,
     matched: false
@@ -38,7 +43,7 @@ const matchTrack = async (
 }
 
 export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void => {
-  // Generate playlist suggestions
+  // Generate playlist suggestions (AI only, no matching yet)
   router.post('/playlist/generate', async (req: Request, res: Response) => {
     const request = req.body as CreatePlaylistRequest
 
@@ -57,12 +62,11 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         throw new Error('Music Assistant URL not configured')
       }
 
-      // Connect to Music Assistant
+      // Connect to Music Assistant briefly to get favorite artists
       const maClient = new MusicAssistantClient(maUrl)
       await maClient.connect()
-
-      // Get favorite artists for context
       const favoriteArtists = await maClient.getFavoriteArtists()
+      maClient.disconnect()
 
       // Get AI suggestions
       const aiService = new AIService(
@@ -78,27 +82,60 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         temperature
       })
 
-      // Match AI suggestions using Music Assistant search
-      const matches: TrackMatch[] = await Promise.all(
-        aiResponse.tracks.map(suggestion => matchTrack(suggestion, maClient))
-      )
-
-      maClient.disconnect()
+      // Return unmatched tracks immediately with matching state
+      const matches: TrackMatch[] = aiResponse.tracks.map(suggestion => ({
+        suggestion,
+        matched: false,
+        matching: true
+      }))
 
       const response: CreatePlaylistResponse = {
         success: true,
         playlistName: request.playlistName ?? 'AI Generated Playlist',
         matches,
         totalSuggested: matches.length,
-        totalMatched: matches.filter(m => m.matched).length
+        totalMatched: 0
       }
 
       return response
     })
 
     if (err !== undefined) {
+      console.error('Playlist generation error:', err)
       res.status(500).json({
         error: 'Failed to generate playlist',
+        details: err.message
+      })
+      return
+    }
+
+    res.json(result)
+  })
+
+  // Match a single track
+  router.post('/playlist/match-track', async (req: Request, res: Response) => {
+    const { suggestion } = req.body as { suggestion: TrackSuggestion }
+
+    const [err, result] = await attemptPromise(async () => {
+      const maUrl = db.getSetting('musicAssistantUrl')
+      if (maUrl === null || maUrl.length === 0) {
+        throw new Error('Music Assistant URL not configured')
+      }
+
+      const maClient = new MusicAssistantClient(maUrl)
+      await maClient.connect()
+
+      const match = await matchTrack(suggestion, maClient)
+
+      maClient.disconnect()
+
+      return match
+    })
+
+    if (err !== undefined) {
+      console.error('Track matching error:', err)
+      res.status(500).json({
+        error: 'Failed to match track',
         details: err.message
       })
       return

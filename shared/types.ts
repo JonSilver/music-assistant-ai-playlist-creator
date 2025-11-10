@@ -34,6 +34,7 @@ export interface TrackMatch {
   matched: boolean;
   maTrack?: MATrack;
   confidence?: number;
+  matching?: boolean; // True while search is in progress
 }
 
 // Playlist creation request

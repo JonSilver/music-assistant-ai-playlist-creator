@@ -25,6 +25,8 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
     const response: GetSettingsResponse = {
       musicAssistantUrl,
       aiProvider,
+      anthropicApiKey: anthropicKey ?? undefined,
+      openaiApiKey: openaiKey ?? undefined,
       openaiBaseUrl: openaiBaseUrl ?? undefined,
       customSystemPrompt: customSystemPrompt ?? undefined,
       temperature,

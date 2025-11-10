@@ -34,7 +34,7 @@ app.use(
     origin: process.env.FRONTEND_URL ?? `http://localhost:${frontendPort}`
   })
 )
-app.use(express.json())
+app.use(express.json({ limit: '10mb' })) // Increase payload limit for large playlists
 
 // API router
 const apiRouter = express.Router()

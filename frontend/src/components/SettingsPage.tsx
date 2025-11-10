@@ -1,7 +1,7 @@
 import React from 'react'
-import { TestResultDisplay } from './TestResultDisplay'
 import { AnthropicSettings } from './AnthropicSettings'
 import { OpenAISettings } from './OpenAISettings'
+import { TestResultDisplay } from './TestResultDisplay'
 
 interface TestResult {
   success: boolean
@@ -88,7 +88,7 @@ export const SettingsPage = ({
               <span className="label-text-alt">WebSocket URL of your Music Assistant server</span>
             </label>
             <button
-              className="btn btn-sm btn-outline mt-2"
+              className="btn btn-sm btn-outline mt-2 test-btn"
               onClick={() => {
                 void testMA()
               }}
