@@ -2,7 +2,7 @@ import React from 'react'
 import type { PresetPrompt } from '../../../shared/types'
 
 interface PresetPromptsProps {
-  presets: PresetPrompt[] | undefined
+  presets: PresetPrompt[]
   onSelectPreset: (preset: PresetPrompt) => void
 }
 
@@ -11,7 +11,7 @@ export const PresetPrompts = ({ presets, onSelectPreset }: PresetPromptsProps): 
     <div className="card-body">
       <h2 className="card-title">Quick Presets</h2>
       <div className="flex flex-wrap gap-2">
-        {(presets ?? []).map(preset => (
+        {presets.map(preset => (
           <button
             key={preset.id}
             className="btn btn-sm btn-outline"
