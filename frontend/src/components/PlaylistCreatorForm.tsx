@@ -1,14 +1,17 @@
 import React from 'react';
+import type { AIProviderConfig } from '@shared/types';
 
 interface PlaylistCreatorFormProps {
     playlistName: string;
     prompt: string;
     trackCount: string;
     generating: boolean;
-    aiProvider: 'claude' | 'openai';
+    providers: AIProviderConfig[];
+    selectedProviderId: string | null;
     onPlaylistNameChange: (value: string) => void;
     onPromptChange: (value: string) => void;
     onTrackCountChange: (value: string) => void;
+    onProviderChange: (providerId: string) => void;
     onGenerate: () => void;
 }
 
@@ -17,18 +20,42 @@ export const PlaylistCreatorForm = ({
     prompt,
     trackCount,
     generating,
-    aiProvider,
+    providers,
+    selectedProviderId,
     onPlaylistNameChange,
     onPromptChange,
     onTrackCountChange,
+    onProviderChange,
     onGenerate
 }: PlaylistCreatorFormProps): React.JSX.Element => {
-    const aiProviderName = aiProvider === 'claude' ? 'Claude' : 'OpenAI';
+    const selectedProvider = providers.find(p => p.id === selectedProviderId);
+    const providerName = selectedProvider?.name ?? 'AI';
 
     return (
         <div className="card bg-base-100 shadow-xl mb-4">
             <div className="card-body">
-                <h2 className="card-title">Create Playlist using {aiProviderName}</h2>
+                <h2 className="card-title">Create Playlist</h2>
+
+                {providers.length > 1 && (
+                    <div className="form-control">
+                        <label className="label">
+                            <span className="label-text">AI Provider</span>
+                        </label>
+                        <select
+                            className="select select-bordered w-full"
+                            value={selectedProviderId ?? ''}
+                            onChange={e => {
+                                onProviderChange(e.target.value);
+                            }}
+                        >
+                            {providers.map(provider => (
+                                <option key={provider.id} value={provider.id}>
+                                    {provider.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
 
                 <div className="flex gap-4">
                     <div className="form-control flex-1">
@@ -85,11 +112,12 @@ export const PlaylistCreatorForm = ({
                         disabled={
                             generating ||
                             prompt.trim().length === 0 ||
-                            playlistName.trim().length === 0
+                            playlistName.trim().length === 0 ||
+                            providers.length === 0
                         }
                     >
                         {generating && <span className="loading loading-spinner"></span>}
-                        {generating ? `Generating with ${aiProviderName}...` : 'Generate Playlist'}
+                        {generating ? `Generating with ${providerName}...` : 'Generate Playlist'}
                     </button>
                 </div>
             </div>

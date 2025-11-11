@@ -7,6 +7,7 @@ import { mkdirSync } from 'fs';
 import { PlaylistDatabase } from './db/schema.js';
 import { setupSettingsRoutes } from './routes/settings.js';
 import { setupPromptsRoutes } from './routes/prompts.js';
+import modelsRouter from './routes/models.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,6 +42,7 @@ const apiRouter = express.Router();
 // Setup routes
 setupSettingsRoutes(apiRouter, db);
 setupPromptsRoutes(apiRouter, db);
+apiRouter.use('/models', modelsRouter);
 
 // Health check
 apiRouter.get('/health', (_req, res) => {

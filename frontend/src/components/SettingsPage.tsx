@@ -1,43 +1,36 @@
 import React, { useState } from 'react';
-import type { useSettingsForm } from '../hooks/useSettingsForm';
-import { AnthropicSettings } from './AnthropicSettings';
-import { OpenAISettings } from './OpenAISettings';
+import type { AIProviderConfig } from '../../../shared/types';
+import { ProvidersManager } from './ProvidersManager';
 import { TestResultDisplay } from './TestResultDisplay';
 import { DefaultSystemPromptModal } from './DefaultSystemPromptModal';
 
-// Derive props type from the hook - no more duplication!
-type SettingsPageProps = ReturnType<typeof useSettingsForm> & {
+interface SettingsPageProps {
+    musicAssistantUrl: string;
+    setMusicAssistantUrl: (value: string) => void;
+    aiProviders: AIProviderConfig[];
+    setAiProviders: (value: AIProviderConfig[]) => void;
+    customSystemPrompt: string;
+    setCustomSystemPrompt: (value: string) => void;
+    testingMA: boolean;
+    testResults: {
+        ma?: { success: boolean; error?: string };
+    };
+    testMA: () => Promise<void>;
     onSave: () => void;
     onCancel?: () => void;
     showCancel: boolean;
-};
+}
 
 export const SettingsPage = ({
     musicAssistantUrl,
     setMusicAssistantUrl,
-    aiProvider,
-    setAiProvider,
-    anthropicApiKey,
-    setAnthropicApiKey,
-    anthropicModel,
-    setAnthropicModel,
-    openaiApiKey,
-    setOpenaiApiKey,
-    openaiModel,
-    setOpenaiModel,
-    openaiBaseUrl,
-    setOpenaiBaseUrl,
+    aiProviders,
+    setAiProviders,
     customSystemPrompt,
     setCustomSystemPrompt,
-    temperature,
-    setTemperature,
     testingMA,
-    testingAnthropic,
-    testingOpenAI,
     testResults,
     testMA,
-    testAnthropic,
-    testOpenAI,
     onSave,
     onCancel,
     showCancel
@@ -91,72 +84,11 @@ export const SettingsPage = ({
                             />
                         </div>
 
-                        <div className="form-control mb-4">
-                            <label className="label">
-                                <span className="label-text">AI Provider</span>
-                            </label>
-                            <select
-                                className="select select-bordered w-full"
-                                value={aiProvider}
-                                onChange={e => {
-                                    setAiProvider(e.target.value as 'claude' | 'openai');
-                                }}
-                            >
-                                <option value="claude">Claude (Anthropic)</option>
-                                <option value="openai">OpenAI</option>
-                            </select>
-                        </div>
-
-                        {aiProvider === 'claude' && (
-                            <AnthropicSettings
-                                anthropicApiKey={anthropicApiKey}
-                                setAnthropicApiKey={setAnthropicApiKey}
-                                anthropicModel={anthropicModel}
-                                setAnthropicModel={setAnthropicModel}
-                                testingAnthropic={testingAnthropic}
-                                testResults={testResults}
-                                testAnthropic={testAnthropic}
-                            />
-                        )}
-
-                        {aiProvider === 'openai' && (
-                            <OpenAISettings
-                                openaiApiKey={openaiApiKey}
-                                setOpenaiApiKey={setOpenaiApiKey}
-                                openaiModel={openaiModel}
-                                setOpenaiModel={setOpenaiModel}
-                                openaiBaseUrl={openaiBaseUrl}
-                                setOpenaiBaseUrl={setOpenaiBaseUrl}
-                                testingOpenAI={testingOpenAI}
-                                testResults={testResults}
-                                testOpenAI={testOpenAI}
-                            />
-                        )}
-
                         <div className="divider"></div>
 
-                        <div className="form-control mb-4">
-                            <label className="label">
-                                <span className="label-text">Temperature</span>
-                            </label>
-                            <input
-                                type="number"
-                                min="0"
-                                max="2"
-                                step="0.1"
-                                placeholder="1.0"
-                                className="input input-bordered w-full"
-                                value={temperature}
-                                onChange={e => {
-                                    setTemperature(e.target.value);
-                                }}
-                            />
-                            <label className="label">
-                                <span className="label-text-alt">
-                                    Controls randomness (0 = focused, 2 = creative). Default: 1.0
-                                </span>
-                            </label>
-                        </div>
+                        <ProvidersManager providers={aiProviders} onChange={setAiProviders} />
+
+                        <div className="divider"></div>
 
                         <div className="form-control mb-4">
                             <label className="label">

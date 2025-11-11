@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { attemptPromise } from '@jfdi/attempt';
 import { useAlerts } from './useAlerts';
-import { useSettings } from '../contexts/AppContext';
+import { useApp } from '../contexts/AppContext';
 import { useTrackReplace } from './useTrackReplace';
 import { matchTracksProgressively } from '../services/trackMatching';
 import { generatePlaylist as generatePlaylistService } from '../services/playlistGenerator';
@@ -40,7 +40,7 @@ interface UsePlaylistReturn {
 
 export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
     const { setError, setSuccess } = useAlerts();
-    const { settings } = useSettings();
+    const { settings, selectedProviderId } = useApp();
     const [prompt, setPrompt] = useState('');
     const [playlistName, setPlaylistName] = useState('');
     const [trackCount, setTrackCount] = useState('25');
@@ -57,6 +57,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         prompt,
         playlistName,
         settings,
+        selectedProviderId,
         setGeneratedTracks,
         setError
     );
@@ -67,16 +68,21 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
             return;
         }
 
-        if (settings.musicAssistantUrl.trim().length === 0) {
+        if (settings === null || settings.musicAssistantUrl.trim().length === 0) {
             setError('Music Assistant URL not configured');
             return;
         }
 
-        const aiProvider = settings.aiProvider;
-        const apiKey = aiProvider === 'claude' ? settings.anthropicApiKey : settings.openaiApiKey;
+        if (settings.aiProviders.length === 0) {
+            setError('No AI providers configured');
+            return;
+        }
 
-        if (apiKey === null || apiKey === undefined || apiKey.trim().length === 0) {
-            setError(`${aiProvider === 'claude' ? 'Anthropic' : 'OpenAI'} API key not configured`);
+        const providerId = selectedProviderId ?? settings.aiProviders[0].id;
+        const providerConfig = settings.aiProviders.find(p => p.id === providerId);
+
+        if (providerConfig === undefined) {
+            setError('Selected AI provider not found');
             return;
         }
 
@@ -88,12 +94,8 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
                 prompt,
                 trackCount,
                 musicAssistantUrl: settings.musicAssistantUrl,
-                aiProvider,
-                apiKey,
-                model: aiProvider === 'claude' ? settings.anthropicModel : settings.openaiModel,
-                baseUrl: aiProvider === 'openai' ? settings.openaiBaseUrl : undefined,
-                customSystemPrompt: settings.customSystemPrompt,
-                temperature: settings.temperature
+                providerConfig,
+                customSystemPrompt: settings.customSystemPrompt
             })
         );
 
@@ -113,7 +115,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
             setGeneratedTracks,
             setError
         );
-    }, [prompt, playlistName, trackCount, settings, setError, onHistoryUpdate]);
+    }, [prompt, playlistName, trackCount, settings, selectedProviderId, setError, onHistoryUpdate]);
 
     const createPlaylist = useCallback(async (): Promise<void> => {
         if (generatedTracks.length === 0) {
@@ -121,7 +123,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
             return;
         }
 
-        if (settings.musicAssistantUrl.trim().length === 0) {
+        if (settings === null || settings.musicAssistantUrl.trim().length === 0) {
             setError('Music Assistant URL not configured');
             return;
         }
@@ -145,7 +147,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         setPrompt('');
         setPlaylistName('');
         setGeneratedTracks([]);
-    }, [generatedTracks, playlistName, settings.musicAssistantUrl, setError, setSuccess]);
+    }, [generatedTracks, playlistName, settings, setError, setSuccess]);
 
     const refinePlaylist = useCallback(async (): Promise<void> => {
         if (refinementPrompt.trim().length === 0) {
@@ -153,16 +155,21 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
             return;
         }
 
-        if (settings.musicAssistantUrl.trim().length === 0) {
+        if (settings === null || settings.musicAssistantUrl.trim().length === 0) {
             setError('Music Assistant URL not configured');
             return;
         }
 
-        const aiProvider = settings.aiProvider;
-        const apiKey = aiProvider === 'claude' ? settings.anthropicApiKey : settings.openaiApiKey;
+        if (settings.aiProviders.length === 0) {
+            setError('No AI providers configured');
+            return;
+        }
 
-        if (apiKey === null || apiKey === undefined || apiKey.trim().length === 0) {
-            setError(`${aiProvider === 'claude' ? 'Anthropic' : 'OpenAI'} API key not configured`);
+        const providerId = selectedProviderId ?? settings.aiProviders[0].id;
+        const providerConfig = settings.aiProviders.find(p => p.id === providerId);
+
+        if (providerConfig === undefined) {
+            setError('Selected AI provider not found');
             return;
         }
 
@@ -173,12 +180,8 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
                 refinementPrompt,
                 generatedTracks,
                 settings.musicAssistantUrl,
-                aiProvider,
-                apiKey,
-                aiProvider === 'claude' ? settings.anthropicModel : settings.openaiModel,
-                aiProvider === 'openai' ? settings.openaiBaseUrl : undefined,
-                settings.customSystemPrompt,
-                settings.temperature
+                providerConfig,
+                settings.customSystemPrompt
             )
         );
 
@@ -198,12 +201,12 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
             setGeneratedTracks,
             setError
         );
-    }, [refinementPrompt, generatedTracks, settings, setError]);
+    }, [refinementPrompt, generatedTracks, settings, selectedProviderId, setError]);
 
     const retryTrack = useCallback(
         async (index: number): Promise<void> => {
             const track = generatedTracks[index];
-            if (track === undefined) return;
+            if (track === undefined || settings === null) return;
 
             setRetryingTrackIndex(index);
             setGeneratedTracks(prev => {
@@ -228,7 +231,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
 
             setRetryingTrackIndex(null);
         },
-        [generatedTracks, settings.musicAssistantUrl, setError]
+        [generatedTracks, settings, setError]
     );
 
     const removeTrack = useCallback((index: number): void => {

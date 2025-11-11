@@ -10,8 +10,12 @@ export {
   type UpdateSettingsRequest,
   type GetSettingsResponse,
   type AIProvider,
+  type AIProviderConfig,
+  type ProviderType,
   type SettingKey,
   AI_PROVIDERS,
+  PROVIDER_TYPES,
+  AIProviderConfigSchema,
   AppSettingsSchema,
   UpdateSettingsRequestSchema,
   GetSettingsResponseSchema,
@@ -63,7 +67,7 @@ export type TrackMatch = z.infer<typeof TrackMatchSchema>
 export const CreatePlaylistRequestSchema = z.object({
   prompt: z.string(),
   playlistName: z.string().optional(),
-  provider: z.enum(['claude', 'openai']).optional(),
+  providerId: z.string().optional(),
   trackCount: z.number().optional()
 })
 export type CreatePlaylistRequest = z.infer<typeof CreatePlaylistRequestSchema>
@@ -85,7 +89,7 @@ export const RefinePlaylistRequestSchema = z.object({
   originalPrompt: z.string(),
   refinementPrompt: z.string(),
   currentTracks: z.array(TrackMatchSchema),
-  provider: z.enum(['claude', 'openai']).optional()
+  providerId: z.string().optional()
 })
 export type RefinePlaylistRequest = z.infer<typeof RefinePlaylistRequestSchema>
 

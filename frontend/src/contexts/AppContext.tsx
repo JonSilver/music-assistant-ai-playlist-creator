@@ -9,6 +9,8 @@ interface AppContextType {
     error: string | null;
     updateSettings: (updates: UpdateSettingsRequest) => Promise<Error | undefined>;
     refreshSettings: () => Promise<void>;
+    selectedProviderId: string | null;
+    setSelectedProviderId: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -17,6 +19,21 @@ export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.El
     const [settings, setSettings] = useState<GetSettingsResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedProviderId, setSelectedProviderIdState] = useState<string | null>(null);
+
+    // Load last selected provider from localStorage on mount
+    useEffect(() => {
+        const stored = localStorage.getItem('selectedProviderId');
+        if (stored !== null) {
+            setSelectedProviderIdState(stored);
+        }
+    }, []);
+
+    // Persist to localStorage when changed
+    const setSelectedProviderId = (id: string): void => {
+        setSelectedProviderIdState(id);
+        localStorage.setItem('selectedProviderId', id);
+    };
 
     const refreshSettings = async (): Promise<void> => {
         setLoading(true);
@@ -28,6 +45,11 @@ export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.El
             setError(err.message);
         } else {
             setSettings(result);
+            // If no provider selected yet and providers exist, select the first one
+            const providers = result.aiProviders;
+            if (selectedProviderId === null && providers.length > 0) {
+                setSelectedProviderId(providers[0].id);
+            }
         }
 
         setLoading(false);
@@ -50,7 +72,17 @@ export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.El
     }, []);
 
     return (
-        <AppContext.Provider value={{ settings, loading, error, updateSettings, refreshSettings }}>
+        <AppContext.Provider
+            value={{
+                settings,
+                loading,
+                error,
+                updateSettings,
+                refreshSettings,
+                selectedProviderId,
+                setSelectedProviderId
+            }}
+        >
             {children}
         </AppContext.Provider>
     );
@@ -69,16 +101,8 @@ export const useSettings = (): { settings: GetSettingsResponse } => {
     return {
         settings: settings ?? {
             musicAssistantUrl: '',
-            aiProvider: 'claude',
-            anthropicApiKey: undefined,
-            anthropicModel: undefined,
-            openaiApiKey: undefined,
-            openaiModel: undefined,
-            openaiBaseUrl: undefined,
-            customSystemPrompt: undefined,
-            temperature: undefined,
-            hasAnthropicKey: false,
-            hasOpenAIKey: false
+            aiProviders: [],
+            customSystemPrompt: undefined
         }
     };
 };

@@ -13,7 +13,8 @@ export const useTrackReplace = (
     generatedTracks: TrackMatch[],
     prompt: string,
     playlistName: string,
-    settings: GetSettingsResponse,
+    settings: GetSettingsResponse | null,
+    selectedProviderId: string | null,
     setGeneratedTracks: (tracks: TrackMatch[]) => void,
     setError: (message: string) => void
 ): UseTrackReplaceReturn => {
@@ -21,14 +22,21 @@ export const useTrackReplace = (
 
     const replaceTrack = useCallback(
         async (index: number): Promise<void> => {
-            const aiProvider = settings.aiProvider;
-            const apiKey =
-                aiProvider === 'claude' ? settings.anthropicApiKey : settings.openaiApiKey;
+            if (settings === null) {
+                setError('Settings not loaded');
+                return;
+            }
 
-            if (apiKey === undefined || apiKey.trim().length === 0) {
-                setError(
-                    `${aiProvider === 'claude' ? 'Anthropic' : 'OpenAI'} API key not configured`
-                );
+            if (settings.aiProviders.length === 0) {
+                setError('No AI providers configured');
+                return;
+            }
+
+            const providerId = selectedProviderId ?? settings.aiProviders[0].id;
+            const providerConfig = settings.aiProviders.find(p => p.id === providerId);
+
+            if (providerConfig === undefined) {
+                setError('Selected AI provider not found');
                 return;
             }
 
@@ -43,12 +51,8 @@ export const useTrackReplace = (
                     prompt,
                     playlistName,
                     settings.musicAssistantUrl,
-                    aiProvider,
-                    apiKey,
-                    aiProvider === 'claude' ? settings.anthropicModel : settings.openaiModel,
-                    aiProvider === 'openai' ? settings.openaiBaseUrl : undefined,
-                    settings.customSystemPrompt,
-                    settings.temperature
+                    providerConfig,
+                    settings.customSystemPrompt
                 )
             );
 
@@ -78,7 +82,15 @@ export const useTrackReplace = (
                 setError
             );
         },
-        [generatedTracks, prompt, playlistName, settings, setError, setGeneratedTracks]
+        [
+            generatedTracks,
+            prompt,
+            playlistName,
+            settings,
+            selectedProviderId,
+            setError,
+            setGeneratedTracks
+        ]
     );
 
     return { replacingTrackIndex, replaceTrack };

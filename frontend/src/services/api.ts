@@ -38,6 +38,15 @@ const fetchJSON = async <T>(url: string, options?: RequestInit): Promise<T> => {
     return (await response.json()) as T;
 };
 
+interface ModelOption {
+    value: string;
+    label: string;
+}
+
+interface ModelsResponse {
+    models: ModelOption[];
+}
+
 export const api = {
     // Settings
     getSettings: async () =>
@@ -56,5 +65,20 @@ export const api = {
         attemptPromise<{ history: PromptHistory[] }>(async () => fetchJSON('/prompts/history')),
 
     getPresetPrompts: async () =>
-        attemptPromise<{ presets: PresetPrompt[] }>(async () => fetchJSON('/prompts/presets'))
+        attemptPromise<{ presets: PresetPrompt[] }>(async () => fetchJSON('/prompts/presets')),
+
+    // Models
+    getAnthropicModels: async (apiKey: string) =>
+        attemptPromise<ModelsResponse>(async () =>
+            fetchJSON(`/models/anthropic?apiKey=${encodeURIComponent(apiKey)}`)
+        ),
+
+    getOpenAIModels: async (apiKey: string, baseUrl?: string) =>
+        attemptPromise<ModelsResponse>(async () => {
+            const params = new URLSearchParams({ apiKey });
+            if (baseUrl !== undefined && baseUrl.trim() !== '') {
+                params.append('baseUrl', baseUrl);
+            }
+            return fetchJSON(`/models/openai?${params.toString()}`);
+        })
 };

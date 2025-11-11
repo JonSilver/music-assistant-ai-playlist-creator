@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import { attempt, attemptPromise } from '@jfdi/attempt';
 import {
-    type AIProvider,
+    type AIProviderConfig,
     type AIPlaylistResponse,
     AIPlaylistResponseSchema
 } from '../../../shared/types.js';
@@ -10,27 +10,30 @@ import {
 interface AIPlaylistRequest {
     prompt: string;
     favoriteArtists?: string[];
-    provider: AIProvider;
-    model?: string;
+    providerConfig: AIProviderConfig;
     customSystemPrompt?: string;
-    temperature?: number;
     trackCount?: number;
 }
 
 export class AIService {
-    private anthropic: Anthropic | null = null;
-    private openai: OpenAI | null = null;
+    // No static clients - create per-request based on provider config
+    constructor() {}
 
-    constructor(anthropicKey?: string, openaiKey?: string, openaiBaseUrl?: string) {
-        if (anthropicKey !== undefined) {
-            this.anthropic = new Anthropic({ apiKey: anthropicKey });
+    private getAnthropicClient(config: AIProviderConfig): Anthropic {
+        if (config.type !== 'anthropic') {
+            throw new Error('Provider is not Anthropic type');
         }
-        if (openaiKey !== undefined) {
-            this.openai = new OpenAI({
-                apiKey: openaiKey,
-                baseURL: openaiBaseUrl
-            });
+        return new Anthropic({ apiKey: config.apiKey });
+    }
+
+    private getOpenAIClient(config: AIProviderConfig): OpenAI {
+        if (config.type !== 'openai-compatible') {
+            throw new Error('Provider is not OpenAI-compatible type');
         }
+        return new OpenAI({
+            apiKey: config.apiKey,
+            baseURL: config.baseUrl
+        });
     }
 
     private buildSystemPrompt(
@@ -85,28 +88,31 @@ ${countGuideline}
             request.customSystemPrompt,
             request.trackCount
         );
-        const temperature = request.temperature ?? 1.0;
-        const model = request.model;
+        const { providerConfig } = request;
+        const temperature = providerConfig.temperature ?? 1.0;
 
-        if (request.provider === 'claude') {
-            return this.generateWithClaude(request.prompt, systemPrompt, temperature, model);
+        if (providerConfig.type === 'anthropic') {
+            return this.generateWithClaude(
+                request.prompt,
+                systemPrompt,
+                temperature,
+                providerConfig
+            );
         }
-        return this.generateWithOpenAI(request.prompt, systemPrompt, temperature, model);
+        return this.generateWithOpenAI(request.prompt, systemPrompt, temperature, providerConfig);
     }
 
     private async generateWithClaude(
         userPrompt: string,
         systemPrompt: string,
         temperature: number,
-        model?: string
+        config: AIProviderConfig
     ): Promise<AIPlaylistResponse> {
-        if (this.anthropic === null) {
-            throw new Error('Claude API key not configured');
-        }
+        const client = this.getAnthropicClient(config);
 
         const [err, result] = await attemptPromise(async () => {
-            const response = await this.anthropic!.messages.create({
-                model: model ?? 'claude-sonnet-4-5-20250929',
+            const response = await client.messages.create({
+                model: config.model,
                 max_tokens: 4096,
                 temperature,
                 system: systemPrompt,
@@ -137,15 +143,13 @@ ${countGuideline}
         userPrompt: string,
         systemPrompt: string,
         temperature: number,
-        model?: string
+        config: AIProviderConfig
     ): Promise<AIPlaylistResponse> {
-        if (this.openai === null) {
-            throw new Error('OpenAI API key not configured');
-        }
+        const client = this.getOpenAIClient(config);
 
         const [err, result] = await attemptPromise(async () => {
-            const response = await this.openai!.chat.completions.create({
-                model: model ?? 'gpt-4-turbo-preview',
+            const response = await client.chat.completions.create({
+                model: config.model,
                 temperature,
                 messages: [
                     { role: 'system', content: systemPrompt },

@@ -6,9 +6,26 @@
 import { z } from 'zod';
 
 // Setting field types
-export type SettingFieldType = 'string' | 'number' | 'boolean' | 'enum';
+export type SettingFieldType = 'string' | 'number' | 'boolean' | 'enum' | 'providers';
 
-// Define available AI providers as const for type inference
+// Provider types
+export const PROVIDER_TYPES = ['anthropic', 'openai-compatible'] as const;
+export type ProviderType = typeof PROVIDER_TYPES[number];
+
+// AI Provider Configuration
+export const AIProviderConfigSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.enum(PROVIDER_TYPES),
+  apiKey: z.string(),
+  model: z.string(),
+  baseUrl: z.string().optional(),
+  temperature: z.number().min(0).max(2).optional()
+});
+
+export type AIProviderConfig = z.infer<typeof AIProviderConfigSchema>;
+
+// Legacy provider enum (deprecated but kept for backwards compatibility)
 export const AI_PROVIDERS = ['claude', 'openai'] as const;
 export type AIProvider = typeof AI_PROVIDERS[number];
 
@@ -54,11 +71,21 @@ interface EnumSettingField<T extends readonly string[]> extends BaseSettingField
   zodSchema: z.ZodEnum<any> | z.ZodOptional<z.ZodEnum<any>>;
 }
 
+interface ProvidersSettingField extends BaseSettingField<'providers', AIProviderConfig[]> {
+  type: 'providers';
+  zodSchema: z.ZodArray<typeof AIProviderConfigSchema>;
+  dbTransform: {
+    serialize: (value: AIProviderConfig[]) => string;
+    deserialize: (value: string | null) => AIProviderConfig[] | undefined;
+  };
+}
+
 type SettingField =
   | StringSettingField
   | NumberSettingField
   | BooleanSettingField
-  | EnumSettingField<readonly string[]>;
+  | EnumSettingField<readonly string[]>
+  | ProvidersSettingField;
 
 // Settings configuration - SINGLE SOURCE OF TRUTH
 export const SETTINGS_FIELDS = {
@@ -70,70 +97,31 @@ export const SETTINGS_FIELDS = {
     zodSchema: z.string()
   } satisfies StringSettingField,
 
-  aiProvider: {
-    key: 'aiProvider',
-    type: 'enum',
-    values: AI_PROVIDERS,
+  aiProviders: {
+    key: 'aiProviders',
+    type: 'providers',
     optional: false,
-    defaultValue: 'claude' as const,
-    zodSchema: z.enum(AI_PROVIDERS)
-  } satisfies EnumSettingField<typeof AI_PROVIDERS>,
-
-  anthropicApiKey: {
-    key: 'anthropicApiKey',
-    type: 'string',
-    optional: true,
-    zodSchema: z.string().optional()
-  } satisfies StringSettingField,
-
-  anthropicModel: {
-    key: 'anthropicModel',
-    type: 'string',
-    optional: true,
-    defaultValue: 'claude-sonnet-4-5-20250929',
-    zodSchema: z.string().optional()
-  } satisfies StringSettingField,
-
-  openaiApiKey: {
-    key: 'openaiApiKey',
-    type: 'string',
-    optional: true,
-    zodSchema: z.string().optional()
-  } satisfies StringSettingField,
-
-  openaiModel: {
-    key: 'openaiModel',
-    type: 'string',
-    optional: true,
-    defaultValue: 'gpt-4-turbo-preview',
-    zodSchema: z.string().optional()
-  } satisfies StringSettingField,
-
-  openaiBaseUrl: {
-    key: 'openaiBaseUrl',
-    type: 'string',
-    optional: true,
-    zodSchema: z.string().optional()
-  } satisfies StringSettingField,
+    defaultValue: [],
+    zodSchema: z.array(AIProviderConfigSchema),
+    dbTransform: {
+      serialize: (value: AIProviderConfig[]) => JSON.stringify(value),
+      deserialize: (value: string | null) => {
+        if (value === null || value === '') return [];
+        try {
+          return JSON.parse(value) as AIProviderConfig[];
+        } catch {
+          return [];
+        }
+      }
+    }
+  } satisfies ProvidersSettingField,
 
   customSystemPrompt: {
     key: 'customSystemPrompt',
     type: 'string',
     optional: true,
     zodSchema: z.string().optional()
-  } satisfies StringSettingField,
-
-  temperature: {
-    key: 'temperature',
-    type: 'number',
-    optional: true,
-    defaultValue: 1.0,
-    zodSchema: z.number().optional(),
-    dbTransform: {
-      serialize: (value: number) => value.toString(),
-      deserialize: (value: string | null) => value !== null ? parseFloat(value) : undefined
-    }
-  } satisfies NumberSettingField
+  } satisfies StringSettingField
 } as const;
 
 // Type inference from schema
@@ -145,20 +133,24 @@ type InferFieldValue<F extends SettingField> =
   F extends { optional: true }
     ? F extends { defaultValue: infer D }
       ? D | undefined
+      : F extends ProvidersSettingField
+        ? AIProviderConfig[] | undefined
+        : F extends EnumSettingField<infer T>
+          ? T[number] | undefined
+          : F extends NumberSettingField
+            ? number | undefined
+            : F extends BooleanSettingField
+              ? boolean | undefined
+              : string | undefined
+    : F extends ProvidersSettingField
+      ? AIProviderConfig[]
       : F extends EnumSettingField<infer T>
-        ? T[number] | undefined
+        ? T[number]
         : F extends NumberSettingField
-          ? number | undefined
+          ? number
           : F extends BooleanSettingField
-            ? boolean | undefined
-            : string | undefined
-    : F extends EnumSettingField<infer T>
-      ? T[number]
-      : F extends NumberSettingField
-        ? number
-        : F extends BooleanSettingField
-          ? boolean
-          : string;
+            ? boolean
+            : string;
 
 // Derive AppSettings type from schema
 export type AppSettings = {
@@ -173,38 +165,20 @@ export type UpdateSettingsRequest = {
 // Build Zod schemas directly - type inference handles the rest
 export const AppSettingsSchema = z.object({
   musicAssistantUrl: z.string(),
-  aiProvider: z.enum(AI_PROVIDERS),
-  anthropicApiKey: z.string().optional(),
-  anthropicModel: z.string().optional(),
-  openaiApiKey: z.string().optional(),
-  openaiModel: z.string().optional(),
-  openaiBaseUrl: z.string().optional(),
-  customSystemPrompt: z.string().optional(),
-  temperature: z.number().optional()
+  aiProviders: z.array(AIProviderConfigSchema),
+  customSystemPrompt: z.string().optional()
 });
 
 export const UpdateSettingsRequestSchema = z.object({
   musicAssistantUrl: z.string().optional(),
-  aiProvider: z.enum(AI_PROVIDERS).optional(),
-  anthropicApiKey: z.string().optional(),
-  anthropicModel: z.string().optional(),
-  openaiApiKey: z.string().optional(),
-  openaiModel: z.string().optional(),
-  openaiBaseUrl: z.string().optional(),
-  customSystemPrompt: z.string().optional(),
-  temperature: z.number().optional()
+  aiProviders: z.array(AIProviderConfigSchema).optional(),
+  customSystemPrompt: z.string().optional()
 });
 
-// Extended response type (adds computed fields)
-export interface GetSettingsResponse extends AppSettings {
-  hasAnthropicKey: boolean;
-  hasOpenAIKey: boolean;
-}
+// Extended response type (no extra computed fields needed)
+export type GetSettingsResponse = AppSettings;
 
-export const GetSettingsResponseSchema = AppSettingsSchema.extend({
-  hasAnthropicKey: z.boolean(),
-  hasOpenAIKey: z.boolean()
-});
+export const GetSettingsResponseSchema = AppSettingsSchema;
 
 // Success response schema
 export const SuccessResponseSchema = z.object({
@@ -272,11 +246,15 @@ export const settingsUtils = {
       return undefined;
     }
 
-    if (field.type === 'number') {
-      return parseFloat(formValue) as InferFieldValue<SettingsFieldsConfig[K]>;
+    if (field.type === 'providers') {
+      try {
+        return JSON.parse(formValue) as InferFieldValue<SettingsFieldsConfig[K]>;
+      } catch {
+        return [] as InferFieldValue<SettingsFieldsConfig[K]>;
+      }
     }
 
-    // string or enum - return as is
+    // string - return as is
     return formValue as InferFieldValue<SettingsFieldsConfig[K]>;
   },
 
@@ -289,9 +267,16 @@ export const settingsUtils = {
 
     if (apiValue === undefined) {
       if ('defaultValue' in field && field.defaultValue !== undefined) {
+        if (field.type === 'providers') {
+          return JSON.stringify(field.defaultValue);
+        }
         return String(field.defaultValue);
       }
       return '';
+    }
+
+    if (field.type === 'providers') {
+      return JSON.stringify(apiValue);
     }
 
     return String(apiValue);

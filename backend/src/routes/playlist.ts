@@ -61,18 +61,25 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         const [err, result] = await attemptPromise(async () => {
             // Get settings
             const maUrl = db.getSetting('musicAssistantUrl');
-            const aiProvider = (db.getSetting('aiProvider') ?? 'claude') as 'claude' | 'openai';
-            const anthropicKey = db.getSetting('anthropicApiKey');
-            const anthropicModel = db.getSetting('anthropicModel');
-            const openaiKey = db.getSetting('openaiApiKey');
-            const openaiModel = db.getSetting('openaiModel');
-            const openaiBaseUrl = db.getSetting('openaiBaseUrl');
+            const aiProvidersJson = db.getSetting('aiProviders');
             const customSystemPrompt = db.getSetting('customSystemPrompt');
-            const temperatureStr = db.getSetting('temperature');
-            const temperature = temperatureStr !== null ? parseFloat(temperatureStr) : undefined;
 
             if (maUrl === null || maUrl.length === 0) {
                 throw new Error('Music Assistant URL not configured');
+            }
+
+            // Parse providers
+            const aiProviders =
+                aiProvidersJson !== null ? JSON.parse(aiProvidersJson) : [];
+            if (aiProviders.length === 0) {
+                throw new Error('No AI providers configured');
+            }
+
+            // Find the requested provider or use the first one
+            const providerId = request.providerId ?? aiProviders[0].id;
+            const providerConfig = aiProviders.find((p: { id: string }) => p.id === providerId);
+            if (providerConfig === undefined) {
+                throw new Error(`Provider not found: ${providerId}`);
             }
 
             // Connect to Music Assistant briefly to get favorite artists
@@ -82,24 +89,13 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
             maClient.disconnect();
 
             // Get AI suggestions
-            const aiService = new AIService(
-                anthropicKey ?? undefined,
-                openaiKey ?? undefined,
-                openaiBaseUrl ?? undefined
-            );
-            // Select model based on provider
-            const model =
-                (request.provider ?? aiProvider) === 'claude'
-                    ? (anthropicModel ?? undefined)
-                    : (openaiModel ?? undefined);
+            const aiService = new AIService();
 
             const aiResponse = await aiService.generatePlaylist({
                 prompt: request.prompt,
                 favoriteArtists,
-                provider: request.provider ?? aiProvider,
-                model,
+                providerConfig,
                 customSystemPrompt: customSystemPrompt ?? undefined,
-                temperature,
                 trackCount: request.trackCount
             });
 
@@ -244,18 +240,25 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
 
         const [err, result] = await attemptPromise(async () => {
             const maUrl = db.getSetting('musicAssistantUrl');
-            const aiProvider = (db.getSetting('aiProvider') ?? 'claude') as 'claude' | 'openai';
-            const anthropicKey = db.getSetting('anthropicApiKey');
-            const anthropicModel = db.getSetting('anthropicModel');
-            const openaiKey = db.getSetting('openaiApiKey');
-            const openaiModel = db.getSetting('openaiModel');
-            const openaiBaseUrl = db.getSetting('openaiBaseUrl');
+            const aiProvidersJson = db.getSetting('aiProviders');
             const customSystemPrompt = db.getSetting('customSystemPrompt');
-            const temperatureStr = db.getSetting('temperature');
-            const temperature = temperatureStr !== null ? parseFloat(temperatureStr) : undefined;
 
             if (maUrl === null || maUrl.length === 0) {
                 throw new Error('Music Assistant URL not configured');
+            }
+
+            // Parse providers
+            const aiProviders =
+                aiProvidersJson !== null ? JSON.parse(aiProvidersJson) : [];
+            if (aiProviders.length === 0) {
+                throw new Error('No AI providers configured');
+            }
+
+            // Find the requested provider or use the first one
+            const providerId = request.providerId ?? aiProviders[0].id;
+            const providerConfig = aiProviders.find((p: { id: string }) => p.id === providerId);
+            if (providerConfig === undefined) {
+                throw new Error(`Provider not found: ${providerId}`);
             }
 
             const maClient = new MusicAssistantClient(maUrl);
@@ -269,24 +272,12 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
             );
             const refinementContext = `Current playlist:\n${currentTracks.join('\n')}\n\nRefinement request: ${request.refinementPrompt}`;
 
-            // Select model based on provider
-            const model =
-                (request.provider ?? aiProvider) === 'claude'
-                    ? (anthropicModel ?? undefined)
-                    : (openaiModel ?? undefined);
-
-            const aiService = new AIService(
-                anthropicKey ?? undefined,
-                openaiKey ?? undefined,
-                openaiBaseUrl ?? undefined
-            );
+            const aiService = new AIService();
             const aiResponse = await aiService.generatePlaylist({
                 prompt: refinementContext,
                 favoriteArtists,
-                provider: request.provider ?? aiProvider,
-                model,
-                customSystemPrompt: customSystemPrompt ?? undefined,
-                temperature
+                providerConfig,
+                customSystemPrompt: customSystemPrompt ?? undefined
             });
 
             maClient.disconnect();

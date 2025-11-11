@@ -1,6 +1,6 @@
 import { attemptPromise } from '@jfdi/attempt';
 import { MusicAssistantClient } from './musicAssistant';
-import type { TrackMatch } from '@shared/types';
+import type { AIProviderConfig, TrackMatch } from '@shared/types';
 
 export const createPlaylist = async (
     playlistName: string,
@@ -36,12 +36,8 @@ export const refinePlaylist = async (
     refinementPrompt: string,
     currentTracks: TrackMatch[],
     musicAssistantUrl: string,
-    aiProvider: 'claude' | 'openai',
-    apiKey: string,
-    model?: string,
-    baseUrl?: string,
-    customSystemPrompt?: string,
-    temperature?: number
+    providerConfig: AIProviderConfig,
+    customSystemPrompt?: string
 ): Promise<TrackMatch[]> => {
     const { generatePlaylist: generatePlaylistAI } = await import('./ai');
 
@@ -73,12 +69,8 @@ export const refinePlaylist = async (
         generatePlaylistAI({
             prompt: refinementContext,
             favoriteArtists,
-            provider: aiProvider,
-            apiKey,
-            model,
-            baseUrl,
-            customSystemPrompt,
-            temperature
+            providerConfig,
+            customSystemPrompt
         })
     );
 
@@ -98,12 +90,8 @@ export const replaceTrack = async (
     originalPrompt: string,
     playlistName: string,
     musicAssistantUrl: string,
-    aiProvider: 'claude' | 'openai',
-    apiKey: string,
-    model?: string,
-    baseUrl?: string,
-    customSystemPrompt?: string,
-    temperature?: number
+    providerConfig: AIProviderConfig,
+    customSystemPrompt?: string
 ): Promise<TrackMatch> => {
     const { generatePlaylist: generatePlaylistAI } = await import('./ai');
 
@@ -139,12 +127,8 @@ The replacement should:
         generatePlaylistAI({
             prompt: replacementPrompt,
             favoriteArtists,
-            provider: aiProvider,
-            apiKey,
-            model,
-            baseUrl,
+            providerConfig,
             customSystemPrompt,
-            temperature,
             trackCount: 1
         })
     );

@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import { z } from 'zod';
 import { attemptPromise, attempt } from '@jfdi/attempt';
-import type { AIProvider, AIPlaylistResponse } from '../../../shared/types.js';
+import type { AIProviderConfig, AIPlaylistResponse } from '../../../shared/types.js';
 
 const TrackSuggestionSchema = z.object({
     title: z.string(),
@@ -18,12 +18,8 @@ const AIPlaylistResponseSchema = z.object({
 interface AIPlaylistRequest {
     prompt: string;
     favoriteArtists?: string[];
-    provider: AIProvider;
-    apiKey: string;
-    model?: string;
-    baseUrl?: string;
+    providerConfig: AIProviderConfig;
     customSystemPrompt?: string;
-    temperature?: number;
     trackCount?: number;
 }
 
@@ -96,9 +92,9 @@ const parseAIResponse = (content: string): AIPlaylistResponse => {
     return parseResult.data;
 };
 
-const generateWithClaude = async (request: AIPlaylistRequest): Promise<AIPlaylistResponse> => {
+const generateWithAnthropic = async (request: AIPlaylistRequest): Promise<AIPlaylistResponse> => {
     const anthropic = new Anthropic({
-        apiKey: request.apiKey,
+        apiKey: request.providerConfig.apiKey,
         dangerouslyAllowBrowser: true
     });
 
@@ -107,11 +103,11 @@ const generateWithClaude = async (request: AIPlaylistRequest): Promise<AIPlaylis
         request.customSystemPrompt,
         request.trackCount
     );
-    const temperature = request.temperature ?? 1.0;
+    const temperature = request.providerConfig.temperature ?? 1.0;
 
     const [err, result] = await attemptPromise(async () => {
         const response = await anthropic.messages.create({
-            model: request.model ?? 'claude-sonnet-4-5-20250929',
+            model: request.providerConfig.model,
             max_tokens: 4096,
             temperature,
             system: systemPrompt,
@@ -138,10 +134,12 @@ const generateWithClaude = async (request: AIPlaylistRequest): Promise<AIPlaylis
     return result;
 };
 
-const generateWithOpenAI = async (request: AIPlaylistRequest): Promise<AIPlaylistResponse> => {
+const generateWithOpenAICompatible = async (
+    request: AIPlaylistRequest
+): Promise<AIPlaylistResponse> => {
     const openai = new OpenAI({
-        apiKey: request.apiKey,
-        baseURL: request.baseUrl,
+        apiKey: request.providerConfig.apiKey,
+        baseURL: request.providerConfig.baseUrl,
         dangerouslyAllowBrowser: true
     });
 
@@ -150,11 +148,11 @@ const generateWithOpenAI = async (request: AIPlaylistRequest): Promise<AIPlaylis
         request.customSystemPrompt,
         request.trackCount
     );
-    const temperature = request.temperature ?? 1.0;
+    const temperature = request.providerConfig.temperature ?? 1.0;
 
     const [err, result] = await attemptPromise(async () => {
         const response = await openai.chat.completions.create({
-            model: request.model ?? 'gpt-4-turbo-preview',
+            model: request.providerConfig.model,
             temperature,
             messages: [
                 { role: 'system', content: systemPrompt },
@@ -184,8 +182,8 @@ const generateWithOpenAI = async (request: AIPlaylistRequest): Promise<AIPlaylis
 };
 
 export const generatePlaylist = async (request: AIPlaylistRequest): Promise<AIPlaylistResponse> => {
-    if (request.provider === 'claude') {
-        return generateWithClaude(request);
+    if (request.providerConfig.type === 'anthropic') {
+        return generateWithAnthropic(request);
     }
-    return generateWithOpenAI(request);
+    return generateWithOpenAICompatible(request);
 };

@@ -1,12 +1,10 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { useApp } from './contexts/AppContext';
 import { useAlerts } from './hooks/useAlerts';
 import { usePlaylist } from './hooks/usePlaylist';
-import { useSettingsForm } from './hooks/useSettingsForm';
 import { useHistoryAndPresets } from './hooks/useHistoryAndPresets';
 import { useModals } from './hooks/useModals';
-import type { PromptHistory, PresetPrompt, UpdateSettingsRequest } from '../../shared/types';
-import { settingsUtils } from '../../shared/settings-schema';
+import type { AIProviderConfig } from '../../shared/types';
 import { Navbar } from './components/Navbar';
 import { AlertMessage } from './components/AlertMessage';
 import { PresetPrompts } from './components/PresetPrompts';
@@ -15,9 +13,17 @@ import { GeneratedTracksDisplay } from './components/GeneratedTracksDisplay';
 import { SettingsPage } from './components/SettingsPage';
 import { HistoryModal } from './components/HistoryModal';
 import { RefinePlaylistModal } from './components/RefinePlaylistModal';
+import { MusicAssistantClient } from './services/musicAssistant';
+import { attemptPromise } from '@jfdi/attempt';
 
 const App = (): React.JSX.Element => {
-    const { settings, updateSettings, loading: settingsLoading } = useApp();
+    const {
+        settings,
+        updateSettings,
+        loading: settingsLoading,
+        selectedProviderId,
+        setSelectedProviderId
+    } = useApp();
     const { error, successMessage, setError, clearError, clearSuccess } = useAlerts();
     const historyAndPresetsResult = useHistoryAndPresets();
     const {
@@ -37,7 +43,24 @@ const App = (): React.JSX.Element => {
     const playlist = usePlaylist(() => {
         void loadHistory();
     });
-    const settingsForm = useSettingsForm(settings);
+
+    // Local state for settings form
+    const [musicAssistantUrl, setMusicAssistantUrl] = useState('');
+    const [aiProviders, setAiProviders] = useState<AIProviderConfig[]>([]);
+    const [customSystemPrompt, setCustomSystemPrompt] = useState('');
+    const [testingMA, setTestingMA] = useState(false);
+    const [testResults, setTestResults] = useState<{
+        ma?: { success: boolean; error?: string };
+    }>({});
+
+    // Sync form state with settings
+    useEffect(() => {
+        if (settings !== null) {
+            setMusicAssistantUrl(settings.musicAssistantUrl);
+            setAiProviders(settings.aiProviders);
+            setCustomSystemPrompt(settings.customSystemPrompt ?? '');
+        }
+    }, [settings]);
 
     useEffect(() => {
         void loadHistory();
@@ -48,55 +71,47 @@ const App = (): React.JSX.Element => {
     const settingsComplete =
         settings !== null &&
         settings.musicAssistantUrl.trim().length > 0 &&
-        ((settings.aiProvider === 'claude' &&
-            settings.anthropicApiKey !== undefined &&
-            settings.anthropicApiKey.trim().length > 0) ||
-            (settings.aiProvider === 'openai' &&
-                settings.openaiApiKey !== undefined &&
-                settings.openaiApiKey.trim().length > 0));
+        settings.aiProviders.length > 0;
 
     // Show settings page if settings incomplete OR user opened settings
     const showSettingsPage = !settingsComplete || showSettings;
 
+    const testMA = async (): Promise<void> => {
+        setTestingMA(true);
+        setTestResults({ ...testResults, ma: undefined });
+
+        const [err] = await attemptPromise(async () => {
+            const client = new MusicAssistantClient(musicAssistantUrl);
+            await client.connect();
+            client.disconnect();
+        });
+
+        if (err !== undefined) {
+            setTestResults({ ...testResults, ma: { success: false, error: err.message } });
+        } else {
+            setTestResults({ ...testResults, ma: { success: true } });
+        }
+
+        setTestingMA(false);
+    };
+
     const handleSaveSettings = useCallback(async (): Promise<void> => {
-        if (settingsForm.musicAssistantUrl.trim().length === 0) {
+        if (musicAssistantUrl.trim().length === 0) {
             setError('Music Assistant URL is required');
             return;
         }
 
-        if (
-            settingsForm.aiProvider === 'claude' &&
-            settingsForm.anthropicApiKey.trim().length === 0
-        ) {
-            setError('Anthropic API Key is required when using Claude');
+        if (aiProviders.length === 0) {
+            setError('At least one AI provider is required');
             return;
         }
 
-        if (settingsForm.aiProvider === 'openai' && settingsForm.openaiApiKey.trim().length === 0) {
-            setError('OpenAI API Key is required when using OpenAI');
-            return;
-        }
-
-        // Build update object dynamically from schema
-        // Using Record to avoid type assertions in the loop, then cast once at the end
-        const updates: Record<string, string | number> = {};
-
-        settingsUtils.getAllKeys().forEach(key => {
-            const formValue = settingsForm[key];
-            const fieldType = settingsUtils.getFieldType(key);
-
-            if (typeof formValue === 'string') {
-                if (fieldType === 'number' && formValue.length > 0) {
-                    updates[key] = parseFloat(formValue);
-                } else if (formValue.length > 0 || !settingsUtils.isOptional(key)) {
-                    updates[key] = formValue;
-                }
-            }
+        const err = await updateSettings({
+            musicAssistantUrl,
+            aiProviders,
+            customSystemPrompt:
+                customSystemPrompt.trim().length > 0 ? customSystemPrompt : undefined
         });
-
-        // Single type assertion at the boundary: we know this is safe because we only
-        // assign number to number fields and string to string/enum fields
-        const err = await updateSettings(updates as UpdateSettingsRequest);
 
         if (err !== undefined) {
             setError(`Failed to save settings: ${err.message}`);
@@ -104,37 +119,24 @@ const App = (): React.JSX.Element => {
         }
 
         closeSettings();
-    }, [settingsForm, updateSettings, setError, closeSettings]);
+    }, [
+        musicAssistantUrl,
+        aiProviders,
+        customSystemPrompt,
+        updateSettings,
+        setError,
+        closeSettings
+    ]);
 
     const handleCancelSettings = useCallback((): void => {
-        if (!settingsComplete) {
-            setError('Please complete required settings');
-            return;
+        // Reset form to saved settings
+        if (settings !== null) {
+            setMusicAssistantUrl(settings.musicAssistantUrl);
+            setAiProviders(settings.aiProviders);
+            setCustomSystemPrompt(settings.customSystemPrompt ?? '');
         }
         closeSettings();
-    }, [settingsComplete, setError, closeSettings]);
-
-    const handleUsePreset = useCallback(
-        (preset: PresetPrompt): void => {
-            playlist.setPrompt(preset.prompt);
-            // Only set playlist name if it's currently empty
-            if (playlist.playlistName.trim().length === 0) {
-                playlist.setPlaylistName(preset.name);
-            }
-        },
-        [playlist]
-    );
-
-    const handleUseHistory = useCallback(
-        (item: PromptHistory): void => {
-            playlist.setPrompt(item.prompt);
-            if (item.playlistName !== undefined) {
-                playlist.setPlaylistName(item.playlistName);
-            }
-            closeHistory();
-        },
-        [playlist, closeHistory]
-    );
+    }, [settings, closeSettings]);
 
     if (settingsLoading) {
         return (
@@ -144,33 +146,9 @@ const App = (): React.JSX.Element => {
         );
     }
 
-    // Show settings page if needed
     if (showSettingsPage) {
         return (
             <>
-                {error !== null && (
-                    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4">
-                        <AlertMessage type="error" message={error} onDismiss={clearError} />
-                    </div>
-                )}
-                <SettingsPage
-                    {...settingsForm}
-                    onSave={() => {
-                        void handleSaveSettings();
-                    }}
-                    onCancel={handleCancelSettings}
-                    showCancel={settingsComplete}
-                />
-            </>
-        );
-    }
-
-    // Show main UI
-    return (
-        <div className="min-h-screen bg-base-200">
-            <Navbar onShowHistory={openHistory} onShowSettings={openSettings} />
-
-            <div className="container mx-auto p-4 max-w-6xl">
                 {error !== null && (
                     <AlertMessage type="error" message={error} onDismiss={clearError} />
                 )}
@@ -181,56 +159,97 @@ const App = (): React.JSX.Element => {
                         onDismiss={clearSuccess}
                     />
                 )}
-
-                <PresetPrompts presets={presets} onSelectPreset={handleUsePreset} />
-
-                <PlaylistCreatorForm
-                    playlistName={playlist.playlistName}
-                    prompt={playlist.prompt}
-                    trackCount={playlist.trackCount}
-                    generating={playlist.generating}
-                    aiProvider={settings !== null ? settings.aiProvider : 'claude'}
-                    onPlaylistNameChange={playlist.setPlaylistName}
-                    onPromptChange={playlist.setPrompt}
-                    onTrackCountChange={playlist.setTrackCount}
-                    onGenerate={() => {
-                        void playlist.generatePlaylist();
-                    }}
+                <SettingsPage
+                    musicAssistantUrl={musicAssistantUrl}
+                    setMusicAssistantUrl={setMusicAssistantUrl}
+                    aiProviders={aiProviders}
+                    setAiProviders={setAiProviders}
+                    customSystemPrompt={customSystemPrompt}
+                    setCustomSystemPrompt={setCustomSystemPrompt}
+                    testingMA={testingMA}
+                    testResults={testResults}
+                    testMA={testMA}
+                    onSave={handleSaveSettings}
+                    onCancel={settingsComplete ? handleCancelSettings : undefined}
+                    showCancel={settingsComplete}
                 />
+            </>
+        );
+    }
 
-                {playlist.generatedTracks.length > 0 && (
-                    <GeneratedTracksDisplay
-                        tracks={playlist.generatedTracks}
-                        creating={playlist.creating}
-                        replacingTrackIndex={playlist.replacingTrackIndex}
-                        retryingTrackIndex={playlist.retryingTrackIndex}
-                        trackFilter={playlist.trackFilter}
-                        onTrackFilterChange={playlist.setTrackFilter}
-                        onReplaceTrack={playlist.replaceTrack}
-                        onRetryTrack={playlist.retryTrack}
-                        onRemoveTrack={playlist.removeTrack}
-                        onClear={playlist.clearTracks}
-                        onRefine={openRefine}
-                        onCreate={() => {
-                            void playlist.createPlaylist();
+    return (
+        <div className="min-h-screen bg-base-200">
+            <Navbar onShowSettings={openSettings} onShowHistory={openHistory} />
+
+            {error !== null && <AlertMessage type="error" message={error} onDismiss={clearError} />}
+            {successMessage !== null && (
+                <AlertMessage type="success" message={successMessage} onDismiss={clearSuccess} />
+            )}
+
+            <div className="container mx-auto px-4 py-8">
+                <div className="max-w-4xl mx-auto">
+                    <PresetPrompts
+                        presets={presets}
+                        onSelectPreset={preset => {
+                            playlist.setPrompt(preset.prompt);
                         }}
                     />
-                )}
+
+                    <PlaylistCreatorForm
+                        playlistName={playlist.playlistName}
+                        prompt={playlist.prompt}
+                        trackCount={playlist.trackCount}
+                        generating={playlist.generating}
+                        providers={settings?.aiProviders ?? []}
+                        selectedProviderId={selectedProviderId}
+                        onPlaylistNameChange={playlist.setPlaylistName}
+                        onPromptChange={playlist.setPrompt}
+                        onTrackCountChange={playlist.setTrackCount}
+                        onProviderChange={setSelectedProviderId}
+                        onGenerate={playlist.generatePlaylist}
+                    />
+
+                    {playlist.generatedTracks.length > 0 && (
+                        <GeneratedTracksDisplay
+                            tracks={playlist.generatedTracks}
+                            creating={playlist.creating}
+                            replacingTrackIndex={playlist.replacingTrackIndex}
+                            retryingTrackIndex={playlist.retryingTrackIndex}
+                            trackFilter={playlist.trackFilter}
+                            onTrackFilterChange={playlist.setTrackFilter}
+                            onReplaceTrack={(index: number) => {
+                                void playlist.replaceTrack(index);
+                            }}
+                            onRetryTrack={(index: number) => {
+                                void playlist.retryTrack(index);
+                            }}
+                            onRemoveTrack={playlist.removeTrack}
+                            onClear={playlist.clearTracks}
+                            onRefine={openRefine}
+                            onCreate={() => {
+                                void playlist.createPlaylist();
+                            }}
+                        />
+                    )}
+                </div>
             </div>
 
             <HistoryModal
                 show={showHistory}
-                onClose={closeHistory}
                 history={history}
-                onSelectHistory={handleUseHistory}
+                onClose={closeHistory}
+                onSelectHistory={(item: { prompt: string; playlistName?: string }) => {
+                    playlist.setPrompt(item.prompt);
+                    if (item.playlistName !== undefined) {
+                        playlist.setPlaylistName(item.playlistName);
+                    }
+                    closeHistory();
+                }}
             />
 
             <RefinePlaylistModal
                 show={showRefine}
-                onClose={() => {
-                    closeRefine();
-                    playlist.setRefinementPrompt('');
-                }}
+                onClose={closeRefine}
                 refinementPrompt={playlist.refinementPrompt}
                 onRefinementPromptChange={playlist.setRefinementPrompt}
                 refining={playlist.refining}

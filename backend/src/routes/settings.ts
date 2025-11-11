@@ -20,12 +20,7 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
             settings[key] = deserializedValue ?? settingsUtils.getDefaultValue(key);
         }
 
-        // Add computed fields
-        const response: GetSettingsResponse = {
-            ...(settings as any),
-            hasAnthropicKey: Boolean(db.getSetting('anthropicApiKey')),
-            hasOpenAIKey: Boolean(db.getSetting('openaiApiKey'))
-        };
+        const response: GetSettingsResponse = settings as GetSettingsResponse;
 
         res.json(response);
     });

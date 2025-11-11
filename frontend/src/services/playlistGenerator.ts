@@ -1,18 +1,14 @@
 import { attemptPromise } from '@jfdi/attempt';
 import { MusicAssistantClient } from './musicAssistant';
 import { generatePlaylist as generatePlaylistAI } from './ai';
-import type { AIProvider, TrackMatch } from '@shared/types';
+import type { AIProviderConfig, TrackMatch } from '@shared/types';
 
 export interface GeneratePlaylistParams {
     prompt: string;
     trackCount: string;
     musicAssistantUrl: string;
-    aiProvider: AIProvider;
-    apiKey: string;
-    model?: string;
-    baseUrl?: string;
+    providerConfig: AIProviderConfig;
     customSystemPrompt?: string;
-    temperature?: number;
 }
 
 export const generatePlaylist = async (params: GeneratePlaylistParams): Promise<TrackMatch[]> => {
@@ -41,12 +37,8 @@ export const generatePlaylist = async (params: GeneratePlaylistParams): Promise<
         generatePlaylistAI({
             prompt: params.prompt.trim(),
             favoriteArtists,
-            provider: params.aiProvider,
-            apiKey: params.apiKey,
-            model: params.model,
-            baseUrl: params.baseUrl,
+            providerConfig: params.providerConfig,
             customSystemPrompt: params.customSystemPrompt,
-            temperature: params.temperature,
             trackCount:
                 !isNaN(parsedTrackCount) && parsedTrackCount > 0 ? parsedTrackCount : undefined
         })
