@@ -2,45 +2,60 @@ FROM node:20-alpine AS builder
 
 WORKDIR /build
 
-# Copy all source
-COPY . .
+# Copy package files
+COPY package*.json ./
+COPY backend/package*.json ./backend/
+COPY frontend/package*.json ./frontend/
+
+# Install root dependencies
+RUN npm ci
+
+# Install backend dependencies
+WORKDIR /build/backend
+RUN npm ci
+
+# Install frontend dependencies
+WORKDIR /build/frontend
+RUN npm ci
+
+# Copy source files
+WORKDIR /build
+COPY backend ./backend
+COPY frontend ./frontend
+COPY shared ./shared
 
 # Build backend
 WORKDIR /build/backend
-RUN npm ci && npm run build
+RUN npm run build
 
 # Build frontend
 WORKDIR /build/frontend
-RUN npm ci && npm run build
+RUN npm run build
 
 # Production image
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Install nginx and supervisor
-RUN apk add --no-cache nginx supervisor
-
-# Copy backend
+# Copy backend build output
 COPY --from=builder /build/backend/dist ./backend/dist
 COPY --from=builder /build/backend/package*.json ./backend/
+
+# Copy frontend build output
+COPY --from=builder /build/frontend/dist ./frontend/dist
+
+# Install production dependencies
 WORKDIR /app/backend
 RUN npm ci --production
-
-# Copy frontend built files
-COPY --from=builder /build/frontend/dist /usr/share/nginx/html
-
-# Copy nginx config
-COPY nginx.conf /etc/nginx/http.d/default.conf
-
-# Copy supervisor config
-COPY supervisord.conf /etc/supervisord.conf
 
 # Create data directory
 RUN mkdir -p /app/data
 
-WORKDIR /app
+# Set working directory
+WORKDIR /app/backend
 
-EXPOSE 80
+# Expose port
+EXPOSE 9876
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+# Start Node.js server
+CMD ["node", "dist/server.js"]

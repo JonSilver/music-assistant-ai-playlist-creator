@@ -15,7 +15,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const app = express();
-const PORT = process.env.PORT ?? process.env.BACKEND_PORT ?? '3333';
+const PORT = process.env.PORT ?? '9876';
 
 // Initialize database
 const dbPath = process.env.DATABASE_PATH ?? path.join(__dirname, '../../data/playlists.db');
@@ -27,13 +27,12 @@ mkdirSync(dbDir, { recursive: true });
 const db = new PlaylistDatabase(dbPath);
 
 // Middleware
-const frontendPort = process.env.FRONTEND_PORT ?? '5555';
-app.use(
-    cors({
-        origin: process.env.FRONTEND_URL ?? `http://localhost:${frontendPort}`
-    })
-);
+app.use(cors());
 app.use(express.json({ limit: '10mb' })); // Increase payload limit for large playlists
+
+// Serve frontend static files in production
+const frontendDistPath = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendDistPath));
 
 // API router
 const apiRouter = express.Router();
@@ -49,6 +48,11 @@ apiRouter.get('/health', (_req, res) => {
 
 // Mount API router
 app.use('/api', apiRouter);
+
+// SPA fallback - serve index.html for all non-API routes
+app.get('*', (_req, res) => {
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+});
 
 // Start server
 app.listen(PORT, () => {
