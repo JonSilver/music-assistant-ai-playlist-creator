@@ -1,6 +1,11 @@
 {
   "permissions": {
-    "allow": ["Bash(npm run build:*)", "Bash(npm run lint:*)"],
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc)"
+    ],
     "deny": [],
     "ask": []
   }

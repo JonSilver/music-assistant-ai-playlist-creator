@@ -46,7 +46,9 @@ export const HistoryModal = ({
                     </div>
                   </div>
                   <div className="text-xs opacity-50">
-                    {item.trackCount !== undefined ? `${item.trackCount} tracks` : 'Track count unknown'}
+                    {item.trackCount !== undefined
+                      ? `${item.trackCount.toString()} tracks`
+                      : 'Track count unknown'}
                   </div>
                 </div>
               </div>

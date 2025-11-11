@@ -1,6 +1,12 @@
 import Database from 'better-sqlite3'
 import { attempt } from '@jfdi/attempt'
-import type { PresetPrompt, PromptHistory } from '../../../shared/types.js'
+import {
+  type PresetPrompt,
+  type PromptHistory,
+  PromptHistoryRowSchema,
+  PresetPromptSchema,
+  convertPromptHistoryRow
+} from '../../../shared/types.js'
 
 export class PlaylistDatabase {
   private db: Database.Database
@@ -171,15 +177,26 @@ export class PlaylistDatabase {
       const rows = this.db
         .prepare(
           `
-        SELECT id, prompt, playlist_name as playlistName, track_count as trackCount, timestamp
+        SELECT id, prompt, playlist_name, track_count, timestamp
         FROM prompt_history
         ORDER BY id DESC
         LIMIT ?
       `
         )
-        .all(limit) as PromptHistory[]
+        .all(limit)
 
-      return rows
+      // Validate and convert rows
+      const validatedRows: PromptHistory[] = []
+      for (const row of rows) {
+        const parseResult = PromptHistoryRowSchema.safeParse(row)
+        if (parseResult.success) {
+          validatedRows.push(convertPromptHistoryRow(parseResult.data))
+        } else {
+          console.error('Invalid prompt history row:', parseResult.error)
+        }
+      }
+
+      return validatedRows
     })
 
     return err !== undefined ? [] : result
@@ -195,9 +212,20 @@ export class PlaylistDatabase {
         ORDER BY category, name
       `
         )
-        .all() as PresetPrompt[]
+        .all()
 
-      return rows
+      // Validate rows
+      const validatedRows: PresetPrompt[] = []
+      for (const row of rows) {
+        const parseResult = PresetPromptSchema.safeParse(row)
+        if (parseResult.success) {
+          validatedRows.push(parseResult.data)
+        } else {
+          console.error('Invalid preset prompt row:', parseResult.error)
+        }
+      }
+
+      return validatedRows
     })
 
     return err !== undefined ? [] : result

@@ -3,14 +3,15 @@ import { attemptPromise } from '@jfdi/attempt'
 import { MusicAssistantClient } from '../services/musicAssistant.js'
 import { AIService } from '../services/ai.js'
 import type { PlaylistDatabase } from '../db/schema.js'
-import type {
-  CreatePlaylistRequest,
-  CreatePlaylistResponse,
-  CreatePlaylistInMAResponse,
-  RefinePlaylistRequest,
-  RefinePlaylistResponse,
-  TrackMatch,
-  TrackSuggestion
+import {
+  type CreatePlaylistResponse,
+  type CreatePlaylistInMAResponse,
+  type RefinePlaylistResponse,
+  type TrackMatch,
+  type TrackSuggestion,
+  CreatePlaylistRequestSchema,
+  RefinePlaylistRequestSchema,
+  TrackSuggestionSchema
 } from '../../../shared/types.js'
 
 const matchTrack = async (
@@ -45,7 +46,17 @@ const matchTrack = async (
 export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void => {
   // Generate playlist suggestions (AI only, no matching yet)
   router.post('/playlist/generate', async (req: Request, res: Response) => {
-    const request = req.body as CreatePlaylistRequest
+    // Validate request body
+    const parseResult = CreatePlaylistRequestSchema.safeParse(req.body)
+    if (!parseResult.success) {
+      res.status(400).json({
+        error: 'Invalid request',
+        details: parseResult.error.message
+      })
+      return
+    }
+
+    const request = parseResult.data
 
     const [err, result] = await attemptPromise(async () => {
       // Get settings
@@ -100,11 +111,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
       }))
 
       // Save to history
-      db.addPromptHistory(
-        request.prompt,
-        request.playlistName ?? null,
-        matches.length
-      )
+      db.addPromptHistory(request.prompt, request.playlistName ?? null, matches.length)
 
       const response: CreatePlaylistResponse = {
         success: true,
@@ -131,7 +138,17 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
 
   // Match a single track
   router.post('/playlist/match-track', async (req: Request, res: Response) => {
-    const { suggestion } = req.body as { suggestion: TrackSuggestion }
+    // Validate request body
+    const parseResult = TrackSuggestionSchema.safeParse(req.body.suggestion)
+    if (!parseResult.success) {
+      res.status(400).json({
+        error: 'Invalid request',
+        details: parseResult.error.message
+      })
+      return
+    }
+
+    const suggestion = parseResult.data
 
     const [err, result] = await attemptPromise(async () => {
       const maUrl = db.getSetting('musicAssistantUrl')
@@ -213,7 +230,17 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
 
   // Refine playlist
   router.post('/playlist/refine', async (req: Request, res: Response) => {
-    const request = req.body as RefinePlaylistRequest
+    // Validate request body
+    const parseResult = RefinePlaylistRequestSchema.safeParse(req.body)
+    if (!parseResult.success) {
+      res.status(400).json({
+        error: 'Invalid request',
+        details: parseResult.error.message
+      })
+      return
+    }
+
+    const request = parseResult.data
 
     const [err, result] = await attemptPromise(async () => {
       const maUrl = db.getSetting('musicAssistantUrl')

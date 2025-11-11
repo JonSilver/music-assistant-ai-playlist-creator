@@ -1,7 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk'
 import OpenAI from 'openai'
 import { attempt, attemptPromise } from '@jfdi/attempt'
-import type { AIProvider, TrackSuggestion } from '../../../shared/types.js'
+import {
+  type AIProvider,
+  type AIPlaylistResponse,
+  AIPlaylistResponseSchema
+} from '../../../shared/types.js'
 
 interface AIPlaylistRequest {
   prompt: string
@@ -11,11 +15,6 @@ interface AIPlaylistRequest {
   customSystemPrompt?: string
   temperature?: number
   trackCount?: number
-}
-
-interface AIPlaylistResponse {
-  tracks: TrackSuggestion[]
-  reasoning?: string
 }
 
 export class AIService {
@@ -178,30 +177,19 @@ ${countGuideline}
       jsonContent = jsonMatch[1]
     }
 
-    const [err, data] = attempt(() => JSON.parse(jsonContent) as AIPlaylistResponse)
+    const [parseErr, data] = attempt(() => JSON.parse(jsonContent))
 
-    if (err !== undefined) {
+    if (parseErr !== undefined) {
       const preview = content.substring(0, 200)
       throw new Error(`Failed to parse AI response as JSON. Response start: ${preview}`)
     }
 
-    // Validate response structure
-    if (data.tracks === undefined || !Array.isArray(data.tracks)) {
-      throw new Error('Invalid AI response: missing tracks array')
+    // Validate response structure with Zod
+    const parseResult = AIPlaylistResponseSchema.safeParse(data)
+    if (!parseResult.success) {
+      throw new Error(`Invalid AI response structure: ${parseResult.error.message}`)
     }
 
-    // Validate each track
-    for (const track of data.tracks) {
-      if (
-        track.title === undefined ||
-        track.title.length === 0 ||
-        track.artist === undefined ||
-        track.artist.length === 0
-      ) {
-        throw new Error('Invalid track in AI response: missing title or artist')
-      }
-    }
-
-    return data
+    return parseResult.data
   }
 }

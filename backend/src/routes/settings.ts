@@ -3,11 +3,11 @@ import { attemptPromise } from '@jfdi/attempt'
 import { MusicAssistantClient } from '../services/musicAssistant.js'
 import { AIService } from '../services/ai.js'
 import type { PlaylistDatabase } from '../db/schema.js'
-import type {
-  UpdateSettingsRequest,
-  GetSettingsResponse,
-  TestConnectionResponse,
-  SuccessResponse
+import {
+  type GetSettingsResponse,
+  type TestConnectionResponse,
+  type SuccessResponse,
+  UpdateSettingsRequestSchema
 } from '../../../shared/types.js'
 
 export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void => {
@@ -43,7 +43,17 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
 
   // Update settings
   router.put('/settings', (req: Request, res: Response) => {
-    const updates = req.body as UpdateSettingsRequest
+    // Validate request body
+    const parseResult = UpdateSettingsRequestSchema.safeParse(req.body)
+    if (!parseResult.success) {
+      res.status(400).json({
+        error: 'Invalid request',
+        details: parseResult.error.message
+      })
+      return
+    }
+
+    const updates = parseResult.data
 
     if (updates.musicAssistantUrl !== undefined) {
       db.setSetting('musicAssistantUrl', updates.musicAssistantUrl)
