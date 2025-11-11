@@ -11,7 +11,7 @@ import {
 } from '../services/playlistCreator';
 import type { TrackMatch } from '@shared/types';
 
-interface UsePlaylistReturn {
+export interface UsePlaylistReturn {
     prompt: string;
     setPrompt: (value: string) => void;
     playlistName: string;
