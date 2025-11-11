@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { AIProviderConfig, ProviderType } from '../../../shared/types';
-import { api } from '../services/api';
+import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
+import { attemptPromise } from '@jfdi/attempt';
 
 interface ProvidersManagerProps {
     providers: AIProviderConfig[];
@@ -59,11 +61,22 @@ export const ProvidersManager = ({
             return;
         }
 
+        const apiKey = editForm.apiKey as string;
+        const providerType = editForm.type as ProviderType;
+
         setLoadingModels(true);
         setModelsError(null);
 
-        if (editForm.type === 'anthropic') {
-            const [err, result] = await api.getAnthropicModels(editForm.apiKey);
+        if (providerType === 'anthropic') {
+            const [err, models] = await attemptPromise(async () => {
+                const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
+                const response = await client.models.list();
+                return response.data.map(model => ({
+                    value: model.id,
+                    label: model.display_name ?? model.id
+                }));
+            });
+
             setLoadingModels(false);
 
             if (err !== undefined) {
@@ -71,10 +84,23 @@ export const ProvidersManager = ({
                 return;
             }
 
-            setAvailableModels(result.models);
+            setAvailableModels(models);
             setShowModelDropdown(true);
         } else {
-            const [err, result] = await api.getOpenAIModels(editForm.apiKey, editForm.baseUrl);
+            const baseUrl = editForm.baseUrl as string | undefined;
+            const [err, models] = await attemptPromise(async () => {
+                const client = new OpenAI({
+                    apiKey,
+                    baseURL: baseUrl !== undefined && baseUrl.trim() !== '' ? baseUrl : undefined,
+                    dangerouslyAllowBrowser: true
+                });
+                const response = await client.models.list();
+                return response.data.map(model => ({
+                    value: model.id,
+                    label: model.id
+                }));
+            });
+
             setLoadingModels(false);
 
             if (err !== undefined) {
@@ -82,7 +108,7 @@ export const ProvidersManager = ({
                 return;
             }
 
-            setAvailableModels(result.models);
+            setAvailableModels(models);
             setShowModelDropdown(true);
         }
     };
