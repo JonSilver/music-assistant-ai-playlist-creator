@@ -183,7 +183,7 @@ Backend only handles:
 - **Error-first destructuring**: `const [err, result] = await attemptPromise(...)`
 - **Check errors**: `if (err !== undefined)` not `if (!result.ok)`
 - **Single quotes** for strings
-- **No semicolons**
+- **Semicolons required** (`semi: true`)
 - **100 character line width**
 
 ### React Best Practices
