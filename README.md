@@ -245,6 +245,14 @@ docker-compose up -d
 - Try refining your prompt to be more specific to your library
 - Check that favorite artists are set in Music Assistant for better context
 
+## Planned Features
+
+- Replace Track button next to each track
+- Investigate possible Spotify integration
+- A proper logo and icon
+- Clear Query button to reset prompt
+- Possible MusicBrainz integration
+
 ## License
 
 ISC

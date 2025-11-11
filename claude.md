@@ -6,6 +6,7 @@
 
 ### DO NOT:
 
+- ❌ **Proliferate code volume** - voluminous custom code is NOT a success metric, it's FAILURE
 - ❌ **Create Massive Modules** - decompose, tiny modules only, single responsibility
 - ❌ **Overcomplicate solutions** - Use existing APIs, don't write custom logic
 - ❌ **Add features not requested** - Stick to what the user asked for
