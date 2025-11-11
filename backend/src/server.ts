@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url'
 import { mkdirSync } from 'fs'
 import { PlaylistDatabase } from './db/schema.js'
 import { setupSettingsRoutes } from './routes/settings.js'
-import { setupPlaylistRoutes } from './routes/playlist.js'
 import { setupPromptsRoutes } from './routes/prompts.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -41,7 +40,6 @@ const apiRouter = express.Router()
 
 // Setup routes
 setupSettingsRoutes(apiRouter, db)
-setupPlaylistRoutes(apiRouter, db)
 setupPromptsRoutes(apiRouter, db)
 
 // Health check

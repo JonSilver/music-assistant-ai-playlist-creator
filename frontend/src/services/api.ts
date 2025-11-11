@@ -2,12 +2,8 @@ import { attemptPromise } from '@jfdi/attempt'
 import type {
   GetSettingsResponse,
   UpdateSettingsRequest,
-  CreatePlaylistRequest,
-  CreatePlaylistResponse,
-  RefinePlaylistRequest,
   PromptHistory,
-  PresetPrompt,
-  TrackMatch
+  PresetPrompt
 } from '@shared/types'
 
 const backendPort = (import.meta.env.VITE_BACKEND_PORT as string | undefined) ?? '3333'
@@ -32,10 +28,10 @@ const fetchJSON = async <T>(url: string, options?: RequestInit): Promise<T> => {
     const [err, errorBody] = await attemptPromise<ErrorResponse>(
       async () => (await response.json()) as ErrorResponse
     )
-    let message = response.statusText
-    if (err === undefined && errorBody.error !== undefined) {
-      message = errorBody.details !== undefined ? errorBody.details : errorBody.error
-    }
+    const message =
+      err === undefined && errorBody.error !== undefined
+        ? (errorBody.details ?? errorBody.error)
+        : response.statusText
     throw new Error(message)
   }
 
@@ -54,73 +50,10 @@ export const api = {
       })
     ),
 
-  // Playlist operations
-  generatePlaylist: async (request: CreatePlaylistRequest) =>
-    attemptPromise<CreatePlaylistResponse>(async () =>
-      fetchJSON('/playlist/generate', {
-        method: 'POST',
-        body: JSON.stringify(request)
-      })
-    ),
-
-  matchTrack: async (suggestion: { title: string; artist: string; album?: string }) =>
-    attemptPromise<TrackMatch>(async () =>
-      fetchJSON('/playlist/match-track', {
-        method: 'POST',
-        body: JSON.stringify({ suggestion })
-      })
-    ),
-
-  createPlaylist: async (data: { playlistName: string; tracks: TrackMatch[] }) =>
-    attemptPromise<{ success: boolean; playlistId: string; tracksAdded: number }>(async () =>
-      fetchJSON('/playlist/create', {
-        method: 'POST',
-        body: JSON.stringify(data)
-      })
-    ),
-
-  refinePlaylist: async (request: RefinePlaylistRequest) =>
-    attemptPromise<{
-      success: boolean
-      matches: TrackMatch[]
-      totalSuggested: number
-      totalMatched: number
-    }>(async () =>
-      fetchJSON('/playlist/refine', {
-        method: 'POST',
-        body: JSON.stringify(request)
-      })
-    ),
-
   // Prompts
   getPromptHistory: async () =>
     attemptPromise<{ history: PromptHistory[] }>(async () => fetchJSON('/prompts/history')),
 
   getPresetPrompts: async () =>
-    attemptPromise<{ presets: PresetPrompt[] }>(async () => fetchJSON('/prompts/presets')),
-
-  // Connection tests
-  testMusicAssistant: async (url: string) =>
-    attemptPromise<{ success: boolean; error?: string }>(async () =>
-      fetchJSON('/settings/test/music-assistant', {
-        method: 'POST',
-        body: JSON.stringify({ url })
-      })
-    ),
-
-  testAnthropic: async (apiKey: string) =>
-    attemptPromise<{ success: boolean; error?: string }>(async () =>
-      fetchJSON('/settings/test/anthropic', {
-        method: 'POST',
-        body: JSON.stringify({ apiKey })
-      })
-    ),
-
-  testOpenAI: async (apiKey: string, baseUrl?: string) =>
-    attemptPromise<{ success: boolean; error?: string }>(async () =>
-      fetchJSON('/settings/test/openai', {
-        method: 'POST',
-        body: JSON.stringify({ apiKey, baseUrl })
-      })
-    )
+    attemptPromise<{ presets: PresetPrompt[] }>(async () => fetchJSON('/prompts/presets'))
 }

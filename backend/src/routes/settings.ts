@@ -1,11 +1,7 @@
 import type { Router, Request, Response } from 'express'
-import { attemptPromise } from '@jfdi/attempt'
-import { MusicAssistantClient } from '../services/musicAssistant.js'
-import { AIService } from '../services/ai.js'
 import type { PlaylistDatabase } from '../db/schema.js'
 import {
   type GetSettingsResponse,
-  type TestConnectionResponse,
   type SuccessResponse,
   UpdateSettingsRequestSchema
 } from '../../../shared/types.js'
@@ -93,89 +89,5 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
 
     const response: SuccessResponse = { success: true }
     res.json(response)
-  })
-
-  // Test Music Assistant connection
-  router.post('/settings/test/music-assistant', async (req: Request, res: Response) => {
-    const { url } = req.body as { url: string }
-
-    if (!url) {
-      const errorResponse: TestConnectionResponse = { success: false, error: 'URL is required' }
-      res.status(400).json(errorResponse)
-      return
-    }
-
-    const [err, result] = await attemptPromise(async (): Promise<TestConnectionResponse> => {
-      const client = new MusicAssistantClient(url)
-      await client.connect()
-      client.disconnect()
-      return { success: true }
-    })
-
-    if (err !== undefined) {
-      const errorResponse: TestConnectionResponse = { success: false, error: err.message }
-      res.json(errorResponse)
-      return
-    }
-
-    res.json(result)
-  })
-
-  // Test Anthropic API key
-  router.post('/settings/test/anthropic', async (req: Request, res: Response) => {
-    const { apiKey } = req.body as { apiKey: string }
-
-    if (!apiKey) {
-      const errorResponse: TestConnectionResponse = { success: false, error: 'API key is required' }
-      res.status(400).json(errorResponse)
-      return
-    }
-
-    const [err, result] = await attemptPromise(async (): Promise<TestConnectionResponse> => {
-      const aiService = new AIService(apiKey, undefined, undefined)
-      // Simple test prompt
-      await aiService.generatePlaylist({
-        prompt: 'Test',
-        provider: 'claude'
-      })
-      return { success: true }
-    })
-
-    if (err !== undefined) {
-      const errorResponse: TestConnectionResponse = { success: false, error: err.message }
-      res.json(errorResponse)
-      return
-    }
-
-    res.json(result)
-  })
-
-  // Test OpenAI API key
-  router.post('/settings/test/openai', async (req: Request, res: Response) => {
-    const { apiKey, baseUrl } = req.body as { apiKey: string; baseUrl?: string }
-
-    if (!apiKey) {
-      const errorResponse: TestConnectionResponse = { success: false, error: 'API key is required' }
-      res.status(400).json(errorResponse)
-      return
-    }
-
-    const [err, result] = await attemptPromise(async (): Promise<TestConnectionResponse> => {
-      const aiService = new AIService(undefined, apiKey, baseUrl)
-      // Simple test prompt
-      await aiService.generatePlaylist({
-        prompt: 'Test',
-        provider: 'openai'
-      })
-      return { success: true }
-    })
-
-    if (err !== undefined) {
-      const errorResponse: TestConnectionResponse = { success: false, error: err.message }
-      res.json(errorResponse)
-      return
-    }
-
-    res.json(result)
   })
 }

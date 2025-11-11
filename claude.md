@@ -67,16 +67,16 @@ This project provides an AI-assisted playlist creation interface for Music Assis
 - **State Management**: React Context
 - **Styling**: Tailwind CSS + daisyUI
 - **UI Components**: daisyUI (Tailwind-based component library)
-- **API Communication**: Native fetch API with @jfdi/attempt error handling
+- **AI Integration**: Direct API calls to Claude and OpenAI from browser
+- **Music Assistant Integration**: Direct WebSocket connection from browser
 - **Error Handling**: @jfdi/attempt (try/catch banned)
 
-### Backend
+### Backend (Minimal)
 - **Runtime**: Node.js with Express
 - **Language**: TypeScript (strict mode)
 - **Database**: SQLite (for settings, prompt history, presets)
-- **AI Integration**: Claude API and OpenAI API (user selects via UI)
-- **Music Assistant Integration**: WebSocket API using `ws` library
-- **WebSocket Library**: `ws` for MA connection
+- **Purpose**: Settings persistence ONLY (no business logic)
+- **Endpoints**: GET/PUT /settings, GET /prompts/history, GET /prompts/presets
 - **Error Handling**: @jfdi/attempt
 
 ### Music Assistant Details
@@ -96,19 +96,22 @@ User Input (Prompt)
     ↓
 Frontend (React + daisyUI)
     ↓
-Backend API Server
+Frontend → Music Assistant WebSocket (get favorite artists)
     ↓
-Backend Fetches User's Favorite Artists (for AI context)
-    ↓
-AI Service (Claude/OpenAI)
+Frontend → AI API (Claude/OpenAI) directly from browser
     ↓
 AI Returns Structured Track List
     ↓
-Backend Searches MA Library (via MA search API)
+Frontend → Music Assistant WebSocket (search & match tracks)
     ↓
-Backend Matches Tracks & Creates Playlist
+Frontend → Music Assistant WebSocket (create playlist)
     ↓
-Response to Frontend (with match results)
+Response displayed in UI
+
+Backend only handles:
+- GET/PUT settings (stored in SQLite)
+- GET prompt history
+- GET preset prompts
 ```
 
 ## Core Features (Implemented)

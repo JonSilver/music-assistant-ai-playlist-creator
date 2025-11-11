@@ -1,11 +1,14 @@
 import { useState, useCallback } from 'react'
-import { api } from '../services/api'
+import { attemptPromise } from '@jfdi/attempt'
 import { useAlerts } from './useAlerts'
-import type {
-  TrackMatch,
-  CreatePlaylistRequest,
-  RefinePlaylistRequest
-} from '../../../shared/types'
+import { useSettings } from '../contexts/AppContext'
+import { matchTracksProgressively } from '../services/trackMatching'
+import { generatePlaylist as generatePlaylistService } from '../services/playlistGenerator'
+import {
+  createPlaylist as createPlaylistService,
+  refinePlaylist as refinePlaylistService
+} from '../services/playlistCreator'
+import type { TrackMatch } from '@shared/types'
 
 interface UsePlaylistReturn {
   prompt: string
@@ -32,6 +35,7 @@ interface UsePlaylistReturn {
 
 export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
   const { setError, setSuccess } = useAlerts()
+  const { settings } = useSettings()
   const [prompt, setPrompt] = useState('')
   const [playlistName, setPlaylistName] = useState('')
   const [trackCount, setTrackCount] = useState('25')
@@ -42,62 +46,42 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
   const [trackFilter, setTrackFilter] = useState<'all' | 'matched' | 'unmatched'>('all')
   const [refinementPrompt, setRefinementPrompt] = useState('')
 
-  const matchTracksProgressively = useCallback(async (tracks: TrackMatch[]): Promise<void> => {
-    // Match tracks in parallel batches for better performance
-    const BATCH_SIZE = 5 // Match 5 tracks at a time
-
-    for (let batchStart = 0; batchStart < tracks.length; batchStart += BATCH_SIZE) {
-      const batchEnd = Math.min(batchStart + BATCH_SIZE, tracks.length)
-      const batchPromises: Promise<void>[] = []
-
-      for (let i = batchStart; i < batchEnd; i++) {
-        const track = tracks[i]
-
-        // Mark as actively matching
-        setGeneratedTracks(prev => prev.map((t, idx) => (idx === i ? { ...t, matching: true } : t)))
-
-        // Create promise for this track's matching
-        const matchPromise = api.matchTrack(track.suggestion).then(([err, matchedTrack]) => {
-          if (err === undefined && matchedTrack !== undefined) {
-            // Update this specific track with result and clear matching flag
-            setGeneratedTracks(prev =>
-              prev.map((t, idx) => (idx === i ? { ...matchedTrack, matching: false } : t))
-            )
-          } else {
-            // Mark as done matching even if error
-            setGeneratedTracks(prev =>
-              prev.map((t, idx) => (idx === i ? { ...t, matching: false } : t))
-            )
-          }
-        })
-
-        batchPromises.push(matchPromise)
-      }
-
-      // Wait for entire batch to complete before starting next batch
-      await Promise.all(batchPromises)
-    }
-  }, [])
-
   const generatePlaylist = useCallback(async (): Promise<void> => {
     if (prompt.trim().length === 0 || playlistName.trim().length === 0) {
       setError('Please provide both a prompt and playlist name')
       return
     }
 
-    // Clear previous tracks immediately
+    if (settings.musicAssistantUrl.trim().length === 0) {
+      setError('Music Assistant URL not configured')
+      return
+    }
+
+    const aiProvider = settings.aiProvider
+    const apiKey = aiProvider === 'claude' ? settings.anthropicApiKey : settings.openaiApiKey
+
+    if (apiKey === null || apiKey === undefined || apiKey.trim().length === 0) {
+      setError(`${aiProvider === 'claude' ? 'Anthropic' : 'OpenAI'} API key not configured`)
+      return
+    }
+
     setGeneratedTracks([])
     setGenerating(true)
 
-    const parsedTrackCount = parseInt(trackCount, 10)
-    const request: CreatePlaylistRequest = {
-      prompt: prompt.trim(),
-      playlistName: playlistName.trim(),
-      trackCount: !isNaN(parsedTrackCount) && parsedTrackCount > 0 ? parsedTrackCount : undefined
-    }
+    const [err, unmatchedTracks] = await attemptPromise(async () =>
+      generatePlaylistService({
+        prompt,
+        trackCount,
+        musicAssistantUrl: settings.musicAssistantUrl,
+        aiProvider,
+        apiKey,
+        model: aiProvider === 'claude' ? settings.anthropicModel : settings.openaiModel,
+        baseUrl: aiProvider === 'openai' ? settings.openaiBaseUrl : undefined,
+        customSystemPrompt: settings.customSystemPrompt,
+        temperature: settings.temperature
+      })
+    )
 
-    // Get AI suggestions (fast, no matching yet)
-    const [err, result] = await api.generatePlaylist(request)
     setGenerating(false)
 
     if (err !== undefined) {
@@ -105,13 +89,16 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
       return
     }
 
-    // Show tracks immediately (all unmatched)
-    setGeneratedTracks(result.matches)
+    setGeneratedTracks(unmatchedTracks)
     onHistoryUpdate()
 
-    // Match tracks progressively in the background
-    void matchTracksProgressively(result.matches)
-  }, [prompt, playlistName, trackCount, setError, onHistoryUpdate, matchTracksProgressively])
+    void matchTracksProgressively(
+      unmatchedTracks,
+      settings.musicAssistantUrl,
+      setGeneratedTracks,
+      setError
+    )
+  }, [prompt, playlistName, trackCount, settings, setError, onHistoryUpdate])
 
   const createPlaylist = useCallback(async (): Promise<void> => {
     if (generatedTracks.length === 0) {
@@ -119,12 +106,16 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
       return
     }
 
+    if (settings.musicAssistantUrl.trim().length === 0) {
+      setError('Music Assistant URL not configured')
+      return
+    }
+
     setCreating(true)
 
-    const [err, result] = await api.createPlaylist({
-      playlistName: playlistName.trim(),
-      tracks: generatedTracks
-    })
+    const [err, result] = await attemptPromise(async () =>
+      createPlaylistService(playlistName, generatedTracks, settings.musicAssistantUrl)
+    )
 
     setCreating(false)
 
@@ -133,11 +124,11 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
       return
     }
 
-    setSuccess(`Playlist created successfully! Added ${result.tracksAdded.toString()} tracks.`)
+    setSuccess(`Playlist created successfully! Added ${result.tracksAdded} tracks.`)
     setPrompt('')
     setPlaylistName('')
     setGeneratedTracks([])
-  }, [generatedTracks, playlistName, setError, setSuccess])
+  }, [generatedTracks, playlistName, settings.musicAssistantUrl, setError, setSuccess])
 
   const refinePlaylist = useCallback(async (): Promise<void> => {
     if (refinementPrompt.trim().length === 0) {
@@ -145,15 +136,35 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
       return
     }
 
-    setRefining(true)
-
-    const request: RefinePlaylistRequest = {
-      originalPrompt: prompt.trim(),
-      refinementPrompt: refinementPrompt.trim(),
-      currentTracks: generatedTracks
+    if (settings.musicAssistantUrl.trim().length === 0) {
+      setError('Music Assistant URL not configured')
+      return
     }
 
-    const [err, result] = await api.refinePlaylist(request)
+    const aiProvider = settings.aiProvider
+    const apiKey = aiProvider === 'claude' ? settings.anthropicApiKey : settings.openaiApiKey
+
+    if (apiKey === null || apiKey === undefined || apiKey.trim().length === 0) {
+      setError(`${aiProvider === 'claude' ? 'Anthropic' : 'OpenAI'} API key not configured`)
+      return
+    }
+
+    setRefining(true)
+
+    const [err, unmatchedTracks] = await attemptPromise(async () =>
+      refinePlaylistService(
+        refinementPrompt,
+        generatedTracks,
+        settings.musicAssistantUrl,
+        aiProvider,
+        apiKey,
+        aiProvider === 'claude' ? settings.anthropicModel : settings.openaiModel,
+        aiProvider === 'openai' ? settings.openaiBaseUrl : undefined,
+        settings.customSystemPrompt,
+        settings.temperature
+      )
+    )
+
     setRefining(false)
 
     if (err !== undefined) {
@@ -161,13 +172,16 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
       return
     }
 
-    // Show tracks immediately (all unmatched)
-    setGeneratedTracks(result.matches)
+    setGeneratedTracks(unmatchedTracks)
     setRefinementPrompt('')
 
-    // Match tracks progressively in the background
-    void matchTracksProgressively(result.matches)
-  }, [refinementPrompt, prompt, generatedTracks, setError, matchTracksProgressively])
+    void matchTracksProgressively(
+      unmatchedTracks,
+      settings.musicAssistantUrl,
+      setGeneratedTracks,
+      setError
+    )
+  }, [refinementPrompt, generatedTracks, settings, setError])
 
   const removeTrack = useCallback((index: number): void => {
     setGeneratedTracks(prev => prev.filter((_, i) => i !== index))

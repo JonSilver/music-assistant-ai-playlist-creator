@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import { api } from '../services/api'
+import { attemptPromise } from '@jfdi/attempt'
 import { useAlerts } from './useAlerts'
+import { MusicAssistantClient } from '../services/musicAssistant'
+import { generatePlaylist as generatePlaylistAI } from '../services/ai'
 import type { AppSettings } from '../../../shared/types'
 
 interface TestResult {
@@ -83,13 +85,18 @@ export const useSettingsForm = (settings: AppSettings | null): UseSettingsFormRe
     setTestingMA(true)
     setTestResults(prev => ({ ...prev, ma: undefined }))
 
-    const [err, result] = await api.testMusicAssistant(musicAssistantUrl.trim())
+    const [err] = await attemptPromise(async () => {
+      const client = new MusicAssistantClient(musicAssistantUrl.trim())
+      await client.connect()
+      client.disconnect()
+    })
+
     setTestingMA(false)
 
     if (err !== undefined) {
       setTestResults(prev => ({ ...prev, ma: { success: false, error: err.message } }))
     } else {
-      setTestResults(prev => ({ ...prev, ma: result }))
+      setTestResults(prev => ({ ...prev, ma: { success: true } }))
     }
   }, [musicAssistantUrl, setError])
 
@@ -102,13 +109,20 @@ export const useSettingsForm = (settings: AppSettings | null): UseSettingsFormRe
     setTestingAnthropic(true)
     setTestResults(prev => ({ ...prev, anthropic: undefined }))
 
-    const [err, result] = await api.testAnthropic(anthropicApiKey.trim())
+    const [err] = await attemptPromise(async () =>
+      generatePlaylistAI({
+        prompt: 'Test',
+        provider: 'claude',
+        apiKey: anthropicApiKey.trim()
+      })
+    )
+
     setTestingAnthropic(false)
 
     if (err !== undefined) {
       setTestResults(prev => ({ ...prev, anthropic: { success: false, error: err.message } }))
     } else {
-      setTestResults(prev => ({ ...prev, anthropic: result }))
+      setTestResults(prev => ({ ...prev, anthropic: { success: true } }))
     }
   }, [anthropicApiKey, setError])
 
@@ -121,16 +135,21 @@ export const useSettingsForm = (settings: AppSettings | null): UseSettingsFormRe
     setTestingOpenAI(true)
     setTestResults(prev => ({ ...prev, openai: undefined }))
 
-    const [err, result] = await api.testOpenAI(
-      openaiApiKey.trim(),
-      openaiBaseUrl.trim().length > 0 ? openaiBaseUrl.trim() : undefined
+    const [err] = await attemptPromise(async () =>
+      generatePlaylistAI({
+        prompt: 'Test',
+        provider: 'openai',
+        apiKey: openaiApiKey.trim(),
+        baseUrl: openaiBaseUrl.trim().length > 0 ? openaiBaseUrl.trim() : undefined
+      })
     )
+
     setTestingOpenAI(false)
 
     if (err !== undefined) {
       setTestResults(prev => ({ ...prev, openai: { success: false, error: err.message } }))
     } else {
-      setTestResults(prev => ({ ...prev, openai: result }))
+      setTestResults(prev => ({ ...prev, openai: { success: true } }))
     }
   }, [openaiApiKey, openaiBaseUrl, setError])
 

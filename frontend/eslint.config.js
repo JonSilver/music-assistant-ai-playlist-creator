@@ -81,9 +81,10 @@ export default tseslint.config(
       '@typescript-eslint/no-unnecessary-condition': 'error',
       '@typescript-eslint/prefer-nullish-coalescing': 'error',
       '@typescript-eslint/prefer-optional-chain': 'error',
+      '@typescript-eslint/restrict-template-expressions': 'off',
 
       // General best practices
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-console': ['warn', { allow: ['warn', 'error', 'log'] }],
       'no-debugger': 'error',
       'no-alert': 'error',
       eqeqeq: ['error', 'always'],
@@ -96,11 +97,37 @@ export default tseslint.config(
       'max-lines': ['error', { max: 200, skipBlankLines: true, skipComments: true }],
 
       // No try/catch - use @jfdi/attempt
+      // No let - use const and recursion/map/reduce
+      // No for loops - use functional patterns
       'no-restricted-syntax': [
         'error',
         {
           selector: 'TryStatement',
           message: 'Use @jfdi/attempt instead of try/catch'
+        },
+        {
+          selector: 'VariableDeclaration[kind="let"]',
+          message: 'Use const instead of let. Use recursion or functional patterns instead of mutation.'
+        },
+        {
+          selector: 'ForStatement',
+          message: 'Use map/filter/reduce/forEach or recursion instead of for loops'
+        },
+        {
+          selector: 'ForInStatement',
+          message: 'Use Object.keys/values/entries with forEach instead of for...in'
+        },
+        {
+          selector: 'ForOfStatement',
+          message: 'Use forEach/map/filter/reduce instead of for...of'
+        },
+        {
+          selector: 'WhileStatement',
+          message: 'Use recursion instead of while loops'
+        },
+        {
+          selector: 'DoWhileStatement',
+          message: 'Use recursion instead of do...while loops'
         }
       ]
     }
