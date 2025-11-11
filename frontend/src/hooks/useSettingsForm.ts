@@ -46,10 +46,12 @@ const buildInitialState = (): SettingsFormState => {
     const state: Partial<SettingsFormState> = {};
     settingsUtils.getAllKeys().forEach(key => {
         const defaultValue = settingsUtils.getDefaultValue(key);
-        if (key === 'temperature') {
-            state[key] = '1.0';
-        } else if (key === 'aiProvider') {
+
+        // Special handling for enum and number types based on form state requirements
+        if (key === 'aiProvider') {
             state[key] = (defaultValue ?? 'claude') as SettingsFormState[typeof key];
+        } else if (key === 'temperature') {
+            state[key] = (defaultValue !== undefined ? String(defaultValue) : '1.0') as SettingsFormState[typeof key];
         } else {
             state[key] = (defaultValue ?? '') as SettingsFormState[typeof key];
         }
@@ -60,14 +62,16 @@ const buildInitialState = (): SettingsFormState => {
 const buildStateFromSettings = (settings: AppSettings): SettingsFormState => {
     const state: Partial<SettingsFormState> = {};
     settingsUtils.getAllKeys().forEach(key => {
-        const value = settings[key];
+        const apiValue = settings[key];
         const defaultValue = settingsUtils.getDefaultValue(key);
-        if (key === 'temperature') {
-            state[key] = value !== undefined ? String(value) : '1.0';
-        } else if (key === 'aiProvider') {
-            state[key] = (value ?? defaultValue ?? 'claude') as SettingsFormState[typeof key];
+
+        // Special handling for enum and number types based on form state requirements
+        if (key === 'aiProvider') {
+            state[key] = (apiValue ?? defaultValue ?? 'claude') as SettingsFormState[typeof key];
+        } else if (key === 'temperature') {
+            state[key] = (apiValue !== undefined ? String(apiValue) : '1.0') as SettingsFormState[typeof key];
         } else {
-            state[key] = (value ?? defaultValue ?? '') as SettingsFormState[typeof key];
+            state[key] = (apiValue ?? defaultValue ?? '') as SettingsFormState[typeof key];
         }
     });
     return state as SettingsFormState;

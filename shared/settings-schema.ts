@@ -6,7 +6,7 @@
 import { z } from 'zod';
 
 // Setting field types
-type SettingFieldType = 'string' | 'number' | 'boolean' | 'enum';
+export type SettingFieldType = 'string' | 'number' | 'boolean' | 'enum';
 
 // Define available AI providers as const for type inference
 export const AI_PROVIDERS = ['claude', 'openai'] as const;
@@ -220,6 +220,12 @@ export const settingsUtils = {
   // Get field definition
   getField: <K extends SettingKey>(key: K): SettingsFieldsConfig[K] => SETTINGS_FIELDS[key],
 
+  // Get field type
+  getFieldType: (key: SettingKey): SettingFieldType => SETTINGS_FIELDS[key].type,
+
+  // Check if field is optional
+  isOptional: (key: SettingKey): boolean => SETTINGS_FIELDS[key].optional ?? false,
+
   // Serialize value for database storage
   serializeForDB: <K extends SettingKey>(
     key: K,
@@ -253,5 +259,41 @@ export const settingsUtils = {
   ): InferFieldValue<SettingsFieldsConfig[K]> | undefined => {
     const field = SETTINGS_FIELDS[key];
     return ('defaultValue' in field ? field.defaultValue : undefined) as InferFieldValue<SettingsFieldsConfig[K]> | undefined;
+  },
+
+  // Convert form value (string) to API value using field type
+  formValueToApiValue: <K extends SettingKey>(
+    key: K,
+    formValue: string
+  ): InferFieldValue<SettingsFieldsConfig[K]> | undefined => {
+    const field = SETTINGS_FIELDS[key];
+
+    if (formValue.length === 0 && field.optional) {
+      return undefined;
+    }
+
+    if (field.type === 'number') {
+      return parseFloat(formValue) as InferFieldValue<SettingsFieldsConfig[K]>;
+    }
+
+    // string or enum - return as is
+    return formValue as InferFieldValue<SettingsFieldsConfig[K]>;
+  },
+
+  // Convert API value to form value (string)
+  apiValueToFormValue: <K extends SettingKey>(
+    key: K,
+    apiValue: InferFieldValue<SettingsFieldsConfig[K]> | undefined
+  ): string => {
+    const field = SETTINGS_FIELDS[key];
+
+    if (apiValue === undefined) {
+      if ('defaultValue' in field && field.defaultValue !== undefined) {
+        return String(field.defaultValue);
+      }
+      return '';
+    }
+
+    return String(apiValue);
   }
 };

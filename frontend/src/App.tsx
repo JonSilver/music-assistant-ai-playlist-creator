@@ -78,24 +78,25 @@ const App = (): React.JSX.Element => {
         }
 
         // Build update object dynamically from schema
-        const updates: UpdateSettingsRequest = {};
+        // Using Record to avoid type assertions in the loop, then cast once at the end
+        const updates: Record<string, string | number> = {};
 
         settingsUtils.getAllKeys().forEach(key => {
             const formValue = settingsForm[key];
+            const fieldType = settingsUtils.getFieldType(key);
 
-            // Handle each field based on its type
-            if (key === 'temperature') {
-                if (typeof formValue === 'string' && formValue.length > 0) {
+            if (typeof formValue === 'string') {
+                if (fieldType === 'number' && formValue.length > 0) {
                     updates[key] = parseFloat(formValue);
+                } else if (formValue.length > 0 || !settingsUtils.isOptional(key)) {
+                    updates[key] = formValue;
                 }
-            } else if (key === 'aiProvider') {
-                updates[key] = formValue as 'claude' | 'openai';
-            } else if (typeof formValue === 'string' && formValue.length > 0) {
-                updates[key] = formValue as never;
             }
         });
 
-        const err = await updateSettings(updates);
+        // Single type assertion at the boundary: we know this is safe because we only
+        // assign number to number fields and string to string/enum fields
+        const err = await updateSettings(updates as UpdateSettingsRequest);
 
         if (err !== undefined) {
             setError(`Failed to save settings: ${err.message}`);
