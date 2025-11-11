@@ -5,9 +5,6 @@ WORKDIR /build
 # Copy all source files
 COPY . .
 
-# Install all dependencies (including devDependencies for build)
-RUN npm ci
-
 # Build backend
 WORKDIR /build/backend
 RUN npm ci && npm run build
@@ -16,20 +13,23 @@ RUN npm ci && npm run build
 WORKDIR /build/frontend
 RUN npm ci && npm run build
 
+# Prune dev dependencies from backend
+WORKDIR /build/backend
+RUN npm prune --production
+
 # Production image
 FROM node:20-alpine
 
-WORKDIR /app
-
-# Copy backend package files
-COPY --from=builder /build/backend/package*.json ./backend/
-
-# Install only production dependencies
 WORKDIR /app/backend
-RUN npm ci --omit=dev
 
 # Copy backend build output
 COPY --from=builder /build/backend/dist ./dist
+
+# Copy production node_modules (already pruned)
+COPY --from=builder /build/backend/node_modules ./node_modules
+
+# Copy package.json for reference
+COPY --from=builder /build/backend/package.json ./package.json
 
 # Copy frontend build output
 COPY --from=builder /build/frontend/dist ../frontend/dist
