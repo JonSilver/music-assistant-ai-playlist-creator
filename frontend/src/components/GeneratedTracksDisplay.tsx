@@ -109,6 +109,7 @@ export const GeneratedTracksDisplay = ({
                     <table className="table">
                         <thead>
                             <tr>
+                                <th className="w-12">#</th>
                                 <th>Title</th>
                                 <th>Artist</th>
                                 <th>Album</th>
@@ -119,7 +120,7 @@ export const GeneratedTracksDisplay = ({
                         <tbody>
                             {filteredTracks.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="text-center py-8 opacity-50">
+                                    <td colSpan={6} className="text-center py-8 opacity-50">
                                         No tracks match the current filter
                                     </td>
                                 </tr>
@@ -131,6 +132,9 @@ export const GeneratedTracksDisplay = ({
                                             key={actualIndex}
                                             className={track.matched ? '' : 'opacity-50'}
                                         >
+                                            <td className="text-center opacity-60 font-mono text-sm">
+                                                {actualIndex + 1}
+                                            </td>
                                             <td>
                                                 <div className="font-medium">
                                                     {track.suggestion.title}
