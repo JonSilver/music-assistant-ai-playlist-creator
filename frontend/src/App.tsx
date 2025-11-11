@@ -5,7 +5,8 @@ import { usePlaylist } from './hooks/usePlaylist';
 import { useSettingsForm } from './hooks/useSettingsForm';
 import { useHistoryAndPresets } from './hooks/useHistoryAndPresets';
 import { useModals } from './hooks/useModals';
-import type { PromptHistory, PresetPrompt } from '../../shared/types';
+import type { PromptHistory, PresetPrompt, UpdateSettingsRequest } from '../../shared/types';
+import { settingsUtils } from '../../shared/settings-schema';
 import { Navbar } from './components/Navbar';
 import { AlertMessage } from './components/AlertMessage';
 import { PresetPrompts } from './components/PresetPrompts';
@@ -76,30 +77,25 @@ const App = (): React.JSX.Element => {
             return;
         }
 
-        const err = await updateSettings({
-            musicAssistantUrl:
-                settingsForm.musicAssistantUrl.length > 0
-                    ? settingsForm.musicAssistantUrl
-                    : undefined,
-            aiProvider: settingsForm.aiProvider,
-            anthropicApiKey:
-                settingsForm.anthropicApiKey.length > 0 ? settingsForm.anthropicApiKey : undefined,
-            anthropicModel:
-                settingsForm.anthropicModel.length > 0 ? settingsForm.anthropicModel : undefined,
-            openaiApiKey:
-                settingsForm.openaiApiKey.length > 0 ? settingsForm.openaiApiKey : undefined,
-            openaiModel: settingsForm.openaiModel.length > 0 ? settingsForm.openaiModel : undefined,
-            openaiBaseUrl:
-                settingsForm.openaiBaseUrl.length > 0 ? settingsForm.openaiBaseUrl : undefined,
-            customSystemPrompt:
-                settingsForm.customSystemPrompt.length > 0
-                    ? settingsForm.customSystemPrompt
-                    : undefined,
-            temperature:
-                settingsForm.temperature.length > 0
-                    ? parseFloat(settingsForm.temperature)
-                    : undefined
+        // Build update object dynamically from schema
+        const updates: UpdateSettingsRequest = {};
+
+        settingsUtils.getAllKeys().forEach(key => {
+            const formValue = settingsForm[key];
+
+            // Handle each field based on its type
+            if (key === 'temperature') {
+                if (typeof formValue === 'string' && formValue.length > 0) {
+                    updates[key] = parseFloat(formValue);
+                }
+            } else if (key === 'aiProvider') {
+                updates[key] = formValue as 'claude' | 'openai';
+            } else if (typeof formValue === 'string' && formValue.length > 0) {
+                updates[key] = formValue as never;
+            }
         });
+
+        const err = await updateSettings(updates);
 
         if (err !== undefined) {
             setError(`Failed to save settings: ${err.message}`);
