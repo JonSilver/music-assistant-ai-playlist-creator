@@ -2,57 +2,40 @@ FROM node:20-alpine AS builder
 
 WORKDIR /build
 
-# Copy package files
-COPY package*.json ./
-COPY backend/package*.json ./backend/
-COPY frontend/package*.json ./frontend/
+# Copy all source files
+COPY . .
 
-# Install root dependencies
+# Install all dependencies (including devDependencies for build)
 RUN npm ci
-
-# Install backend dependencies
-WORKDIR /build/backend
-RUN npm ci
-
-# Install frontend dependencies
-WORKDIR /build/frontend
-RUN npm ci
-
-# Copy source files
-WORKDIR /build
-COPY backend ./backend
-COPY frontend ./frontend
-COPY shared ./shared
 
 # Build backend
 WORKDIR /build/backend
-RUN npm run build
+RUN npm ci && npm run build
 
 # Build frontend
 WORKDIR /build/frontend
-RUN npm run build
+RUN npm ci && npm run build
 
 # Production image
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy backend build output
-COPY --from=builder /build/backend/dist ./backend/dist
+# Copy backend package files
 COPY --from=builder /build/backend/package*.json ./backend/
 
-# Copy frontend build output
-COPY --from=builder /build/frontend/dist ./frontend/dist
-
-# Install production dependencies
+# Install only production dependencies
 WORKDIR /app/backend
-RUN npm ci --production
+RUN npm ci --omit=dev
+
+# Copy backend build output
+COPY --from=builder /build/backend/dist ./dist
+
+# Copy frontend build output
+COPY --from=builder /build/frontend/dist ../frontend/dist
 
 # Create data directory
 RUN mkdir -p /app/data
-
-# Set working directory
-WORKDIR /app/backend
 
 # Expose port
 EXPOSE 9876
