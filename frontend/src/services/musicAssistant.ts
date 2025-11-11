@@ -127,7 +127,7 @@ export class MusicAssistantClient {
         );
 
         return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
+            const timeoutId = setTimeout(() => {
                 if (this.pendingRequests.has(messageId)) {
                     this.pendingRequests.delete(messageId);
                     const elapsed = performance.now() - sendTime;
@@ -137,7 +137,7 @@ export class MusicAssistantClient {
                     );
                     reject(new Error(`Request timeout: ${command}`));
                 }
-            }, 10000);
+            }, 10000) as unknown as number;
 
             this.pendingRequests.set(messageId, {
                 resolve: ((value: unknown) => {
@@ -149,7 +149,7 @@ export class MusicAssistantClient {
                     resolve(value as T);
                 }) as (value: unknown) => void,
                 reject,
-                timeout
+                timeout: timeoutId
             });
 
             const [sendErr] = attempt(() => {
@@ -162,7 +162,7 @@ export class MusicAssistantClient {
 
             if (sendErr !== null && sendErr !== undefined) {
                 this.pendingRequests.delete(messageId);
-                clearTimeout(timeout);
+                clearTimeout(timeoutId);
                 console.error(
                     `[${new Date().toISOString()}] [MA WS] ❌ Send failed: ${command}`,
                     sendErr

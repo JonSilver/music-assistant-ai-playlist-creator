@@ -1,48 +1,16 @@
 import React, { useState } from 'react';
+import type { useSettingsForm } from '../hooks/useSettingsForm';
 import { AnthropicSettings } from './AnthropicSettings';
 import { OpenAISettings } from './OpenAISettings';
 import { TestResultDisplay } from './TestResultDisplay';
 import { DefaultSystemPromptModal } from './DefaultSystemPromptModal';
 
-interface TestResult {
-    success: boolean;
-    error?: string;
-}
-
-interface SettingsPageProps {
-    musicAssistantUrl: string;
-    setMusicAssistantUrl: (value: string) => void;
-    aiProvider: 'claude' | 'openai';
-    setAiProvider: (value: 'claude' | 'openai') => void;
-    anthropicApiKey: string;
-    setAnthropicApiKey: (value: string) => void;
-    anthropicModel: string;
-    setAnthropicModel: (value: string) => void;
-    openaiApiKey: string;
-    setOpenaiApiKey: (value: string) => void;
-    openaiModel: string;
-    setOpenaiModel: (value: string) => void;
-    openaiBaseUrl: string;
-    setOpenaiBaseUrl: (value: string) => void;
-    customSystemPrompt: string;
-    setCustomSystemPrompt: (value: string) => void;
-    temperature: string;
-    setTemperature: (value: string) => void;
-    testingMA: boolean;
-    testingAnthropic: boolean;
-    testingOpenAI: boolean;
-    testResults: {
-        ma?: TestResult;
-        anthropic?: TestResult;
-        openai?: TestResult;
-    };
-    testMA: () => Promise<void>;
-    testAnthropic: () => Promise<void>;
-    testOpenAI: () => Promise<void>;
+// Derive props type from the hook - no more duplication!
+type SettingsPageProps = ReturnType<typeof useSettingsForm> & {
     onSave: () => void;
     onCancel?: () => void;
     showCancel: boolean;
-}
+};
 
 export const SettingsPage = ({
     musicAssistantUrl,

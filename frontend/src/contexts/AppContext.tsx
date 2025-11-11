@@ -70,6 +70,13 @@ export const useSettings = (): { settings: GetSettingsResponse } => {
         settings: settings ?? {
             musicAssistantUrl: '',
             aiProvider: 'claude',
+            anthropicApiKey: undefined,
+            anthropicModel: undefined,
+            openaiApiKey: undefined,
+            openaiModel: undefined,
+            openaiBaseUrl: undefined,
+            customSystemPrompt: undefined,
+            temperature: undefined,
             hasAnthropicKey: false,
             hasOpenAIKey: false
         }

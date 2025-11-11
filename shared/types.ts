@@ -4,9 +4,24 @@
 
 import { z } from 'zod'
 
-// AI Provider schemas
+// Re-export settings-related types and schemas from settings-schema
+export {
+  type AppSettings,
+  type UpdateSettingsRequest,
+  type GetSettingsResponse,
+  type AIProvider,
+  type SettingKey,
+  AI_PROVIDERS,
+  AppSettingsSchema,
+  UpdateSettingsRequestSchema,
+  GetSettingsResponseSchema,
+  settingsUtils,
+  SETTINGS_FIELDS
+} from './settings-schema.js'
+
+// AI Provider schemas (for backwards compatibility)
 export const AIProviderSchema = z.enum(['claude', 'openai'])
-export type AIProvider = z.infer<typeof AIProviderSchema>
+export type AIProviderLegacy = z.infer<typeof AIProviderSchema>
 
 // Track suggestion from AI
 export const TrackSuggestionSchema = z.object({
@@ -48,7 +63,7 @@ export type TrackMatch = z.infer<typeof TrackMatchSchema>
 export const CreatePlaylistRequestSchema = z.object({
   prompt: z.string(),
   playlistName: z.string().optional(),
-  provider: AIProviderSchema.optional(),
+  provider: z.enum(['claude', 'openai']).optional(),
   trackCount: z.number().optional()
 })
 export type CreatePlaylistRequest = z.infer<typeof CreatePlaylistRequestSchema>
@@ -70,7 +85,7 @@ export const RefinePlaylistRequestSchema = z.object({
   originalPrompt: z.string(),
   refinementPrompt: z.string(),
   currentTracks: z.array(TrackMatchSchema),
-  provider: AIProviderSchema.optional()
+  provider: z.enum(['claude', 'openai']).optional()
 })
 export type RefinePlaylistRequest = z.infer<typeof RefinePlaylistRequestSchema>
 
@@ -112,39 +127,7 @@ export const APIErrorSchema = z.object({
 })
 export type APIError = z.infer<typeof APIErrorSchema>
 
-// Settings
-export const AppSettingsSchema = z.object({
-  musicAssistantUrl: z.string(),
-  aiProvider: AIProviderSchema,
-  anthropicApiKey: z.string().optional(),
-  anthropicModel: z.string().optional(),
-  openaiApiKey: z.string().optional(),
-  openaiModel: z.string().optional(),
-  openaiBaseUrl: z.string().optional(),
-  customSystemPrompt: z.string().optional(),
-  temperature: z.number().optional()
-})
-export type AppSettings = z.infer<typeof AppSettingsSchema>
-
-// Settings request/response
-export const UpdateSettingsRequestSchema = z.object({
-  musicAssistantUrl: z.string().optional(),
-  aiProvider: AIProviderSchema.optional(),
-  anthropicApiKey: z.string().optional(),
-  anthropicModel: z.string().optional(),
-  openaiApiKey: z.string().optional(),
-  openaiModel: z.string().optional(),
-  openaiBaseUrl: z.string().optional(),
-  customSystemPrompt: z.string().optional(),
-  temperature: z.number().optional()
-})
-export type UpdateSettingsRequest = z.infer<typeof UpdateSettingsRequestSchema>
-
-export const GetSettingsResponseSchema = AppSettingsSchema.extend({
-  hasAnthropicKey: z.boolean(),
-  hasOpenAIKey: z.boolean()
-})
-export type GetSettingsResponse = z.infer<typeof GetSettingsResponseSchema>
+// Settings schemas removed - now imported from settings-schema.ts above
 
 // Prompt history response
 export const GetPromptHistoryResponseSchema = z.object({
