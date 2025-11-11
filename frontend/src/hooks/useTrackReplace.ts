@@ -24,7 +24,7 @@ export const useTrackReplace = (
       const aiProvider = settings.aiProvider
       const apiKey = aiProvider === 'claude' ? settings.anthropicApiKey : settings.openaiApiKey
 
-      if (apiKey.trim().length === 0) {
+      if (apiKey === undefined || apiKey.trim().length === 0) {
         setError(`${aiProvider === 'claude' ? 'Anthropic' : 'OpenAI'} API key not configured`)
         return
       }

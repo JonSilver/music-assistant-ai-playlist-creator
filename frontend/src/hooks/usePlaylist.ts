@@ -22,6 +22,7 @@ interface UsePlaylistReturn {
   creating: boolean
   refining: boolean
   replacingTrackIndex: number | null
+  retryingTrackIndex: number | null
   generatedTracks: TrackMatch[]
   setGeneratedTracks: (tracks: TrackMatch[]) => void
   trackFilter: 'all' | 'matched' | 'unmatched'
@@ -32,6 +33,7 @@ interface UsePlaylistReturn {
   createPlaylist: () => Promise<void>
   refinePlaylist: () => Promise<void>
   replaceTrack: (index: number) => Promise<void>
+  retryTrack: (index: number) => Promise<void>
   removeTrack: (index: number) => void
   clearTracks: () => void
 }
@@ -45,6 +47,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
   const [generating, setGenerating] = useState(false)
   const [creating, setCreating] = useState(false)
   const [refining, setRefining] = useState(false)
+  const [retryingTrackIndex, setRetryingTrackIndex] = useState<number | null>(null)
   const [generatedTracks, setGeneratedTracks] = useState<TrackMatch[]>([])
   const [trackFilter, setTrackFilter] = useState<'all' | 'matched' | 'unmatched'>('all')
   const [refinementPrompt, setRefinementPrompt] = useState('')
@@ -197,6 +200,37 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
     )
   }, [refinementPrompt, generatedTracks, settings, setError])
 
+  const retryTrack = useCallback(
+    async (index: number): Promise<void> => {
+      const track = generatedTracks[index]
+      if (track === undefined) return
+
+      setRetryingTrackIndex(index)
+      setGeneratedTracks(prev => {
+        const updated = [...prev]
+        updated[index] = { ...track, matching: true, matched: false }
+        return updated
+      })
+
+      await matchTracksProgressively(
+        [{ ...track, matching: true, matched: false }],
+        settings.musicAssistantUrl,
+        updater => {
+          setGeneratedTracks(prev => {
+            const matched = updater([track])
+            const updated = [...prev]
+            updated[index] = matched[0] ?? track
+            return updated
+          })
+        },
+        setError
+      )
+
+      setRetryingTrackIndex(null)
+    },
+    [generatedTracks, settings.musicAssistantUrl, setError]
+  )
+
   const removeTrack = useCallback((index: number): void => {
     setGeneratedTracks(prev => prev.filter((_, i) => i !== index))
   }, [])
@@ -216,6 +250,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
     creating,
     refining,
     replacingTrackIndex,
+    retryingTrackIndex,
     generatedTracks,
     setGeneratedTracks,
     trackFilter,
@@ -226,6 +261,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
     createPlaylist,
     refinePlaylist,
     replaceTrack,
+    retryTrack,
     removeTrack,
     clearTracks
   }

@@ -189,9 +189,11 @@ const App = (): React.JSX.Element => {
             tracks={playlist.generatedTracks}
             creating={playlist.creating}
             replacingTrackIndex={playlist.replacingTrackIndex}
+            retryingTrackIndex={playlist.retryingTrackIndex}
             trackFilter={playlist.trackFilter}
             onTrackFilterChange={playlist.setTrackFilter}
             onReplaceTrack={playlist.replaceTrack}
+            onRetryTrack={playlist.retryTrack}
             onRemoveTrack={playlist.removeTrack}
             onClear={playlist.clearTracks}
             onRefine={openRefine}

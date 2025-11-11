@@ -5,9 +5,11 @@ interface GeneratedTracksDisplayProps {
   tracks: TrackMatch[]
   creating: boolean
   replacingTrackIndex: number | null
+  retryingTrackIndex: number | null
   trackFilter: 'all' | 'matched' | 'unmatched'
   onTrackFilterChange: (filter: 'all' | 'matched' | 'unmatched') => void
   onReplaceTrack: (index: number) => void
+  onRetryTrack: (index: number) => void
   onRemoveTrack: (index: number) => void
   onClear: () => void
   onRefine: () => void
@@ -18,9 +20,11 @@ export const GeneratedTracksDisplay = ({
   tracks,
   creating,
   replacingTrackIndex,
+  retryingTrackIndex,
   trackFilter,
   onTrackFilterChange,
   onReplaceTrack,
+  onRetryTrack,
   onRemoveTrack,
   onClear,
   onRefine,
@@ -173,6 +177,24 @@ export const GeneratedTracksDisplay = ({
                       </td>
                       <td>
                         <div className="flex gap-1">
+                          {!track.matched && !track.matching && (
+                            <button
+                              className="btn btn-ghost btn-xs"
+                              onClick={() => {
+                                void onRetryTrack(actualIndex)
+                              }}
+                              disabled={retryingTrackIndex === actualIndex}
+                            >
+                              {retryingTrackIndex === actualIndex ? (
+                                <>
+                                  <span className="loading loading-spinner loading-xs"></span>
+                                  Retrying...
+                                </>
+                              ) : (
+                                'Retry'
+                              )}
+                            </button>
+                          )}
                           <button
                             className="btn btn-ghost btn-xs"
                             onClick={() => {
