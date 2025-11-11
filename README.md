@@ -247,11 +247,9 @@ docker-compose up -d
 
 ## Planned Features
 
-- Replace Track button next to each track
 - Investigate possible Spotify integration
 - A proper logo and icon
 - Clear Query button to reset prompt
-- Possible MusicBrainz integration
 
 ## License
 
