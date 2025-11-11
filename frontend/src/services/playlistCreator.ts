@@ -92,3 +92,74 @@ export const refinePlaylist = async (
     matching: true
   }))
 }
+
+export const replaceTrack = async (
+  trackToReplace: TrackMatch,
+  originalPrompt: string,
+  playlistName: string,
+  musicAssistantUrl: string,
+  aiProvider: 'claude' | 'openai',
+  apiKey: string,
+  model?: string,
+  baseUrl?: string,
+  customSystemPrompt?: string,
+  temperature?: number
+): Promise<TrackMatch> => {
+  const { generatePlaylist: generatePlaylistAI } = await import('./ai')
+
+  const [maConnectErr, maClient] = await attemptPromise(async () => {
+    const client = new MusicAssistantClient(musicAssistantUrl)
+    await client.connect()
+    return client
+  })
+
+  if (maConnectErr !== undefined) {
+    throw new Error(`Failed to connect to Music Assistant: ${maConnectErr.message}`)
+  }
+
+  const [favoriteErr, favoriteArtists] = await attemptPromise(async () =>
+    maClient.getFavoriteArtists()
+  )
+  maClient.disconnect()
+
+  if (favoriteErr !== undefined) {
+    throw new Error(`Failed to get favorite artists: ${favoriteErr.message}`)
+  }
+
+  const replacementPrompt = `Original playlist context: "${originalPrompt}" for playlist "${playlistName}"
+
+Please suggest ONE alternative track to replace "${trackToReplace.suggestion.title}" by ${trackToReplace.suggestion.artist}.
+
+The replacement should:
+- Fit the same playlist context and mood
+- Be from a different artist
+- Maintain the overall flow and theme`
+
+  const [aiErr, aiResult] = await attemptPromise(async () =>
+    generatePlaylistAI({
+      prompt: replacementPrompt,
+      favoriteArtists,
+      provider: aiProvider,
+      apiKey,
+      model,
+      baseUrl,
+      customSystemPrompt,
+      temperature,
+      trackCount: 1
+    })
+  )
+
+  if (aiErr !== undefined) {
+    throw new Error(`Failed to get replacement track: ${aiErr.message}`)
+  }
+
+  if (aiResult.tracks.length === 0) {
+    throw new Error('AI did not return a replacement track')
+  }
+
+  return {
+    suggestion: aiResult.tracks[0],
+    matched: false,
+    matching: true
+  }
+}

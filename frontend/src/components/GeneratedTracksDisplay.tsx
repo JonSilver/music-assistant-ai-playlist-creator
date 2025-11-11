@@ -4,8 +4,10 @@ import type { TrackMatch } from '../../../shared/types'
 interface GeneratedTracksDisplayProps {
   tracks: TrackMatch[]
   creating: boolean
+  replacingTrackIndex: number | null
   trackFilter: 'all' | 'matched' | 'unmatched'
   onTrackFilterChange: (filter: 'all' | 'matched' | 'unmatched') => void
+  onReplaceTrack: (index: number) => void
   onRemoveTrack: (index: number) => void
   onClear: () => void
   onRefine: () => void
@@ -15,8 +17,10 @@ interface GeneratedTracksDisplayProps {
 export const GeneratedTracksDisplay = ({
   tracks,
   creating,
+  replacingTrackIndex,
   trackFilter,
   onTrackFilterChange,
+  onReplaceTrack,
   onRemoveTrack,
   onClear,
   onRefine,
@@ -168,14 +172,32 @@ export const GeneratedTracksDisplay = ({
                         )}
                       </td>
                       <td>
-                        <button
-                          className="btn btn-ghost btn-xs"
-                          onClick={() => {
-                            onRemoveTrack(actualIndex)
-                          }}
-                        >
-                          Remove
-                        </button>
+                        <div className="flex gap-1">
+                          <button
+                            className="btn btn-ghost btn-xs"
+                            onClick={() => {
+                              void onReplaceTrack(actualIndex)
+                            }}
+                            disabled={replacingTrackIndex === actualIndex}
+                          >
+                            {replacingTrackIndex === actualIndex ? (
+                              <>
+                                <span className="loading loading-spinner loading-xs"></span>
+                                Replacing...
+                              </>
+                            ) : (
+                              'Replace'
+                            )}
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-xs"
+                            onClick={() => {
+                              onRemoveTrack(actualIndex)
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )

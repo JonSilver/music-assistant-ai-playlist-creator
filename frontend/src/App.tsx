@@ -188,8 +188,10 @@ const App = (): React.JSX.Element => {
           <GeneratedTracksDisplay
             tracks={playlist.generatedTracks}
             creating={playlist.creating}
+            replacingTrackIndex={playlist.replacingTrackIndex}
             trackFilter={playlist.trackFilter}
             onTrackFilterChange={playlist.setTrackFilter}
+            onReplaceTrack={playlist.replaceTrack}
             onRemoveTrack={playlist.removeTrack}
             onClear={playlist.clearTracks}
             onRefine={openRefine}

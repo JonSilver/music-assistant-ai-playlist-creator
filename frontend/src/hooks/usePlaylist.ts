@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { attemptPromise } from '@jfdi/attempt'
 import { useAlerts } from './useAlerts'
 import { useSettings } from '../contexts/AppContext'
+import { useTrackReplace } from './useTrackReplace'
 import { matchTracksProgressively } from '../services/trackMatching'
 import { generatePlaylist as generatePlaylistService } from '../services/playlistGenerator'
 import {
@@ -20,6 +21,7 @@ interface UsePlaylistReturn {
   generating: boolean
   creating: boolean
   refining: boolean
+  replacingTrackIndex: number | null
   generatedTracks: TrackMatch[]
   setGeneratedTracks: (tracks: TrackMatch[]) => void
   trackFilter: 'all' | 'matched' | 'unmatched'
@@ -29,6 +31,7 @@ interface UsePlaylistReturn {
   generatePlaylist: () => Promise<void>
   createPlaylist: () => Promise<void>
   refinePlaylist: () => Promise<void>
+  replaceTrack: (index: number) => Promise<void>
   removeTrack: (index: number) => void
   clearTracks: () => void
 }
@@ -45,6 +48,15 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
   const [generatedTracks, setGeneratedTracks] = useState<TrackMatch[]>([])
   const [trackFilter, setTrackFilter] = useState<'all' | 'matched' | 'unmatched'>('all')
   const [refinementPrompt, setRefinementPrompt] = useState('')
+
+  const { replacingTrackIndex, replaceTrack } = useTrackReplace(
+    generatedTracks,
+    prompt,
+    playlistName,
+    settings,
+    setGeneratedTracks,
+    setError
+  )
 
   const generatePlaylist = useCallback(async (): Promise<void> => {
     if (prompt.trim().length === 0 || playlistName.trim().length === 0) {
@@ -203,6 +215,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
     generating,
     creating,
     refining,
+    replacingTrackIndex,
     generatedTracks,
     setGeneratedTracks,
     trackFilter,
@@ -212,6 +225,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
     generatePlaylist,
     createPlaylist,
     refinePlaylist,
+    replaceTrack,
     removeTrack,
     clearTracks
   }

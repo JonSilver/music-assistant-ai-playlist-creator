@@ -8,7 +8,6 @@ interface AlertMessageProps {
 
 const renderMessageWithLinks = (message: string): React.JSX.Element => {
   const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g
-  const parts: Array<string | React.JSX.Element> = []
   const messageText = message
   const matches = Array.from(messageText.matchAll(linkRegex))
 
@@ -17,7 +16,7 @@ const renderMessageWithLinks = (message: string): React.JSX.Element => {
   }
 
   const processedParts = matches.reduce<{
-    parts: Array<string | React.JSX.Element>
+    parts: (string | React.JSX.Element)[]
     lastIndex: number
   }>(
     (acc, match) => {
