@@ -6,7 +6,7 @@ export const createPlaylist = async (
   playlistName: string,
   tracks: TrackMatch[],
   musicAssistantUrl: string
-): Promise<{ playlistId: string; tracksAdded: number }> => {
+): Promise<{ playlistId: string; tracksAdded: number; playlistUrl: string }> => {
   const maClient = new MusicAssistantClient(musicAssistantUrl)
   await maClient.connect()
 
@@ -27,7 +27,9 @@ export const createPlaylist = async (
 
   maClient.disconnect()
 
-  return { playlistId, tracksAdded: trackUris.length }
+  const playlistUrl = `${musicAssistantUrl}/#/playlists/library/${playlistId}`
+
+  return { playlistId, tracksAdded: trackUris.length, playlistUrl }
 }
 
 export const refinePlaylist = async (

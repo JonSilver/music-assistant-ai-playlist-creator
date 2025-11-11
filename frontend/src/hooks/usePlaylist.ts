@@ -124,7 +124,9 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
       return
     }
 
-    setSuccess(`Playlist created successfully! Added ${result.tracksAdded} tracks.`)
+    setSuccess(
+      `Playlist created successfully! Added ${result.tracksAdded} tracks. [Open in Music Assistant](${result.playlistUrl})`
+    )
     setPrompt('')
     setPlaylistName('')
     setGeneratedTracks([])

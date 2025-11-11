@@ -6,6 +6,57 @@ interface AlertMessageProps {
   onDismiss: () => void
 }
 
+const renderMessageWithLinks = (message: string): React.JSX.Element => {
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g
+  const parts: Array<string | React.JSX.Element> = []
+  const messageText = message
+  const matches = Array.from(messageText.matchAll(linkRegex))
+
+  if (matches.length === 0) {
+    return <span>{message}</span>
+  }
+
+  const processedParts = matches.reduce<{
+    parts: Array<string | React.JSX.Element>
+    lastIndex: number
+  }>(
+    (acc, match) => {
+      const fullMatch = match[0]
+      const linkText = match[1]
+      const url = match[2]
+      const matchIndex = match.index ?? 0
+
+      if (matchIndex > acc.lastIndex) {
+        acc.parts.push(messageText.substring(acc.lastIndex, matchIndex))
+      }
+
+      acc.parts.push(
+        <a
+          key={matchIndex}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-primary"
+        >
+          {linkText}
+        </a>
+      )
+
+      return {
+        parts: acc.parts,
+        lastIndex: matchIndex + fullMatch.length
+      }
+    },
+    { parts: [], lastIndex: 0 }
+  )
+
+  if (processedParts.lastIndex < messageText.length) {
+    processedParts.parts.push(messageText.substring(processedParts.lastIndex))
+  }
+
+  return <span>{processedParts.parts}</span>
+}
+
 export const AlertMessage = ({
   type,
   message,
@@ -34,7 +85,7 @@ export const AlertMessage = ({
         />
       )}
     </svg>
-    <span>{message}</span>
+    {renderMessageWithLinks(message)}
     <button className="btn btn-sm btn-ghost" onClick={onDismiss}>
       ✕
     </button>
