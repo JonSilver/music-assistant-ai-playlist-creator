@@ -181,7 +181,7 @@ export const GeneratedTracksDisplay = ({
                             <button
                               className="btn btn-ghost btn-xs"
                               onClick={() => {
-                                void onRetryTrack(actualIndex)
+                                onRetryTrack(actualIndex)
                               }}
                               disabled={retryingTrackIndex === actualIndex}
                             >
@@ -198,7 +198,7 @@ export const GeneratedTracksDisplay = ({
                           <button
                             className="btn btn-ghost btn-xs"
                             onClick={() => {
-                              void onReplaceTrack(actualIndex)
+                              onReplaceTrack(actualIndex)
                             }}
                             disabled={replacingTrackIndex === actualIndex}
                           >
