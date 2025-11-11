@@ -15,7 +15,8 @@
     "dev:backend": "npm run dev --workspace=backend",
     "type-check": "npm run type-check --workspaces --if-present",
     "lint": "npm run lint --workspaces -- --fix",
-    "lint:fix": "npm run lint:fix --workspaces"
+    "lint:fix": "npm run lint:fix --workspaces",
+    "knip": "knip"
   },
   "keywords": [
     "music-assistant",
@@ -27,6 +28,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "@types/node": "^24.10.0",
+    "concurrently": "^9.1.2",
+    "knip": "^5.69.0",
+    "typescript": "^5.9.3"
   }
 }
