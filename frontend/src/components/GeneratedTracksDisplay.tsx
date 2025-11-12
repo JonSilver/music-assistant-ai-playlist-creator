@@ -1,6 +1,7 @@
 import React from "react";
 import type { TrackMatch } from "../../../shared/types";
 import { UI_LABELS, TRACK_FILTERS, MATCH_THRESHOLDS } from "@shared/constants";
+import { TrackRow } from "./TrackRow";
 
 interface GeneratedTracksDisplayProps {
     tracks: TrackMatch[];
@@ -12,6 +13,7 @@ interface GeneratedTracksDisplayProps {
     onReplaceTrack: (index: number) => void;
     onRetryTrack: (index: number) => void;
     onRemoveTrack: (index: number) => void;
+    onSelectMatch: (trackIndex: number, matchIndex: number) => void;
     onClear: () => void;
     onRefine: () => void;
     onCreate: () => void;
@@ -27,6 +29,7 @@ export const GeneratedTracksDisplay = ({
     onReplaceTrack,
     onRetryTrack,
     onRemoveTrack,
+    onSelectMatch,
     onClear,
     onRefine,
     onCreate
@@ -129,118 +132,17 @@ export const GeneratedTracksDisplay = ({
                                 filteredTracks.map(track => {
                                     const actualIndex = tracks.indexOf(track);
                                     return (
-                                        <tr
+                                        <TrackRow
                                             key={actualIndex}
-                                            className={track.matched ? "" : "opacity-50"}
-                                        >
-                                            <td className="text-center opacity-60 font-mono text-sm">
-                                                {actualIndex + 1}
-                                            </td>
-                                            <td>
-                                                <div className="font-medium">
-                                                    {track.suggestion.title}
-                                                </div>
-                                                {track.maTrack !== undefined && (
-                                                    <div className="text-xs opacity-60">
-                                                        {track.maTrack.provider}
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td>{track.suggestion.artist}</td>
-                                            <td>{track.suggestion.album ?? "-"}</td>
-                                            <td>
-                                                {track.matching === true ? (
-                                                    <span className="badge badge-warning gap-1">
-                                                        <span className="loading loading-spinner loading-xs"></span>
-                                                        {UI_LABELS.MATCHING}
-                                                    </span>
-                                                ) : track.matched ? (
-                                                    <span className="badge badge-success gap-1">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            className="inline-block w-4 h-4 stroke-current"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth="2"
-                                                                d="M5 13l4 4L19 7"
-                                                            ></path>
-                                                        </svg>
-                                                        {UI_LABELS.FOUND}
-                                                    </span>
-                                                ) : (
-                                                    <span className="badge badge-error gap-1">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            className="inline-block w-4 h-4 stroke-current"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth="2"
-                                                                d="M6 18L18 6M6 6l12 12"
-                                                            ></path>
-                                                        </svg>
-                                                        {UI_LABELS.NOT_FOUND}
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td>
-                                                <div className="flex gap-1">
-                                                    {!track.matched && !track.matching && (
-                                                        <button
-                                                            className="btn btn-ghost btn-xs"
-                                                            onClick={() => {
-                                                                onRetryTrack(actualIndex);
-                                                            }}
-                                                            disabled={
-                                                                retryingTrackIndex === actualIndex
-                                                            }
-                                                        >
-                                                            {retryingTrackIndex === actualIndex ? (
-                                                                <>
-                                                                    <span className="loading loading-spinner loading-xs"></span>
-                                                                    {UI_LABELS.RETRY}...
-                                                                </>
-                                                            ) : (
-                                                                UI_LABELS.RETRY
-                                                            )}
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        className="btn btn-ghost btn-xs"
-                                                        onClick={() => {
-                                                            onReplaceTrack(actualIndex);
-                                                        }}
-                                                        disabled={
-                                                            replacingTrackIndex === actualIndex
-                                                        }
-                                                    >
-                                                        {replacingTrackIndex === actualIndex ? (
-                                                            <>
-                                                                <span className="loading loading-spinner loading-xs"></span>
-                                                                {UI_LABELS.REPLACE}...
-                                                            </>
-                                                        ) : (
-                                                            UI_LABELS.REPLACE
-                                                        )}
-                                                    </button>
-                                                    <button
-                                                        className="btn btn-ghost btn-xs"
-                                                        onClick={() => {
-                                                            onRemoveTrack(actualIndex);
-                                                        }}
-                                                    >
-                                                        {UI_LABELS.REMOVE}
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                            track={track}
+                                            index={actualIndex}
+                                            replacingTrackIndex={replacingTrackIndex}
+                                            retryingTrackIndex={retryingTrackIndex}
+                                            onReplaceTrack={onReplaceTrack}
+                                            onRetryTrack={onRetryTrack}
+                                            onRemoveTrack={onRemoveTrack}
+                                            onSelectMatch={onSelectMatch}
+                                        />
                                     );
                                 })
                             )}

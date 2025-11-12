@@ -35,6 +35,7 @@ export interface UsePlaylistReturn {
     replaceTrack: (index: number) => Promise<void>;
     retryTrack: (index: number) => Promise<void>;
     removeTrack: (index: number) => void;
+    selectMatch: (trackIndex: number, matchIndex: number) => void;
     clearTracks: () => void;
 }
 
@@ -242,6 +243,24 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         setGeneratedTracks([]);
     }, []);
 
+    const selectMatch = useCallback((trackIndex: number, matchIndex: number): void => {
+        setGeneratedTracks(prev => {
+            const updated = [...prev];
+            const track = updated[trackIndex];
+            if (track === undefined || track.maMatches === undefined) return prev;
+
+            const selectedMatch = track.maMatches[matchIndex];
+            if (selectedMatch === undefined) return prev;
+
+            updated[trackIndex] = {
+                ...track,
+                selectedMatchIndex: matchIndex,
+                maTrack: selectedMatch
+            };
+            return updated;
+        });
+    }, []);
+
     return {
         prompt,
         setPrompt,
@@ -266,6 +285,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         replaceTrack,
         retryTrack,
         removeTrack,
+        selectMatch,
         clearTracks
     };
 };

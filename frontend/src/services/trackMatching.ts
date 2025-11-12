@@ -58,14 +58,17 @@ export const matchTrack = async (
         const matchedArtist = firstArtist !== undefined ? firstArtist.name : "unknown";
         const totalDuration = performance.now() - startTime;
         const durationMs = Math.round(totalDuration);
+        const multipleMatches = results.length > 1 ? ` (${results.length} matches)` : "";
         console.log(
-            `[${new Date().toISOString()}] [MATCH] ✓ "${match.name}" by "${matchedArtist}" (${durationMs}ms)`
+            `[${new Date().toISOString()}] [MATCH] ✓ "${match.name}" by "${matchedArtist}" (${durationMs}ms)${multipleMatches}`
         );
 
         return {
             suggestion,
             matched: true,
-            maTrack: match
+            maTrack: match,
+            maMatches: results.length > 1 ? results : undefined,
+            selectedMatchIndex: 0
         };
     };
 

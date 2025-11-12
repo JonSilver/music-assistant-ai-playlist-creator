@@ -58,6 +58,8 @@ export const TrackMatchSchema = z.object({
   suggestion: TrackSuggestionSchema,
   matched: z.boolean(),
   maTrack: MATrackSchema.optional(),
+  maMatches: z.array(MATrackSchema).optional(),
+  selectedMatchIndex: z.number().optional(),
   confidence: z.number().optional(),
   matching: z.boolean().optional()
 })

@@ -97,6 +97,9 @@ export const MainView: FC<MainViewProps> = ({
                             void playlist.retryTrack(index);
                         }}
                         onRemoveTrack={playlist.removeTrack}
+                        onSelectMatch={(trackIndex: number, matchIndex: number) => {
+                            playlist.selectMatch(trackIndex, matchIndex);
+                        }}
                         onClear={playlist.clearTracks}
                         onRefine={openRefine}
                         onCreate={() => {
