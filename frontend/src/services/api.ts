@@ -6,9 +6,12 @@ import type {
     PresetPrompt
 } from "@shared/types";
 
-const backendPort = (import.meta.env.VITE_BACKEND_PORT as string | undefined) ?? "3333";
-const API_BASE =
-    (import.meta.env.VITE_API_URL as string | undefined) ?? `http://localhost:${backendPort}/api`;
+// In production (Docker), backend serves frontend on same origin, so use relative path
+// In development, frontend (5555) and backend (3333) are separate, so use absolute URL
+const isDev = import.meta.env.DEV;
+const API_BASE = isDev
+    ? `http://localhost:${import.meta.env.VITE_BACKEND_PORT ?? "3333"}/api`
+    : "/api";
 
 interface ErrorResponse {
     error?: string;
