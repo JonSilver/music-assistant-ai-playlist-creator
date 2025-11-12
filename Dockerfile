@@ -12,8 +12,6 @@ WORKDIR /app
 COPY --from=deps /app /app
 COPY . .
 
-# Run builds by PATH, not by workspace name (robust for any package name)
-# RUN npm run --workspace ./frontend build && npm run --workspace ./backend build
 RUN npm run build:prod
 
 # Sanity-check: fail fast if dist missing
@@ -24,26 +22,26 @@ FROM node:22-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 
-# Backend prod deps only
+# Backend production deps only
 COPY backend/package*.json ./backend/
 RUN cd backend && npm install --omit=dev --no-audit --no-fund
 
-# Server artefacts
+# App artefacts
 COPY --from=build /app/backend/dist ./backend/dist
-COPY --from=build /app/shared ./shared
+# COPY --from=build /app/shared ./shared
 
-# Place SPA in several likely static roots
+# Deploy frontend build output to backend static serving path
 COPY --from=build /app/frontend/dist ./backend/dist/public
-# COPY --from=build /app/frontend/dist ./backend/dist/backend/public
-# COPY --from=build /app/frontend/dist ./backend/dist/backend/src/public
-# Also drop alongside server root just in case the server serves __dirname
-# COPY --from=build /app/frontend/dist ./backend/dist
+
+# Data dir expected to be a volume
+RUN mkdir -p /app/data
+VOLUME ["/app/data"]
+
+# Strict volume check entrypoint (atomic write, executable, on PATH)
+COPY entrypoint.sh /usr/local/bin/entrypoint
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint && chmod +x /usr/local/bin/entrypoint
 
 USER node
-EXPOSE ${PORT:-9876}
-
-# Optional healthcheck: returns 2xx if SPA served
-HEALTHCHECK --interval=20s --timeout=3s --start-period=10s --retries=3 \
-    CMD wget -qO- http://127.0.0.1:${PORT:-9876}/ >/dev/null 2>&1 || exit 1
-
+EXPOSE 9876
+ENTRYPOINT ["entrypoint"]
 CMD ["node", "backend/dist/backend/src/server.js"]
