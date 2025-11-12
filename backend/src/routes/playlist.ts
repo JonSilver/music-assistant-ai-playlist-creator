@@ -21,7 +21,8 @@ const matchTrack = async (
     // Use Music Assistant's search - it's excellent, trust it
     const searchQuery = `${suggestion.title} ${suggestion.artist}`;
     console.log(`Searching for: "${searchQuery}"`);
-    const searchResults = await maClient.searchTracks(searchQuery, 5);
+    const searchLimit = 5;
+    const searchResults = await maClient.searchTracks(searchQuery, searchLimit);
 
     console.log(`Search returned ${searchResults.length} results`);
     if (searchResults.length > 0) {

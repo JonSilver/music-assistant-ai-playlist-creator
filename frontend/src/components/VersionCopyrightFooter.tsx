@@ -1,5 +1,5 @@
+import { author, version } from "@shared/constants/general";
 import type { FC } from "react";
-import { author, version } from "../../package.json";
 
 interface IVersionCopyrightFooterProps {
     showCopyright?: boolean;

@@ -1,6 +1,15 @@
 import WebSocket from "ws";
 import { attempt, attemptPromise } from "@jfdi/attempt";
 import type { MATrack } from "../../../shared/types.js";
+import {
+    MA_COMMANDS,
+    MEDIA_TYPES,
+    WS_MESSAGE_PREFIX,
+    WS_PATH,
+    TIMEOUTS,
+    LIMITS,
+    ERROR_MESSAGES
+} from "../../../shared/constants/index.js";
 
 interface MAResponse {
     message_id: string;
@@ -48,14 +57,14 @@ export class MusicAssistantClient {
     constructor(private url: string) {}
 
     async connect(): Promise<void> {
-        const wsUrl = this.url.replace(/^http/, "ws") + "/ws";
+        const wsUrl = this.url.replace(/^http/, "ws") + WS_PATH;
 
         const [err] = await attemptPromise(async () => {
             this.ws = new WebSocket(wsUrl);
 
             return new Promise<void>((resolve, reject) => {
                 if (this.ws === null) {
-                    reject(new Error("WebSocket not initialized"));
+                    reject(new Error(ERROR_MESSAGES.WS_NOT_INITIALIZED));
                     return;
                 }
 
@@ -72,7 +81,7 @@ export class MusicAssistantClient {
         });
 
         if (err !== undefined) {
-            throw new Error(`Failed to connect to Music Assistant: ${err.message}`);
+            throw new Error(`${ERROR_MESSAGES.CONNECTION_FAILED}: ${err.message}`);
         }
     }
 
@@ -106,10 +115,10 @@ export class MusicAssistantClient {
 
     private async sendCommand<T>(command: string, params?: Record<string, unknown>): Promise<T> {
         if (this.ws === null || this.ws.readyState !== WebSocket.OPEN) {
-            throw new Error("Not connected to Music Assistant");
+            throw new Error(ERROR_MESSAGES.WS_NOT_CONNECTED);
         }
 
-        const messageId = `msg_${this.messageId++}`;
+        const messageId = `${WS_MESSAGE_PREFIX}${this.messageId++}`;
         const message = {
             message_id: messageId,
             command,
@@ -133,20 +142,20 @@ export class MusicAssistantClient {
                 reject(err);
             }
 
-            // Timeout after 30 seconds
+            // Timeout
             setTimeout(() => {
                 if (this.pendingRequests.has(messageId)) {
                     this.pendingRequests.delete(messageId);
-                    reject(new Error("Request timeout"));
+                    reject(new Error(ERROR_MESSAGES.REQUEST_TIMEOUT));
                 }
-            }, 30000);
+            }, TIMEOUTS.AI_REQUEST);
         });
     }
 
-    async searchTracks(query: string, limit = 50): Promise<MATrack[]> {
-        const result = await this.sendCommand<MASearchResults>("music/search", {
+    async searchTracks(query: string, limit = LIMITS.SEARCH_TRACKS): Promise<MATrack[]> {
+        const result = await this.sendCommand<MASearchResults>(MA_COMMANDS.SEARCH, {
             search_query: query,
-            media_types: ["track"],
+            media_types: [MEDIA_TYPES.TRACK],
             limit
         });
 
@@ -165,8 +174,8 @@ export class MusicAssistantClient {
 
     async getFavoriteArtists(): Promise<string[]> {
         const [err, result] = await attemptPromise(async () => {
-            const response = await this.sendCommand<MAFavoritesResponse>("music/favorites", {
-                media_type: "artist"
+            const response = await this.sendCommand<MAFavoritesResponse>(MA_COMMANDS.FAVORITES, {
+                media_type: MEDIA_TYPES.ARTIST
             });
             return response.items.map(item => item.name);
         });
@@ -175,9 +184,9 @@ export class MusicAssistantClient {
         return err !== undefined ? [] : result;
     }
 
-    async getLibraryTracks(limit = 1000): Promise<MATrack[]> {
-        const result = await this.sendCommand<{ items: MATrack[] }>("music/library_items", {
-            media_type: "track",
+    async getLibraryTracks(limit = LIMITS.LIBRARY_TRACKS): Promise<MATrack[]> {
+        const result = await this.sendCommand<{ items: MATrack[] }>(MA_COMMANDS.LIBRARY_ITEMS, {
+            media_type: MEDIA_TYPES.TRACK,
             limit
         });
 
@@ -185,7 +194,7 @@ export class MusicAssistantClient {
     }
 
     async createPlaylist(name: string, providerInstance?: string): Promise<string> {
-        const result = await this.sendCommand<MAPlaylist>("music/playlists/create_playlist", {
+        const result = await this.sendCommand<MAPlaylist>(MA_COMMANDS.CREATE_PLAYLIST, {
             name,
             provider_instance: providerInstance
         });
@@ -195,7 +204,7 @@ export class MusicAssistantClient {
     }
 
     async addTracksToPlaylist(playlistId: string, trackUris: string[]): Promise<void> {
-        await this.sendCommand("music/playlists/add_playlist_tracks", {
+        await this.sendCommand(MA_COMMANDS.ADD_PLAYLIST_TRACKS, {
             db_playlist_id: playlistId,
             uris: trackUris
         });

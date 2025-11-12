@@ -1,8 +1,6 @@
 {
     "name": "frontend",
     "private": true,
-    "version": "0.5.0",
-    "author": "Jon Silver",
     "type": "module",
     "scripts": {
         "dev": "vite",

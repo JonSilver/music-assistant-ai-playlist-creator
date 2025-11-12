@@ -1,7 +1,7 @@
 {
     "name": "music-assistant-ai-playlist-creator",
-    "version": "0.5.0",
     "description": "AI-assisted playlist creator for Music Assistant",
+    "version": "0.5.0",
     "private": true,
     "workspaces": [
         "frontend",

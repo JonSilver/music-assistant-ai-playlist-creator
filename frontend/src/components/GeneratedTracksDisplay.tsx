@@ -1,5 +1,6 @@
 import React from "react";
 import type { TrackMatch } from "../../../shared/types";
+import { UI_LABELS, TRACK_FILTERS, MATCH_THRESHOLDS } from "@shared/constants";
 
 interface GeneratedTracksDisplayProps {
     tracks: TrackMatch[];
@@ -39,8 +40,8 @@ export const GeneratedTracksDisplay = ({
     const isMatching = tracks.some(t => t.matching === true);
 
     const filteredTracks = tracks.filter(track => {
-        if (trackFilter === "matched") return track.matched;
-        if (trackFilter === "unmatched") return !track.matched;
+        if (trackFilter === TRACK_FILTERS.MATCHED) return track.matched;
+        if (trackFilter === TRACK_FILTERS.UNMATCHED) return !track.matched;
         return true;
     });
 
@@ -49,7 +50,7 @@ export const GeneratedTracksDisplay = ({
             <div className="card-body">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <h2 className="card-title mb-2">Generated Tracks</h2>
+                        <h2 className="card-title mb-2">{UI_LABELS.GENERATED_TRACKS}</h2>
                         <div className="text-sm space-y-1">
                             <p>
                                 <span className="font-semibold">{matchedCount}</span> of{" "}
@@ -65,33 +66,33 @@ export const GeneratedTracksDisplay = ({
                     </div>
                     <div className="btn-group">
                         <button
-                            className={`btn btn-sm ${trackFilter === "all" ? "btn-active" : ""}`}
+                            className={`btn btn-sm ${trackFilter === TRACK_FILTERS.ALL ? "btn-active" : ""}`}
                             onClick={() => {
-                                onTrackFilterChange("all");
+                                onTrackFilterChange(TRACK_FILTERS.ALL);
                             }}
                         >
                             All ({totalCount})
                         </button>
                         <button
-                            className={`btn btn-sm ${trackFilter === "matched" ? "btn-active" : ""}`}
+                            className={`btn btn-sm ${trackFilter === TRACK_FILTERS.MATCHED ? "btn-active" : ""}`}
                             onClick={() => {
-                                onTrackFilterChange("matched");
+                                onTrackFilterChange(TRACK_FILTERS.MATCHED);
                             }}
                         >
-                            Found ({matchedCount})
+                            {UI_LABELS.FOUND} ({matchedCount})
                         </button>
                         <button
-                            className={`btn btn-sm ${trackFilter === "unmatched" ? "btn-active" : ""}`}
+                            className={`btn btn-sm ${trackFilter === TRACK_FILTERS.UNMATCHED ? "btn-active" : ""}`}
                             onClick={() => {
-                                onTrackFilterChange("unmatched");
+                                onTrackFilterChange(TRACK_FILTERS.UNMATCHED);
                             }}
                         >
-                            Not Found ({totalCount - matchedCount})
+                            {UI_LABELS.NOT_FOUND} ({totalCount - matchedCount})
                         </button>
                     </div>
                 </div>
 
-                {matchPercentage < 100 && matchPercentage > 0 && (
+                {matchPercentage < MATCH_THRESHOLDS.PERFECT && matchPercentage > MATCH_THRESHOLDS.MIN_DISPLAY && (
                     <div className="mb-4">
                         <div className="flex justify-between text-xs mb-1">
                             <span>Match Rate</span>
@@ -100,7 +101,7 @@ export const GeneratedTracksDisplay = ({
                         <progress
                             className="progress progress-success w-full"
                             value={matchPercentage}
-                            max="100"
+                            max={MATCH_THRESHOLDS.PERFECT}
                         ></progress>
                     </div>
                 )}
@@ -151,7 +152,7 @@ export const GeneratedTracksDisplay = ({
                                                 {track.matching === true ? (
                                                     <span className="badge badge-warning gap-1">
                                                         <span className="loading loading-spinner loading-xs"></span>
-                                                        Searching...
+                                                        {UI_LABELS.MATCHING}
                                                     </span>
                                                 ) : track.matched ? (
                                                     <span className="badge badge-success gap-1">
@@ -168,7 +169,7 @@ export const GeneratedTracksDisplay = ({
                                                                 d="M5 13l4 4L19 7"
                                                             ></path>
                                                         </svg>
-                                                        Found
+                                                        {UI_LABELS.FOUND}
                                                     </span>
                                                 ) : (
                                                     <span className="badge badge-error gap-1">
@@ -185,7 +186,7 @@ export const GeneratedTracksDisplay = ({
                                                                 d="M6 18L18 6M6 6l12 12"
                                                             ></path>
                                                         </svg>
-                                                        Not Found
+                                                        {UI_LABELS.NOT_FOUND}
                                                     </span>
                                                 )}
                                             </td>
@@ -204,10 +205,10 @@ export const GeneratedTracksDisplay = ({
                                                             {retryingTrackIndex === actualIndex ? (
                                                                 <>
                                                                     <span className="loading loading-spinner loading-xs"></span>
-                                                                    Retrying...
+                                                                    {UI_LABELS.RETRY}...
                                                                 </>
                                                             ) : (
-                                                                "Retry"
+                                                                UI_LABELS.RETRY
                                                             )}
                                                         </button>
                                                     )}
@@ -223,10 +224,10 @@ export const GeneratedTracksDisplay = ({
                                                         {replacingTrackIndex === actualIndex ? (
                                                             <>
                                                                 <span className="loading loading-spinner loading-xs"></span>
-                                                                Replacing...
+                                                                {UI_LABELS.REPLACE}...
                                                             </>
                                                         ) : (
-                                                            "Replace"
+                                                            UI_LABELS.REPLACE
                                                         )}
                                                     </button>
                                                     <button
@@ -235,7 +236,7 @@ export const GeneratedTracksDisplay = ({
                                                             onRemoveTrack(actualIndex);
                                                         }}
                                                     >
-                                                        Remove
+                                                        {UI_LABELS.REMOVE}
                                                     </button>
                                                 </div>
                                             </td>
@@ -249,10 +250,10 @@ export const GeneratedTracksDisplay = ({
 
                 <div className="card-actions justify-end mt-4">
                     <button className="btn btn-outline" onClick={onClear}>
-                        Clear
+                        {UI_LABELS.CLEAR}
                     </button>
                     <button className="btn btn-secondary" onClick={onRefine}>
-                        Refine Playlist
+                        {UI_LABELS.REFINE}
                     </button>
                     <button
                         className="btn btn-primary"
@@ -260,7 +261,7 @@ export const GeneratedTracksDisplay = ({
                         disabled={creating || !hasMatchedTracks || isMatching}
                     >
                         {creating && <span className="loading loading-spinner"></span>}
-                        {creating ? "Creating..." : "Create Playlist in Music Assistant"}
+                        {creating ? UI_LABELS.CREATING : UI_LABELS.CREATE}
                     </button>
                 </div>
             </div>

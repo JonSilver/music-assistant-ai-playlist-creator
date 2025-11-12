@@ -7,6 +7,7 @@ import { fileURLToPath } from "url";
 import { PlaylistDatabase } from "./db/schema.js";
 import { setupPromptsRoutes } from "./routes/prompts.js";
 import { setupSettingsRoutes } from "./routes/settings.js";
+import { DEFAULT_BACKEND_PORT, PAYLOAD_LIMIT, API_BASE_PATH, API_ENDPOINTS } from "../../shared/constants/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,7 +16,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, "..", "..", ".env") });
 
 const app = express();
-const PORT = process.env.PORT ?? process.env.BACKEND_PORT ?? "3333";
+const PORT = process.env.PORT ?? process.env.BACKEND_PORT ?? DEFAULT_BACKEND_PORT;
 
 // Initialize database
 const isProduction = process.env.NODE_ENV === "production";
@@ -33,7 +34,7 @@ const db = new PlaylistDatabase(dbPath);
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: "10mb" })); // Increase payload limit for large playlists
+app.use(express.json({ limit: PAYLOAD_LIMIT })); // Increase payload limit for large playlists
 
 // 1) Static assets from: backend/dist/public
 const staticDir = path.resolve(__dirname, "..", "..", "public");
@@ -43,7 +44,7 @@ app.use(express.static(staticDir));
 app.use((req, res, next) => {
     // Let API and asset/file requests pass
     if (req.method !== "GET") return next();
-    if (req.path.startsWith("/api")) return next();
+    if (req.path.startsWith(API_BASE_PATH)) return next();
     if (req.path.includes(".")) return next(); // e.g. /main.js, /logo.png
 
     res.sendFile(path.join(staticDir, "index.html"));
@@ -57,12 +58,12 @@ setupSettingsRoutes(apiRouter, db);
 setupPromptsRoutes(apiRouter, db);
 
 // Health check
-apiRouter.get("/health", (_req, res) => {
+apiRouter.get(API_ENDPOINTS.HEALTH, (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
 // Mount API router
-app.use("/api", apiRouter);
+app.use(API_BASE_PATH, apiRouter);
 
 // Start server
 app.listen(PORT, () => {

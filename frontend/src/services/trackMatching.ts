@@ -12,8 +12,9 @@ export const matchTrack = async (
 
     const trySearch = async (attempt: number): Promise<TrackMatch> => {
         const attemptStart = performance.now();
+        const searchLimit = 5;
         const [err, results] = await attemptPromise(async () =>
-            maClient.searchTracks(searchQuery, 5)
+            maClient.searchTracks(searchQuery, searchLimit)
         );
         const attemptDuration = performance.now() - attemptStart;
         const attemptDurationMs = Math.round(attemptDuration);

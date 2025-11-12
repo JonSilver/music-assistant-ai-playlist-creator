@@ -1,8 +1,5 @@
 {
     "name": "backend",
-    "version": "0.5.0",
-    "author": "Jon Silver",
-    "description": "AI Playlist Creator Backend API",
     "main": "dist/backend/src/server.js",
     "type": "module",
     "scripts": {
