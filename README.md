@@ -9,9 +9,11 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 - **Iterative Refinement**: Refine generated playlists with additional instructions
 - **Enhanced Visualization**: Match statistics, progress bars, and track filters
 - **Connection Testing**: Test Music Assistant and AI API connections before saving settings
-- **Customizable AI**: Adjust temperature and custom system prompts
+- **Customizable AI**: Adjust temperature, custom system prompts, and model selection
+- **Model Selection**: Choose from any available Claude or OpenAI model
+- **Track Management**: Replace or retry individual tracks, remove tracks from preview
 - **Prompt History**: Track previously used prompts
-- **Preset Prompts**: Quick access to common playlist types
+- **Preset Prompts**: Quick access to common playlist types (workout, chill, party, focus, road trip, etc.)
 
 ## Architecture
 
@@ -20,20 +22,23 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 - **Frontend**: React 19.2 + TypeScript + Vite
 - **UI Framework**: Tailwind CSS + daisyUI
 - **Backend**: Node.js + Express + TypeScript
-- **Database**: SQLite
-- **AI Integration**: Claude API and OpenAI API
+- **Database**: SQLite with better-sqlite3
+- **AI Integration**: Claude API (multiple models) and OpenAI API (multiple models)
 - **Music Assistant**: WebSocket API integration
 - **Error Handling**: @jfdi/attempt (tuple destructuring pattern)
-- **Deployment**: Single Docker container with nginx + Node.js
+- **Validation**: Zod for runtime type safety
+- **Code Quality**: ESLint + Prettier with strict rules
+- **Deployment**: Single Docker container with strict volume validation
 
 ### How It Works
 
 1. User enters a natural language playlist description
-2. Backend fetches user's favorite artists from Music Assistant for context
+2. Frontend fetches user's favorite artists from Music Assistant for context
 3. AI service (Claude or OpenAI) generates structured track list
-4. Backend searches Music Assistant library for each suggested track
+4. Frontend searches Music Assistant library for each suggested track
 5. Matched tracks are displayed with Found/Not Found badges
-6. User can refine suggestions or create playlist in Music Assistant
+6. User can retry individual tracks, replace tracks, refine the entire playlist, or create playlist in Music Assistant
+7. After creation, a direct link to the new playlist in Music Assistant is displayed
 
 ## Prerequisites
 
@@ -66,8 +71,10 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 5. Go to Settings and configure:
    - Music Assistant URL (e.g., `http://192.168.1.100:8095`)
    - AI Provider (Claude or OpenAI)
+   - AI Model (select from available models)
    - API Key
    - Test the connections to verify
+   - Optionally customize temperature and system prompt
 
 ### Development Setup (Local)
 
@@ -85,30 +92,27 @@ Default dev ports (configurable in `.env`):
 
 ## Usage
 
-1. Enter a playlist description (e.g., "Upbeat 80s rock for a road trip")
-2. Click "Generate Playlist"
-3. Review the AI-suggested tracks
-4. Use filters to view All/Found/Not Found tracks
-5. Remove unwanted tracks or click "Refine Playlist" for adjustments
-6. Click "Create Playlist in Music Assistant"
+1. Enter a playlist description (e.g., "Upbeat 80s rock for a road trip") or select a preset prompt
+2. Optionally enter a custom playlist name
+3. Click "Generate Playlist"
+4. Review the AI-suggested tracks
+5. Use filters to view All/Found/Not Found tracks
+6. For individual tracks: click "Retry" to search again or "Replace" to get an AI substitute
+7. Remove unwanted tracks or click "Refine Playlist" for batch adjustments
+8. Click "Create Playlist in Music Assistant"
+9. Click the provided link to view your new playlist in Music Assistant
 
 ## API Endpoints
 
 ### Settings
 - `GET /api/settings` - Get current settings
 - `PUT /api/settings` - Update settings
-- `POST /api/settings/test/music-assistant` - Test MA WebSocket connection
-- `POST /api/settings/test/anthropic` - Test Anthropic API key
-- `POST /api/settings/test/openai` - Test OpenAI API key
-
-### Playlist
-- `POST /api/playlist/generate` - Generate playlist from prompt
-- `POST /api/playlist/create` - Create playlist in Music Assistant
-- `POST /api/playlist/refine` - Refine existing playlist suggestions
 
 ### Prompts
 - `GET /api/prompts/history` - Get prompt history
 - `GET /api/prompts/presets` - Get preset prompts
+
+**Note**: All AI and Music Assistant operations are handled directly in the frontend via their respective APIs/WebSockets. The backend only manages settings and prompt storage.
 
 ## Configuration
 
@@ -129,10 +133,11 @@ All application settings are configured through the web interface and stored in 
 
 - **Music Assistant URL**: WebSocket endpoint for your Music Assistant instance
 - **AI Provider**: Choose between Claude (Anthropic) or OpenAI
+- **AI Model**: Select from available models for the selected provider
 - **API Keys**: Anthropic API key and/or OpenAI API key
 - **OpenAI Base URL**: Optional custom endpoint for OpenAI-compatible services
 - **Temperature**: AI creativity level (0-2, default: 0.7)
-- **System Prompt**: Custom instructions for the AI
+- **System Prompt**: Custom instructions for the AI (preview default prompt in UI)
 
 ## Data Storage
 
@@ -203,11 +208,11 @@ This application connects to Music Assistant via WebSocket to:
 ### Supported Providers
 
 1. **Claude (Anthropic)**
-   - Model: Claude 3.5 Sonnet
+   - Select from available Claude models via dropdown
    - Requires: Anthropic API key
 
 2. **OpenAI**
-   - Model: GPT-4
+   - Select from available OpenAI models via dropdown
    - Requires: OpenAI API key
    - Supports custom base URLs for compatible endpoints
 
