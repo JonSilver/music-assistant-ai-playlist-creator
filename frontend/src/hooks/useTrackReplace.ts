@@ -15,7 +15,9 @@ export const useTrackReplace = (
     playlistName: string,
     settings: GetSettingsResponse | null,
     selectedProviderId: string | null,
-    setGeneratedTracks: (tracksOrUpdater: TrackMatch[] | ((prev: TrackMatch[]) => TrackMatch[])) => void,
+    setGeneratedTracks: (
+        tracksOrUpdater: TrackMatch[] | ((prev: TrackMatch[]) => TrackMatch[])
+    ) => void,
     setError: (message: string) => void
 ): UseTrackReplaceReturn => {
     const [replacingTrackIndex, setReplacingTrackIndex] = useState<number | null>(null);
@@ -66,10 +68,16 @@ export const useTrackReplace = (
                 return;
             }
 
-            console.log(`[Replace] Got replacement for index ${index}:`, replacementTrack.suggestion);
+            console.log(
+                `[Replace] Got replacement for index ${index}:`,
+                replacementTrack.suggestion
+            );
 
             setGeneratedTracks(prev => {
-                console.log(`[Replace] Updating state at index ${index}, current array length:`, prev.length);
+                console.log(
+                    `[Replace] Updating state at index ${index}, current array length:`,
+                    prev.length
+                );
                 const updated = [
                     ...prev.slice(0, index),
                     replacementTrack,
@@ -85,9 +93,15 @@ export const useTrackReplace = (
                 updater => {
                     console.log(`[Replace] Matching callback for index ${index}`);
                     const matchedTrack = updater([replacementTrack])[0] ?? replacementTrack;
-                    console.log(`[Replace] Matched track for index ${index}:`, matchedTrack.suggestion);
+                    console.log(
+                        `[Replace] Matched track for index ${index}:`,
+                        matchedTrack.suggestion
+                    );
                     setGeneratedTracks(prev => {
-                        console.log(`[Replace] Final update at index ${index}, prev length:`, prev.length);
+                        console.log(
+                            `[Replace] Final update at index ${index}, prev length:`,
+                            prev.length
+                        );
                         const updated = [
                             ...prev.slice(0, index),
                             matchedTrack,

@@ -57,8 +57,12 @@ export const api = {
 
     // Prompts
     getPromptHistory: async () =>
-        attemptPromise<{ history: PromptHistory[] }>(async () => fetchJSON(API_ENDPOINTS.PROMPTS_HISTORY)),
+        attemptPromise<{ history: PromptHistory[] }>(async () =>
+            fetchJSON(API_ENDPOINTS.PROMPTS_HISTORY)
+        ),
 
     getPresetPrompts: async () =>
-        attemptPromise<{ presets: PresetPrompt[] }>(async () => fetchJSON(API_ENDPOINTS.PROMPTS_PRESETS))
+        attemptPromise<{ presets: PresetPrompt[] }>(async () =>
+            fetchJSON(API_ENDPOINTS.PROMPTS_PRESETS)
+        )
 };

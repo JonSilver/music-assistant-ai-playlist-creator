@@ -95,19 +95,20 @@ export const GeneratedTracksDisplay = ({
                     </div>
                 </div>
 
-                {matchPercentage < MATCH_THRESHOLDS.PERFECT && matchPercentage > MATCH_THRESHOLDS.MIN_DISPLAY && (
-                    <div className="mb-4">
-                        <div className="flex justify-between text-xs mb-1">
-                            <span>Match Rate</span>
-                            <span>{matchPercentage}%</span>
+                {matchPercentage < MATCH_THRESHOLDS.PERFECT &&
+                    matchPercentage > MATCH_THRESHOLDS.MIN_DISPLAY && (
+                        <div className="mb-4">
+                            <div className="flex justify-between text-xs mb-1">
+                                <span>Match Rate</span>
+                                <span>{matchPercentage}%</span>
+                            </div>
+                            <progress
+                                className="progress progress-success w-full"
+                                value={matchPercentage}
+                                max={MATCH_THRESHOLDS.PERFECT}
+                            ></progress>
                         </div>
-                        <progress
-                            className="progress progress-success w-full"
-                            value={matchPercentage}
-                            max={MATCH_THRESHOLDS.PERFECT}
-                        ></progress>
-                    </div>
-                )}
+                    )}
 
                 <div className="overflow-x-auto">
                     <table className="table table-auto">

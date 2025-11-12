@@ -247,7 +247,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         setGeneratedTracks(prev => {
             const updated = [...prev];
             const track = updated[trackIndex];
-            if (track === undefined || track.maMatches === undefined) return prev;
+            if (track?.maMatches === undefined) return prev;
 
             const selectedMatch = track.maMatches[matchIndex];
             if (selectedMatch === undefined) return prev;
