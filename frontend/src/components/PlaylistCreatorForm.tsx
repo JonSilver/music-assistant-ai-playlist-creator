@@ -1,5 +1,6 @@
-import React from "react";
 import type { AIProviderConfig } from "@shared/types";
+import React from "react";
+import { VersionCopyrightFooter } from "./VersionCopyrightFooter";
 
 interface PlaylistCreatorFormProps {
     playlistName: string;
@@ -105,7 +106,7 @@ export const PlaylistCreatorForm = ({
                     ></textarea>
                 </div>
 
-                <div className="card-actions justify-end">
+                <div className="relative card-actions justify-end">
                     <button
                         className="btn btn-primary"
                         onClick={onGenerate}
@@ -119,6 +120,8 @@ export const PlaylistCreatorForm = ({
                         {generating && <span className="loading loading-spinner"></span>}
                         {generating ? `Generating with ${providerName}...` : "Generate Playlist"}
                     </button>
+
+                    <VersionCopyrightFooter />
                 </div>
             </div>
         </div>
