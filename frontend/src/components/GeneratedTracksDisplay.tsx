@@ -110,15 +110,15 @@ export const GeneratedTracksDisplay = ({
                 )}
 
                 <div className="overflow-x-auto">
-                    <table className="table">
+                    <table className="table table-auto">
                         <thead>
                             <tr>
                                 <th className="w-12">#</th>
-                                <th>Title</th>
-                                <th>Artist</th>
-                                <th>Album</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th className="min-w-[200px]">Title</th>
+                                <th className="min-w-[150px]">Artist</th>
+                                <th className="min-w-[150px]">Album</th>
+                                <th className="w-32 whitespace-nowrap">Status</th>
+                                <th className="w-28">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
