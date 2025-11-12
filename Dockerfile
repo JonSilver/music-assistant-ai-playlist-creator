@@ -13,7 +13,8 @@ COPY --from=deps /app /app
 COPY . .
 
 # Run builds by PATH, not by workspace name (robust for any package name)
-RUN npm run --workspace ./frontend build && npm run --workspace ./backend build
+# RUN npm run --workspace ./frontend build && npm run --workspace ./backend build
+RUN npm run build:prod
 
 # Sanity-check: fail fast if dist missing
 RUN test -f /app/frontend/dist/index.html || (echo "frontend/dist/index.html missing" && ls -la /app/frontend && exit 1)
@@ -33,10 +34,10 @@ COPY --from=build /app/shared ./shared
 
 # Place SPA in several likely static roots
 COPY --from=build /app/frontend/dist ./backend/dist/public
-COPY --from=build /app/frontend/dist ./backend/dist/backend/public
-COPY --from=build /app/frontend/dist ./backend/dist/backend/src/public
+# COPY --from=build /app/frontend/dist ./backend/dist/backend/public
+# COPY --from=build /app/frontend/dist ./backend/dist/backend/src/public
 # Also drop alongside server root just in case the server serves __dirname
-COPY --from=build /app/frontend/dist ./backend/dist
+# COPY --from=build /app/frontend/dist ./backend/dist
 
 USER node
 EXPOSE ${PORT:-9876}
