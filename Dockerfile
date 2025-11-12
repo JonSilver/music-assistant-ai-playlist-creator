@@ -29,6 +29,7 @@ RUN cd backend && npm install --omit=dev --no-audit --no-fund
 
 # Server artefacts
 COPY --from=build /app/backend/dist ./backend/dist
+COPY --from=build /app/shared ./shared
 
 # Place SPA in several likely static roots
 COPY --from=build /app/frontend/dist ./backend/dist/public
@@ -38,10 +39,10 @@ COPY --from=build /app/frontend/dist ./backend/dist/backend/src/public
 COPY --from=build /app/frontend/dist ./backend/dist
 
 USER node
-EXPOSE 9876
+EXPOSE ${PORT:-9876}
 
 # Optional healthcheck: returns 2xx if SPA served
 HEALTHCHECK --interval=20s --timeout=3s --start-period=10s --retries=3 \
-    CMD wget -qO- http://127.0.0.1:9876/ >/dev/null 2>&1 || exit 1
+    CMD wget -qO- http://127.0.0.1:${PORT:-9876}/ >/dev/null 2>&1 || exit 1
 
 CMD ["node", "backend/dist/backend/src/server.js"]

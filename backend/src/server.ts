@@ -12,14 +12,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load environment variables
-dotenv.config({ path: path.join(__dirname, "../../.env") });
+dotenv.config({ path: path.resolve(__dirname, "..", "..", ".env") });
 
 const app = express();
-const PORT = process.env.PORT ?? "9876";
+const PORT = process.env.PORT ?? process.env.BACKEND_PORT ?? "3333";
 
 // Initialize database
-const dbPath = process.env.DATABASE_PATH ?? path.join(__dirname, "../../data/playlists.db");
+const isProduction = process.env.NODE_ENV === "production";
+const dbPath = isProduction
+    ? (process.env.DATABASE_PATH ?? "/app/data/playlists.db")
+    : path.join(process.cwd(), "data/playlists.db");
 const dbDir = path.dirname(dbPath);
+
+console.log(`Using database at: ${dbPath}`);
 
 // Create data directory if it doesn't exist
 mkdirSync(dbDir, { recursive: true });
