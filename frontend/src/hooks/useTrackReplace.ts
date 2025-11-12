@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
-import { attemptPromise } from '@jfdi/attempt';
-import { matchTracksProgressively } from '../services/trackMatching';
-import { replaceTrack as replaceTrackService } from '../services/playlistCreator';
-import type { TrackMatch, GetSettingsResponse } from '@shared/types';
+import { useState, useCallback } from "react";
+import { attemptPromise } from "@jfdi/attempt";
+import { matchTracksProgressively } from "../services/trackMatching";
+import { replaceTrack as replaceTrackService } from "../services/playlistCreator";
+import type { TrackMatch, GetSettingsResponse } from "@shared/types";
 
 interface UseTrackReplaceReturn {
     replacingTrackIndex: number | null;
@@ -23,12 +23,12 @@ export const useTrackReplace = (
     const replaceTrack = useCallback(
         async (index: number): Promise<void> => {
             if (settings === null) {
-                setError('Settings not loaded');
+                setError("Settings not loaded");
                 return;
             }
 
             if (settings.aiProviders.length === 0) {
-                setError('No AI providers configured');
+                setError("No AI providers configured");
                 return;
             }
 
@@ -36,7 +36,7 @@ export const useTrackReplace = (
             const providerConfig = settings.aiProviders.find(p => p.id === providerId);
 
             if (providerConfig === undefined) {
-                setError('Selected AI provider not found');
+                setError("Selected AI provider not found");
                 return;
             }
 

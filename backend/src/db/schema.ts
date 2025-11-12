@@ -1,12 +1,12 @@
-import Database from 'better-sqlite3';
-import { attempt } from '@jfdi/attempt';
+import Database from "better-sqlite3";
+import { attempt } from "@jfdi/attempt";
 import {
     type PresetPrompt,
     type PromptHistory,
     PromptHistoryRowSchema,
     PresetPromptSchema,
     convertPromptHistoryRow
-} from '../../../shared/types.js';
+} from "../../../shared/types.js";
 
 export class PlaylistDatabase {
     private db: Database.Database;
@@ -55,53 +55,53 @@ export class PlaylistDatabase {
     private insertDefaultPresets(): void {
         const defaultPresets: PresetPrompt[] = [
             {
-                id: 'workout-high-energy',
-                name: 'High Energy Workout',
-                description: 'Upbeat tracks to power through your workout',
-                prompt: 'Create a high-energy workout playlist with fast-paced, motivating tracks. Include rock, electronic, and hip-hop with strong beats and driving rhythms. Perfect for cardio and intense training.',
-                category: 'workout'
+                id: "workout-high-energy",
+                name: "High Energy Workout",
+                description: "Upbeat tracks to power through your workout",
+                prompt: "Create a high-energy workout playlist with fast-paced, motivating tracks. Include rock, electronic, and hip-hop with strong beats and driving rhythms. Perfect for cardio and intense training.",
+                category: "workout"
             },
             {
-                id: 'chill-focus',
-                name: 'Focus & Study',
-                description: 'Calm instrumental music for concentration',
-                prompt: 'Create a calm, focused playlist for studying or deep work. Include lo-fi, ambient, classical, and instrumental tracks. No lyrics, smooth transitions, steady tempo around 60-80 BPM.',
-                category: 'focus'
+                id: "chill-focus",
+                name: "Focus & Study",
+                description: "Calm instrumental music for concentration",
+                prompt: "Create a calm, focused playlist for studying or deep work. Include lo-fi, ambient, classical, and instrumental tracks. No lyrics, smooth transitions, steady tempo around 60-80 BPM.",
+                category: "focus"
             },
             {
-                id: 'party-dance',
-                name: 'Party Mix',
-                description: 'Popular dance hits to get everyone moving',
-                prompt: 'Create an energetic party playlist with current and classic dance hits. Mix pop, dance, EDM, and hip-hop. High energy, recognizable tracks that get people on the dance floor.',
-                category: 'party'
+                id: "party-dance",
+                name: "Party Mix",
+                description: "Popular dance hits to get everyone moving",
+                prompt: "Create an energetic party playlist with current and classic dance hits. Mix pop, dance, EDM, and hip-hop. High energy, recognizable tracks that get people on the dance floor.",
+                category: "party"
             },
             {
-                id: 'chill-evening',
-                name: 'Evening Relaxation',
-                description: 'Mellow tracks for unwinding',
-                prompt: 'Create a relaxing evening playlist with mellow, soothing tracks. Include indie, acoustic, jazz, and soul. Perfect for winding down after a long day.',
-                category: 'chill'
+                id: "chill-evening",
+                name: "Evening Relaxation",
+                description: "Mellow tracks for unwinding",
+                prompt: "Create a relaxing evening playlist with mellow, soothing tracks. Include indie, acoustic, jazz, and soul. Perfect for winding down after a long day.",
+                category: "chill"
             },
             {
-                id: 'road-trip',
-                name: 'Road Trip',
-                description: 'Sing-along classics for the open road',
-                prompt: 'Create an epic road trip playlist with classic rock, alternative, and sing-along anthems. Mix of decades, feel-good vibes, great for long drives.',
-                category: 'other'
+                id: "road-trip",
+                name: "Road Trip",
+                description: "Sing-along classics for the open road",
+                prompt: "Create an epic road trip playlist with classic rock, alternative, and sing-along anthems. Mix of decades, feel-good vibes, great for long drives.",
+                category: "other"
             },
             {
-                id: 'peppy-classical',
-                name: 'Peppy Classical',
-                description: 'Upbeat and energetic classical pieces',
-                prompt: 'Create a lively classical playlist with energetic, upbeat orchestral pieces. Include fast movements from symphonies, concertos, and overtures. Think Vivaldi, Mozart, Rossini - bright, cheerful, and invigorating classical music.',
-                category: 'other'
+                id: "peppy-classical",
+                name: "Peppy Classical",
+                description: "Upbeat and energetic classical pieces",
+                prompt: "Create a lively classical playlist with energetic, upbeat orchestral pieces. Include fast movements from symphonies, concertos, and overtures. Think Vivaldi, Mozart, Rossini - bright, cheerful, and invigorating classical music.",
+                category: "other"
             },
             {
-                id: 'dinner-party',
-                name: 'Dinner Party',
-                description: 'Sophisticated background music for entertaining',
-                prompt: 'Create an elegant dinner party playlist with sophisticated, conversation-friendly music. Include jazz standards, bossa nova, light classical, and smooth vocals. Classy and refined, perfect background ambiance for entertaining guests.',
-                category: 'other'
+                id: "dinner-party",
+                name: "Dinner Party",
+                description: "Sophisticated background music for entertaining",
+                prompt: "Create an elegant dinner party playlist with sophisticated, conversation-friendly music. Include jazz standards, bossa nova, light classical, and smooth vocals. Classy and refined, perfect background ambiance for entertaining guests.",
+                category: "other"
             }
         ];
 
@@ -117,7 +117,7 @@ export class PlaylistDatabase {
 
     getSetting(key: string): string | null {
         const [err, result] = attempt(() => {
-            const row = this.db.prepare('SELECT value FROM settings WHERE key = ?').get(key) as
+            const row = this.db.prepare("SELECT value FROM settings WHERE key = ?").get(key) as
                 | { value: string }
                 | undefined;
             return row?.value ?? null;
@@ -185,7 +185,7 @@ export class PlaylistDatabase {
                 if (parseResult.success) {
                     validatedRows.push(convertPromptHistoryRow(parseResult.data));
                 } else {
-                    console.error('Invalid prompt history row:', parseResult.error);
+                    console.error("Invalid prompt history row:", parseResult.error);
                 }
             }
 
@@ -214,7 +214,7 @@ export class PlaylistDatabase {
                 if (parseResult.success) {
                     validatedRows.push(parseResult.data);
                 } else {
-                    console.error('Invalid preset prompt row:', parseResult.error);
+                    console.error("Invalid preset prompt row:", parseResult.error);
                 }
             }
 

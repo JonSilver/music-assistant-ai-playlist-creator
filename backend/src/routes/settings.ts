@@ -1,16 +1,16 @@
-import type { Router, Request, Response } from 'express';
-import type { PlaylistDatabase } from '../db/schema.js';
+import type { Router, Request, Response } from "express";
+import type { PlaylistDatabase } from "../db/schema.js";
 import {
     type GetSettingsResponse,
     type SuccessResponse,
     UpdateSettingsRequestSchema,
     settingsUtils,
     type SettingKey
-} from '../../../shared/settings-schema.js';
+} from "../../../shared/settings-schema.js";
 
 export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void => {
     // Get settings - iterate through schema instead of hardcoding
-    router.get('/settings', (_req: Request, res: Response) => {
+    router.get("/settings", (_req: Request, res: Response) => {
         const settings: Record<string, unknown> = {};
 
         // Iterate through all setting fields defined in schema
@@ -26,12 +26,12 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
     });
 
     // Update settings - iterate through schema instead of hardcoding
-    router.put('/settings', (req: Request, res: Response) => {
+    router.put("/settings", (req: Request, res: Response) => {
         // Validate request body
         const parseResult = UpdateSettingsRequestSchema.safeParse(req.body);
         if (!parseResult.success) {
             res.status(400).json({
-                error: 'Invalid request',
+                error: "Invalid request",
                 details: parseResult.error.message
             });
             return;

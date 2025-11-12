@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
-import { api } from '../services/api';
-import { useAlerts } from './useAlerts';
-import type { PromptHistory, PresetPrompt } from '../../../shared/types';
+import { useState, useCallback } from "react";
+import { api } from "../services/api";
+import { useAlerts } from "./useAlerts";
+import type { PromptHistory, PresetPrompt } from "../../../shared/types";
 
 interface UseHistoryAndPresetsReturn {
     history: PromptHistory[];

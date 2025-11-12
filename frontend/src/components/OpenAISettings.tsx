@@ -1,5 +1,5 @@
-import React from 'react';
-import { TestResultDisplay } from './TestResultDisplay';
+import React from "react";
+import { TestResultDisplay } from "./TestResultDisplay";
 
 interface TestResult {
     success: boolean;
@@ -19,11 +19,11 @@ interface OpenAISettingsProps {
 }
 
 const OPENAI_MODELS = [
-    { value: 'gpt-4-turbo-preview', label: 'GPT-4 Turbo' },
-    { value: 'gpt-4', label: 'GPT-4' },
-    { value: 'gpt-4o', label: 'GPT-4o' },
-    { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
-    { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' }
+    { value: "gpt-4-turbo-preview", label: "GPT-4 Turbo" },
+    { value: "gpt-4", label: "GPT-4" },
+    { value: "gpt-4o", label: "GPT-4o" },
+    { value: "gpt-4o-mini", label: "GPT-4o Mini" },
+    { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo" }
 ];
 
 export const OpenAISettings = ({
@@ -98,7 +98,7 @@ export const OpenAISettings = ({
             disabled={testingOpenAI || openaiApiKey.trim().length === 0}
         >
             {testingOpenAI && <span className="loading loading-spinner loading-xs"></span>}
-            {testingOpenAI ? 'Testing...' : 'Test API Key'}
+            {testingOpenAI ? "Testing..." : "Test API Key"}
         </button>
         <TestResultDisplay
             result={testResults.openai}

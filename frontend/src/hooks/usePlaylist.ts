@@ -1,15 +1,15 @@
-import { useState, useCallback } from 'react';
-import { attemptPromise } from '@jfdi/attempt';
-import { useAlerts } from './useAlerts';
-import { useApp } from '../contexts/AppContext';
-import { useTrackReplace } from './useTrackReplace';
-import { matchTracksProgressively } from '../services/trackMatching';
-import { generatePlaylist as generatePlaylistService } from '../services/playlistGenerator';
+import { useState, useCallback } from "react";
+import { attemptPromise } from "@jfdi/attempt";
+import { useAlerts } from "./useAlerts";
+import { useApp } from "../contexts/AppContext";
+import { useTrackReplace } from "./useTrackReplace";
+import { matchTracksProgressively } from "../services/trackMatching";
+import { generatePlaylist as generatePlaylistService } from "../services/playlistGenerator";
 import {
     createPlaylist as createPlaylistService,
     refinePlaylist as refinePlaylistService
-} from '../services/playlistCreator';
-import type { TrackMatch } from '@shared/types';
+} from "../services/playlistCreator";
+import type { TrackMatch } from "@shared/types";
 
 export interface UsePlaylistReturn {
     prompt: string;
@@ -25,8 +25,8 @@ export interface UsePlaylistReturn {
     retryingTrackIndex: number | null;
     generatedTracks: TrackMatch[];
     setGeneratedTracks: (tracks: TrackMatch[]) => void;
-    trackFilter: 'all' | 'matched' | 'unmatched';
-    setTrackFilter: (filter: 'all' | 'matched' | 'unmatched') => void;
+    trackFilter: "all" | "matched" | "unmatched";
+    setTrackFilter: (filter: "all" | "matched" | "unmatched") => void;
     refinementPrompt: string;
     setRefinementPrompt: (value: string) => void;
     generatePlaylist: () => Promise<void>;
@@ -41,16 +41,16 @@ export interface UsePlaylistReturn {
 export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
     const { setError, setSuccess } = useAlerts();
     const { settings, selectedProviderId } = useApp();
-    const [prompt, setPrompt] = useState('');
-    const [playlistName, setPlaylistName] = useState('');
-    const [trackCount, setTrackCount] = useState('25');
+    const [prompt, setPrompt] = useState("");
+    const [playlistName, setPlaylistName] = useState("");
+    const [trackCount, setTrackCount] = useState("25");
     const [generating, setGenerating] = useState(false);
     const [creating, setCreating] = useState(false);
     const [refining, setRefining] = useState(false);
     const [retryingTrackIndex, setRetryingTrackIndex] = useState<number | null>(null);
     const [generatedTracks, setGeneratedTracks] = useState<TrackMatch[]>([]);
-    const [trackFilter, setTrackFilter] = useState<'all' | 'matched' | 'unmatched'>('all');
-    const [refinementPrompt, setRefinementPrompt] = useState('');
+    const [trackFilter, setTrackFilter] = useState<"all" | "matched" | "unmatched">("all");
+    const [refinementPrompt, setRefinementPrompt] = useState("");
 
     const { replacingTrackIndex, replaceTrack } = useTrackReplace(
         generatedTracks,
@@ -64,17 +64,17 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
 
     const generatePlaylist = useCallback(async (): Promise<void> => {
         if (prompt.trim().length === 0 || playlistName.trim().length === 0) {
-            setError('Please provide both a prompt and playlist name');
+            setError("Please provide both a prompt and playlist name");
             return;
         }
 
         if (settings === null || settings.musicAssistantUrl.trim().length === 0) {
-            setError('Music Assistant URL not configured');
+            setError("Music Assistant URL not configured");
             return;
         }
 
         if (settings.aiProviders.length === 0) {
-            setError('No AI providers configured');
+            setError("No AI providers configured");
             return;
         }
 
@@ -82,7 +82,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         const providerConfig = settings.aiProviders.find(p => p.id === providerId);
 
         if (providerConfig === undefined) {
-            setError('Selected AI provider not found');
+            setError("Selected AI provider not found");
             return;
         }
 
@@ -119,12 +119,12 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
 
     const createPlaylist = useCallback(async (): Promise<void> => {
         if (generatedTracks.length === 0) {
-            setError('No tracks to create playlist from');
+            setError("No tracks to create playlist from");
             return;
         }
 
         if (settings === null || settings.musicAssistantUrl.trim().length === 0) {
-            setError('Music Assistant URL not configured');
+            setError("Music Assistant URL not configured");
             return;
         }
 
@@ -144,24 +144,24 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         setSuccess(
             `Playlist created successfully! Added ${result.tracksAdded} tracks. [Open in Music Assistant](${result.playlistUrl})`
         );
-        setPrompt('');
-        setPlaylistName('');
+        setPrompt("");
+        setPlaylistName("");
         setGeneratedTracks([]);
     }, [generatedTracks, playlistName, settings, setError, setSuccess]);
 
     const refinePlaylist = useCallback(async (): Promise<void> => {
         if (refinementPrompt.trim().length === 0) {
-            setError('Please provide refinement instructions');
+            setError("Please provide refinement instructions");
             return;
         }
 
         if (settings === null || settings.musicAssistantUrl.trim().length === 0) {
-            setError('Music Assistant URL not configured');
+            setError("Music Assistant URL not configured");
             return;
         }
 
         if (settings.aiProviders.length === 0) {
-            setError('No AI providers configured');
+            setError("No AI providers configured");
             return;
         }
 
@@ -169,7 +169,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         const providerConfig = settings.aiProviders.find(p => p.id === providerId);
 
         if (providerConfig === undefined) {
-            setError('Selected AI provider not found');
+            setError("Selected AI provider not found");
             return;
         }
 
@@ -193,7 +193,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         }
 
         setGeneratedTracks(unmatchedTracks);
-        setRefinementPrompt('');
+        setRefinementPrompt("");
 
         void matchTracksProgressively(
             unmatchedTracks,

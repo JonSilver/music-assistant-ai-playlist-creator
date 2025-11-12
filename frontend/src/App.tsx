@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
-import { MainView } from './components/MainView';
-import { SettingsView } from './components/SettingsView';
-import { useApp } from './contexts/AppContext';
-import { useAlerts } from './hooks/useAlerts';
-import { useHistoryAndPresets } from './hooks/useHistoryAndPresets';
-import { useModals } from './hooks/useModals';
-import { usePlaylist } from './hooks/usePlaylist';
+import React, { useEffect } from "react";
+import { MainView } from "./components/MainView";
+import { SettingsView } from "./components/SettingsView";
+import { useApp } from "./contexts/AppContext";
+import { useAlerts } from "./hooks/useAlerts";
+import { useHistoryAndPresets } from "./hooks/useHistoryAndPresets";
+import { useModals } from "./hooks/useModals";
+import { usePlaylist } from "./hooks/usePlaylist";
 
 const App = (): React.JSX.Element => {
     const {

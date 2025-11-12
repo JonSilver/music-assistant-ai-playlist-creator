@@ -1,5 +1,5 @@
-import { attemptPromise, attempt } from '@jfdi/attempt';
-import type { MATrack } from '@shared/types';
+import { attemptPromise, attempt } from "@jfdi/attempt";
+import type { MATrack } from "@shared/types";
 
 interface MAResponse {
     message_id: string;
@@ -51,14 +51,14 @@ export class MusicAssistantClient {
     }
 
     async connect(): Promise<void> {
-        const wsUrl = this.url.replace(/^http/, 'ws') + '/ws';
+        const wsUrl = this.url.replace(/^http/, "ws") + "/ws";
 
         const [err] = await attemptPromise(async () => {
             this.ws = new WebSocket(wsUrl);
 
             return new Promise<void>((resolve, reject) => {
                 if (this.ws === null) {
-                    reject(new Error('WebSocket not initialized'));
+                    reject(new Error("WebSocket not initialized"));
                     return;
                 }
 
@@ -82,7 +82,7 @@ export class MusicAssistantClient {
     private handleMessage(data: string): void {
         const [parseErr, message] = attempt<MAResponse>(() => JSON.parse(data));
         if (parseErr !== undefined) {
-            console.error('Failed to parse MA message:', parseErr);
+            console.error("Failed to parse MA message:", parseErr);
             return;
         }
 
@@ -108,7 +108,7 @@ export class MusicAssistantClient {
 
     private sendCommand<T>(command: string, params?: Record<string, unknown>): Promise<T> {
         if (this.ws === null || this.ws.readyState !== WebSocket.OPEN) {
-            throw new Error('Not connected to Music Assistant');
+            throw new Error("Not connected to Music Assistant");
         }
 
         const currentMessageId = this.messageId;
@@ -155,7 +155,7 @@ export class MusicAssistantClient {
             const [sendErr] = attempt(() => {
                 const ws = this.ws;
                 if (ws === null) {
-                    throw new Error('WebSocket is null');
+                    throw new Error("WebSocket is null");
                 }
                 ws.send(JSON.stringify(message));
             });
@@ -173,9 +173,9 @@ export class MusicAssistantClient {
     }
 
     async searchTracks(query: string, limit = 50): Promise<MATrack[]> {
-        const result = await this.sendCommand<MASearchResults>('music/search', {
+        const result = await this.sendCommand<MASearchResults>("music/search", {
             search_query: query,
-            media_types: ['track'],
+            media_types: ["track"],
             limit
         });
 
@@ -196,8 +196,8 @@ export class MusicAssistantClient {
 
     async getFavoriteArtists(): Promise<string[]> {
         const [err, result] = await attemptPromise(async () => {
-            const response = await this.sendCommand<MAFavoritesResponse>('music/favorites', {
-                media_type: 'artist'
+            const response = await this.sendCommand<MAFavoritesResponse>("music/favorites", {
+                media_type: "artist"
             });
             return response.items.map(item => item.name);
         });
@@ -206,7 +206,7 @@ export class MusicAssistantClient {
     }
 
     async createPlaylist(name: string, providerInstance?: string): Promise<string> {
-        const result = await this.sendCommand<MAPlaylist>('music/playlists/create_playlist', {
+        const result = await this.sendCommand<MAPlaylist>("music/playlists/create_playlist", {
             name,
             provider_instance: providerInstance
         });
@@ -215,7 +215,7 @@ export class MusicAssistantClient {
     }
 
     async addTracksToPlaylist(playlistId: string, trackUris: string[]): Promise<void> {
-        await this.sendCommand('music/playlists/add_playlist_tracks', {
+        await this.sendCommand("music/playlists/add_playlist_tracks", {
             db_playlist_id: playlistId,
             uris: trackUris
         });

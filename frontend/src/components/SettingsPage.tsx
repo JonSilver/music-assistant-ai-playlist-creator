@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import type { AIProviderConfig } from '../../../shared/types';
-import { ProvidersManager } from './ProvidersManager';
-import { TestResultDisplay } from './TestResultDisplay';
-import { DefaultSystemPromptModal } from './DefaultSystemPromptModal';
+import React, { useState } from "react";
+import type { AIProviderConfig } from "../../../shared/types";
+import { ProvidersManager } from "./ProvidersManager";
+import { TestResultDisplay } from "./TestResultDisplay";
+import { DefaultSystemPromptModal } from "./DefaultSystemPromptModal";
 
 interface SettingsPageProps {
     musicAssistantUrl: string;
@@ -75,7 +75,7 @@ export const SettingsPage = ({
                                 {testingMA && (
                                     <span className="loading loading-spinner loading-xs"></span>
                                 )}
-                                {testingMA ? 'Testing...' : 'Test Connection'}
+                                {testingMA ? "Testing..." : "Test Connection"}
                             </button>
                             <TestResultDisplay
                                 result={testResults.ma}

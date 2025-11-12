@@ -1,6 +1,6 @@
-import { attemptPromise } from '@jfdi/attempt';
-import { MusicAssistantClient } from './musicAssistant';
-import type { AIProviderConfig, TrackMatch } from '@shared/types';
+import { attemptPromise } from "@jfdi/attempt";
+import { MusicAssistantClient } from "./musicAssistant";
+import type { AIProviderConfig, TrackMatch } from "@shared/types";
 
 export const createPlaylist = async (
     playlistName: string,
@@ -16,7 +16,7 @@ export const createPlaylist = async (
         .filter(m => m.matched && m.maTrack !== undefined)
         .map(m => {
             if (m.maTrack === undefined) {
-                throw new Error('Unexpected undefined maTrack');
+                throw new Error("Unexpected undefined maTrack");
             }
             return m.maTrack.uri;
         });
@@ -39,7 +39,7 @@ export const refinePlaylist = async (
     providerConfig: AIProviderConfig,
     customSystemPrompt?: string
 ): Promise<TrackMatch[]> => {
-    const { generatePlaylist: generatePlaylistAI } = await import('./ai');
+    const { generatePlaylist: generatePlaylistAI } = await import("./ai");
 
     const [maConnectErr, maClient] = await attemptPromise(async () => {
         const client = new MusicAssistantClient(musicAssistantUrl);
@@ -63,7 +63,7 @@ export const refinePlaylist = async (
     const trackList = currentTracks.map(
         (m: TrackMatch) => `${m.suggestion.title} by ${m.suggestion.artist}`
     );
-    const refinementContext = `Current playlist:\n${trackList.join('\n')}\n\nRefinement request: ${refinementPrompt.trim()}`;
+    const refinementContext = `Current playlist:\n${trackList.join("\n")}\n\nRefinement request: ${refinementPrompt.trim()}`;
 
     const [aiErr, aiResult] = await attemptPromise(async () =>
         generatePlaylistAI({
@@ -93,7 +93,7 @@ export const replaceTrack = async (
     providerConfig: AIProviderConfig,
     customSystemPrompt?: string
 ): Promise<TrackMatch> => {
-    const { generatePlaylist: generatePlaylistAI } = await import('./ai');
+    const { generatePlaylist: generatePlaylistAI } = await import("./ai");
 
     const [maConnectErr, maClient] = await attemptPromise(async () => {
         const client = new MusicAssistantClient(musicAssistantUrl);
@@ -138,7 +138,7 @@ The replacement should:
     }
 
     if (aiResult.tracks.length === 0) {
-        throw new Error('AI did not return a replacement track');
+        throw new Error("AI did not return a replacement track");
     }
 
     return {

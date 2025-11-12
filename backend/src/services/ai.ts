@@ -1,11 +1,11 @@
-import Anthropic from '@anthropic-ai/sdk';
-import OpenAI from 'openai';
-import { attempt, attemptPromise } from '@jfdi/attempt';
+import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
+import { attempt, attemptPromise } from "@jfdi/attempt";
 import {
     type AIProviderConfig,
     type AIPlaylistResponse,
     AIPlaylistResponseSchema
-} from '../../../shared/types.js';
+} from "../../../shared/types.js";
 
 interface AIPlaylistRequest {
     prompt: string;
@@ -20,15 +20,15 @@ export class AIService {
     constructor() {}
 
     private getAnthropicClient(config: AIProviderConfig): Anthropic {
-        if (config.type !== 'anthropic') {
-            throw new Error('Provider is not Anthropic type');
+        if (config.type !== "anthropic") {
+            throw new Error("Provider is not Anthropic type");
         }
         return new Anthropic({ apiKey: config.apiKey });
     }
 
     private getOpenAIClient(config: AIProviderConfig): OpenAI {
-        if (config.type !== 'openai-compatible') {
-            throw new Error('Provider is not OpenAI-compatible type');
+        if (config.type !== "openai-compatible") {
+            throw new Error("Provider is not OpenAI-compatible type");
         }
         return new OpenAI({
             apiKey: config.apiKey,
@@ -60,7 +60,7 @@ Required JSON format:
 }`;
 
         if (favoriteArtists && favoriteArtists.length > 0) {
-            prompt += `\n\nThe user's favorite artists include: ${favoriteArtists.join(', ')}.
+            prompt += `\n\nThe user's favorite artists include: ${favoriteArtists.join(", ")}.
 When appropriate, consider including tracks from these artists or similar artists.`;
         }
 
@@ -68,7 +68,7 @@ When appropriate, consider including tracks from these artists or similar artist
         if (!customPrompt) {
             const countGuideline = trackCount
                 ? `- Create exactly ${trackCount} tracks`
-                : '- Create 15-30 tracks unless user specifies otherwise';
+                : "- Create 15-30 tracks unless user specifies otherwise";
 
             prompt += `\n\nGuidelines:
 ${countGuideline}
@@ -91,7 +91,7 @@ ${countGuideline}
         const { providerConfig } = request;
         const temperature = providerConfig.temperature ?? 1.0;
 
-        if (providerConfig.type === 'anthropic') {
+        if (providerConfig.type === "anthropic") {
             return this.generateWithClaude(
                 request.prompt,
                 systemPrompt,
@@ -118,15 +118,15 @@ ${countGuideline}
                 system: systemPrompt,
                 messages: [
                     {
-                        role: 'user',
+                        role: "user",
                         content: userPrompt
                     }
                 ]
             });
 
             const content = response.content[0];
-            if (content.type !== 'text') {
-                throw new Error('Unexpected response type from Claude');
+            if (content.type !== "text") {
+                throw new Error("Unexpected response type from Claude");
             }
 
             return this.parseAIResponse(content.text);
@@ -152,15 +152,15 @@ ${countGuideline}
                 model: config.model,
                 temperature,
                 messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: userPrompt }
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
                 ],
-                response_format: { type: 'json_object' }
+                response_format: { type: "json_object" }
             });
 
             const content = response.choices[0]?.message.content;
             if (content === null || content === undefined) {
-                throw new Error('No response from OpenAI');
+                throw new Error("No response from OpenAI");
             }
 
             return this.parseAIResponse(content);

@@ -1,8 +1,8 @@
-import type { Router, Request, Response } from 'express';
-import { attemptPromise } from '@jfdi/attempt';
-import { MusicAssistantClient } from '../services/musicAssistant.js';
-import { AIService } from '../services/ai.js';
-import type { PlaylistDatabase } from '../db/schema.js';
+import type { Router, Request, Response } from "express";
+import { attemptPromise } from "@jfdi/attempt";
+import { MusicAssistantClient } from "../services/musicAssistant.js";
+import { AIService } from "../services/ai.js";
+import type { PlaylistDatabase } from "../db/schema.js";
 import {
     type CreatePlaylistResponse,
     type CreatePlaylistInMAResponse,
@@ -12,7 +12,7 @@ import {
     CreatePlaylistRequestSchema,
     RefinePlaylistRequestSchema,
     TrackSuggestionSchema
-} from '../../../shared/types.js';
+} from "../../../shared/types.js";
 
 const matchTrack = async (
     suggestion: TrackSuggestion,
@@ -27,7 +27,7 @@ const matchTrack = async (
     if (searchResults.length > 0) {
         const firstTrack = searchResults[0];
         console.log(
-            `Matched: "${suggestion.title}" by "${suggestion.artist}" -> "${firstTrack.name}" by "${firstTrack.artists?.[0]?.name || 'unknown'}"`
+            `Matched: "${suggestion.title}" by "${suggestion.artist}" -> "${firstTrack.name}" by "${firstTrack.artists?.[0]?.name || "unknown"}"`
         );
         return {
             suggestion,
@@ -45,12 +45,12 @@ const matchTrack = async (
 
 export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void => {
     // Generate playlist suggestions (AI only, no matching yet)
-    router.post('/playlist/generate', async (req: Request, res: Response) => {
+    router.post("/playlist/generate", async (req: Request, res: Response) => {
         // Validate request body
         const parseResult = CreatePlaylistRequestSchema.safeParse(req.body);
         if (!parseResult.success) {
             res.status(400).json({
-                error: 'Invalid request',
+                error: "Invalid request",
                 details: parseResult.error.message
             });
             return;
@@ -60,19 +60,18 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
 
         const [err, result] = await attemptPromise(async () => {
             // Get settings
-            const maUrl = db.getSetting('musicAssistantUrl');
-            const aiProvidersJson = db.getSetting('aiProviders');
-            const customSystemPrompt = db.getSetting('customSystemPrompt');
+            const maUrl = db.getSetting("musicAssistantUrl");
+            const aiProvidersJson = db.getSetting("aiProviders");
+            const customSystemPrompt = db.getSetting("customSystemPrompt");
 
             if (maUrl === null || maUrl.length === 0) {
-                throw new Error('Music Assistant URL not configured');
+                throw new Error("Music Assistant URL not configured");
             }
 
             // Parse providers
-            const aiProviders =
-                aiProvidersJson !== null ? JSON.parse(aiProvidersJson) : [];
+            const aiProviders = aiProvidersJson !== null ? JSON.parse(aiProvidersJson) : [];
             if (aiProviders.length === 0) {
-                throw new Error('No AI providers configured');
+                throw new Error("No AI providers configured");
             }
 
             // Find the requested provider or use the first one
@@ -111,7 +110,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
 
             const response: CreatePlaylistResponse = {
                 success: true,
-                playlistName: request.playlistName ?? 'AI Generated Playlist',
+                playlistName: request.playlistName ?? "AI Generated Playlist",
                 matches,
                 totalSuggested: matches.length,
                 totalMatched: 0
@@ -121,9 +120,9 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         });
 
         if (err !== undefined) {
-            console.error('Playlist generation error:', err);
+            console.error("Playlist generation error:", err);
             res.status(500).json({
-                error: 'Failed to generate playlist',
+                error: "Failed to generate playlist",
                 details: err.message
             });
             return;
@@ -133,12 +132,12 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
     });
 
     // Match a single track
-    router.post('/playlist/match-track', async (req: Request, res: Response) => {
+    router.post("/playlist/match-track", async (req: Request, res: Response) => {
         // Validate request body
         const parseResult = TrackSuggestionSchema.safeParse(req.body.suggestion);
         if (!parseResult.success) {
             res.status(400).json({
-                error: 'Invalid request',
+                error: "Invalid request",
                 details: parseResult.error.message
             });
             return;
@@ -147,9 +146,9 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         const suggestion = parseResult.data;
 
         const [err, result] = await attemptPromise(async () => {
-            const maUrl = db.getSetting('musicAssistantUrl');
+            const maUrl = db.getSetting("musicAssistantUrl");
             if (maUrl === null || maUrl.length === 0) {
-                throw new Error('Music Assistant URL not configured');
+                throw new Error("Music Assistant URL not configured");
             }
 
             const maClient = new MusicAssistantClient(maUrl);
@@ -163,9 +162,9 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         });
 
         if (err !== undefined) {
-            console.error('Track matching error:', err);
+            console.error("Track matching error:", err);
             res.status(500).json({
-                error: 'Failed to match track',
+                error: "Failed to match track",
                 details: err.message
             });
             return;
@@ -175,13 +174,13 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
     });
 
     // Create playlist in Music Assistant
-    router.post('/playlist/create', async (req: Request, res: Response) => {
+    router.post("/playlist/create", async (req: Request, res: Response) => {
         const { playlistName, tracks } = req.body as { playlistName: string; tracks: TrackMatch[] };
 
         const [err, result] = await attemptPromise(async () => {
-            const maUrl = db.getSetting('musicAssistantUrl');
+            const maUrl = db.getSetting("musicAssistantUrl");
             if (maUrl === null || maUrl.length === 0) {
-                throw new Error('Music Assistant URL not configured');
+                throw new Error("Music Assistant URL not configured");
             }
 
             const maClient = new MusicAssistantClient(maUrl);
@@ -203,7 +202,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
 
             // Save to history
             const promptFromBody = req.body.prompt as string | undefined;
-            db.addPromptHistory(promptFromBody ?? 'Unknown', playlistName, trackUris.length);
+            db.addPromptHistory(promptFromBody ?? "Unknown", playlistName, trackUris.length);
 
             const response: CreatePlaylistInMAResponse = {
                 success: true,
@@ -215,7 +214,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
 
         if (err !== undefined) {
             res.status(500).json({
-                error: 'Failed to create playlist',
+                error: "Failed to create playlist",
                 details: err.message
             });
             return;
@@ -225,12 +224,12 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
     });
 
     // Refine playlist
-    router.post('/playlist/refine', async (req: Request, res: Response) => {
+    router.post("/playlist/refine", async (req: Request, res: Response) => {
         // Validate request body
         const parseResult = RefinePlaylistRequestSchema.safeParse(req.body);
         if (!parseResult.success) {
             res.status(400).json({
-                error: 'Invalid request',
+                error: "Invalid request",
                 details: parseResult.error.message
             });
             return;
@@ -239,19 +238,18 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
         const request = parseResult.data;
 
         const [err, result] = await attemptPromise(async () => {
-            const maUrl = db.getSetting('musicAssistantUrl');
-            const aiProvidersJson = db.getSetting('aiProviders');
-            const customSystemPrompt = db.getSetting('customSystemPrompt');
+            const maUrl = db.getSetting("musicAssistantUrl");
+            const aiProvidersJson = db.getSetting("aiProviders");
+            const customSystemPrompt = db.getSetting("customSystemPrompt");
 
             if (maUrl === null || maUrl.length === 0) {
-                throw new Error('Music Assistant URL not configured');
+                throw new Error("Music Assistant URL not configured");
             }
 
             // Parse providers
-            const aiProviders =
-                aiProvidersJson !== null ? JSON.parse(aiProvidersJson) : [];
+            const aiProviders = aiProvidersJson !== null ? JSON.parse(aiProvidersJson) : [];
             if (aiProviders.length === 0) {
-                throw new Error('No AI providers configured');
+                throw new Error("No AI providers configured");
             }
 
             // Find the requested provider or use the first one
@@ -270,7 +268,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
             const currentTracks = request.currentTracks.map(
                 (m: TrackMatch) => `${m.suggestion.title} by ${m.suggestion.artist}`
             );
-            const refinementContext = `Current playlist:\n${currentTracks.join('\n')}\n\nRefinement request: ${request.refinementPrompt}`;
+            const refinementContext = `Current playlist:\n${currentTracks.join("\n")}\n\nRefinement request: ${request.refinementPrompt}`;
 
             const aiService = new AIService();
             const aiResponse = await aiService.generatePlaylist({
@@ -300,7 +298,7 @@ export const setupPlaylistRoutes = (router: Router, db: PlaylistDatabase): void 
 
         if (err !== undefined) {
             res.status(500).json({
-                error: 'Failed to refine playlist',
+                error: "Failed to refine playlist",
                 details: err.message
             });
             return;

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import type { AIProviderConfig, ProviderType } from '../../../shared/types';
-import Anthropic from '@anthropic-ai/sdk';
-import OpenAI from 'openai';
-import { attemptPromise } from '@jfdi/attempt';
+import React, { useState } from "react";
+import type { AIProviderConfig, ProviderType } from "../../../shared/types";
+import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
+import { attemptPromise } from "@jfdi/attempt";
 
 interface ProvidersManagerProps {
     providers: AIProviderConfig[];
@@ -26,13 +26,13 @@ export const ProvidersManager = ({
     const [showModelDropdown, setShowModelDropdown] = useState(false);
 
     const startAdd = (): void => {
-        setEditingId('new');
+        setEditingId("new");
         setEditForm({
             id: crypto.randomUUID(),
-            name: '',
-            type: 'anthropic',
-            apiKey: '',
-            model: '',
+            name: "",
+            type: "anthropic",
+            apiKey: "",
+            model: "",
             temperature: 1.0
         });
     };
@@ -51,23 +51,23 @@ export const ProvidersManager = ({
     };
 
     const loadModels = async (): Promise<void> => {
-        if (editForm.apiKey === undefined || editForm.apiKey.trim() === '') {
-            setModelsError('Please enter an API key first');
+        if (editForm.apiKey === undefined || editForm.apiKey.trim() === "") {
+            setModelsError("Please enter an API key first");
             return;
         }
 
         if (editForm.type === undefined) {
-            setModelsError('Please select a provider type first');
+            setModelsError("Please select a provider type first");
             return;
         }
 
-        const apiKey = editForm.apiKey as string;
-        const providerType = editForm.type as ProviderType;
+        const apiKey = editForm.apiKey;
+        const providerType = editForm.type;
 
         setLoadingModels(true);
         setModelsError(null);
 
-        if (providerType === 'anthropic') {
+        if (providerType === "anthropic") {
             const [err, models] = await attemptPromise(async () => {
                 const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
                 const response = await client.models.list();
@@ -87,11 +87,11 @@ export const ProvidersManager = ({
             setAvailableModels(models);
             setShowModelDropdown(true);
         } else {
-            const baseUrl = editForm.baseUrl as string | undefined;
+            const baseUrl = editForm.baseUrl;
             const [err, models] = await attemptPromise(async () => {
                 const client = new OpenAI({
                     apiKey,
-                    baseURL: baseUrl !== undefined && baseUrl.trim() !== '' ? baseUrl : undefined,
+                    baseURL: baseUrl !== undefined && baseUrl.trim() !== "" ? baseUrl : undefined,
                     dangerouslyAllowBrowser: true
                 });
                 const response = await client.models.list();
@@ -117,14 +117,14 @@ export const ProvidersManager = ({
         if (
             editForm.id === undefined ||
             editForm.name === undefined ||
-            editForm.name.trim() === '' ||
+            editForm.name.trim() === "" ||
             editForm.type === undefined ||
             editForm.apiKey === undefined ||
-            editForm.apiKey.trim() === '' ||
+            editForm.apiKey.trim() === "" ||
             editForm.model === undefined ||
-            editForm.model.trim() === ''
+            editForm.model.trim() === ""
         ) {
-            alert('Please fill in all required fields');
+            alert("Please fill in all required fields");
             return;
         }
 
@@ -138,7 +138,7 @@ export const ProvidersManager = ({
             temperature: editForm.temperature
         };
 
-        if (editingId === 'new') {
+        if (editingId === "new") {
             onChange([...providers, newProvider]);
         } else {
             onChange(providers.map(p => (p.id === editingId ? newProvider : p)));
@@ -149,7 +149,7 @@ export const ProvidersManager = ({
     };
 
     const deleteProvider = (id: string): void => {
-        if (confirm('Are you sure you want to delete this provider?')) {
+        if (confirm("Are you sure you want to delete this provider?")) {
             onChange(providers.filter(p => p.id !== id));
         }
     };
@@ -172,14 +172,14 @@ export const ProvidersManager = ({
                                     type="text"
                                     placeholder="Provider Name (e.g., Claude 3.5)"
                                     className="input input-bordered input-sm w-full"
-                                    value={editForm.name ?? ''}
+                                    value={editForm.name ?? ""}
                                     onChange={e => {
                                         setEditForm({ ...editForm, name: e.target.value });
                                     }}
                                 />
                                 <select
                                     className="select select-bordered select-sm w-full"
-                                    value={editForm.type ?? 'anthropic'}
+                                    value={editForm.type ?? "anthropic"}
                                     onChange={e => {
                                         setEditForm({
                                             ...editForm,
@@ -194,7 +194,7 @@ export const ProvidersManager = ({
                                     type="password"
                                     placeholder="API Key"
                                     className="input input-bordered input-sm w-full"
-                                    value={editForm.apiKey ?? ''}
+                                    value={editForm.apiKey ?? ""}
                                     onChange={e => {
                                         setEditForm({ ...editForm, apiKey: e.target.value });
                                     }}
@@ -204,7 +204,7 @@ export const ProvidersManager = ({
                                         {showModelDropdown && availableModels.length > 0 ? (
                                             <select
                                                 className="select select-bordered select-sm flex-1"
-                                                value={editForm.model ?? ''}
+                                                value={editForm.model ?? ""}
                                                 onChange={e => {
                                                     setEditForm({
                                                         ...editForm,
@@ -224,7 +224,7 @@ export const ProvidersManager = ({
                                                 type="text"
                                                 placeholder="Model (e.g., claude-sonnet-4-5-20250929, llama3:latest)"
                                                 className="input input-bordered input-sm flex-1"
-                                                value={editForm.model ?? ''}
+                                                value={editForm.model ?? ""}
                                                 onChange={e => {
                                                     setEditForm({
                                                         ...editForm,
@@ -241,20 +241,20 @@ export const ProvidersManager = ({
                                             }}
                                             disabled={loadingModels}
                                         >
-                                            {loadingModels ? 'Loading...' : 'Load Models'}
+                                            {loadingModels ? "Loading..." : "Load Models"}
                                         </button>
                                     </div>
                                     {modelsError !== null && (
                                         <div className="text-error text-xs">{modelsError}</div>
                                     )}
                                 </div>
-                                {(editForm.type === 'openai-compatible' ||
+                                {(editForm.type === "openai-compatible" ||
                                     editForm.baseUrl !== undefined) && (
                                     <input
                                         type="text"
                                         placeholder="Base URL (optional, e.g., http://localhost:11434/v1)"
                                         className="input input-bordered input-sm w-full"
-                                        value={editForm.baseUrl ?? ''}
+                                        value={editForm.baseUrl ?? ""}
                                         onChange={e => {
                                             setEditForm({ ...editForm, baseUrl: e.target.value });
                                         }}
@@ -295,9 +295,9 @@ export const ProvidersManager = ({
                                 <div>
                                     <div className="font-semibold">{provider.name}</div>
                                     <div className="text-sm opacity-70">
-                                        {provider.type === 'anthropic'
-                                            ? 'Anthropic'
-                                            : 'OpenAI-Compatible'}{' '}
+                                        {provider.type === "anthropic"
+                                            ? "Anthropic"
+                                            : "OpenAI-Compatible"}{" "}
                                         • {provider.model}
                                         {provider.baseUrl !== undefined && ` • ${provider.baseUrl}`}
                                         {provider.temperature !== undefined &&
@@ -327,21 +327,21 @@ export const ProvidersManager = ({
                     </div>
                 ))}
 
-                {editingId === 'new' && (
+                {editingId === "new" && (
                     <div className="card bg-base-200 p-4">
                         <div className="space-y-3">
                             <input
                                 type="text"
                                 placeholder="Provider Name (e.g., Local Ollama)"
                                 className="input input-bordered input-sm w-full"
-                                value={editForm.name ?? ''}
+                                value={editForm.name ?? ""}
                                 onChange={e => {
                                     setEditForm({ ...editForm, name: e.target.value });
                                 }}
                             />
                             <select
                                 className="select select-bordered select-sm w-full"
-                                value={editForm.type ?? 'anthropic'}
+                                value={editForm.type ?? "anthropic"}
                                 onChange={e => {
                                     setEditForm({
                                         ...editForm,
@@ -356,7 +356,7 @@ export const ProvidersManager = ({
                                 type="password"
                                 placeholder="API Key"
                                 className="input input-bordered input-sm w-full"
-                                value={editForm.apiKey ?? ''}
+                                value={editForm.apiKey ?? ""}
                                 onChange={e => {
                                     setEditForm({ ...editForm, apiKey: e.target.value });
                                 }}
@@ -366,7 +366,7 @@ export const ProvidersManager = ({
                                     {showModelDropdown && availableModels.length > 0 ? (
                                         <select
                                             className="select select-bordered select-sm flex-1"
-                                            value={editForm.model ?? ''}
+                                            value={editForm.model ?? ""}
                                             onChange={e => {
                                                 setEditForm({ ...editForm, model: e.target.value });
                                             }}
@@ -383,7 +383,7 @@ export const ProvidersManager = ({
                                             type="text"
                                             placeholder="Model (e.g., llama3:latest)"
                                             className="input input-bordered input-sm flex-1"
-                                            value={editForm.model ?? ''}
+                                            value={editForm.model ?? ""}
                                             onChange={e => {
                                                 setEditForm({ ...editForm, model: e.target.value });
                                             }}
@@ -397,20 +397,20 @@ export const ProvidersManager = ({
                                         }}
                                         disabled={loadingModels}
                                     >
-                                        {loadingModels ? 'Loading...' : 'Load Models'}
+                                        {loadingModels ? "Loading..." : "Load Models"}
                                     </button>
                                 </div>
                                 {modelsError !== null && (
                                     <div className="text-error text-xs">{modelsError}</div>
                                 )}
                             </div>
-                            {(editForm.type === 'openai-compatible' ||
+                            {(editForm.type === "openai-compatible" ||
                                 editForm.baseUrl !== undefined) && (
                                 <input
                                     type="text"
                                     placeholder="Base URL (e.g., http://localhost:11434/v1)"
                                     className="input input-bordered input-sm w-full"
-                                    value={editForm.baseUrl ?? ''}
+                                    value={editForm.baseUrl ?? ""}
                                     onChange={e => {
                                         setEditForm({ ...editForm, baseUrl: e.target.value });
                                     }}

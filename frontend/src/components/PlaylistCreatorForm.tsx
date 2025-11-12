@@ -1,5 +1,5 @@
-import React from 'react';
-import type { AIProviderConfig } from '@shared/types';
+import React from "react";
+import type { AIProviderConfig } from "@shared/types";
 
 interface PlaylistCreatorFormProps {
     playlistName: string;
@@ -29,7 +29,7 @@ export const PlaylistCreatorForm = ({
     onGenerate
 }: PlaylistCreatorFormProps): React.JSX.Element => {
     const selectedProvider = providers.find(p => p.id === selectedProviderId);
-    const providerName = selectedProvider?.name ?? 'AI';
+    const providerName = selectedProvider?.name ?? "AI";
 
     return (
         <div className="card bg-base-100 shadow-xl mb-4">
@@ -43,7 +43,7 @@ export const PlaylistCreatorForm = ({
                         </label>
                         <select
                             className="select select-bordered w-full"
-                            value={selectedProviderId ?? ''}
+                            value={selectedProviderId ?? ""}
                             onChange={e => {
                                 onProviderChange(e.target.value);
                             }}
@@ -117,7 +117,7 @@ export const PlaylistCreatorForm = ({
                         }
                     >
                         {generating && <span className="loading loading-spinner"></span>}
-                        {generating ? `Generating with ${providerName}...` : 'Generate Playlist'}
+                        {generating ? `Generating with ${providerName}...` : "Generate Playlist"}
                     </button>
                 </div>
             </div>

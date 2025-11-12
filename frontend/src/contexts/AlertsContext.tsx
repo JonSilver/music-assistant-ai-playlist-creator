@@ -1,5 +1,5 @@
-import React, { createContext, useState, useCallback } from 'react';
-import type { AlertsContextValue } from '../hooks/useAlerts';
+import React, { createContext, useState, useCallback } from "react";
+import type { AlertsContextValue } from "../hooks/useAlerts";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AlertsContext = createContext<AlertsContextValue | null>(null);

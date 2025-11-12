@@ -1,14 +1,14 @@
-import React from 'react';
-import type { GetSettingsResponse } from '@shared/types';
-import { useSettings } from '../hooks/useSettings';
-import { AlertMessage } from './AlertMessage';
-import { SettingsPage } from './SettingsPage';
+import React from "react";
+import type { GetSettingsResponse } from "@shared/types";
+import { useSettings } from "../hooks/useSettings";
+import { AlertMessage } from "./AlertMessage";
+import { SettingsPage } from "./SettingsPage";
 
 interface SettingsViewProps {
     settings: GetSettingsResponse | null;
     updateSettings: (updates: {
         musicAssistantUrl: string;
-        aiProviders: import('@shared/types').AIProviderConfig[];
+        aiProviders: import("@shared/types").AIProviderConfig[];
         customSystemPrompt?: string;
     }) => Promise<Error | undefined>;
     setError: (message: string) => void;

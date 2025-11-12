@@ -1,5 +1,5 @@
-import React from 'react';
-import type { PromptHistory } from '../../../shared/types';
+import React from "react";
+import type { PromptHistory } from "../../../shared/types";
 
 interface HistoryModalProps {
     show: boolean;
@@ -39,7 +39,7 @@ export const HistoryModal = ({
                                     <div className="flex justify-between items-start">
                                         <div className="flex-1">
                                             <p className="font-semibold">
-                                                {item.playlistName ?? 'Untitled'}
+                                                {item.playlistName ?? "Untitled"}
                                             </p>
                                             <p className="text-sm opacity-75 mt-1">{item.prompt}</p>
                                         </div>
@@ -50,7 +50,7 @@ export const HistoryModal = ({
                                     <div className="text-xs opacity-50">
                                         {item.trackCount !== undefined
                                             ? `${item.trackCount.toString()} tracks`
-                                            : 'Track count unknown'}
+                                            : "Track count unknown"}
                                     </div>
                                 </div>
                             </div>

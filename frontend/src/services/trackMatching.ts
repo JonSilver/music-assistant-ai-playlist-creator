@@ -1,6 +1,6 @@
-import { attemptPromise } from '@jfdi/attempt';
-import type { MusicAssistantClient } from './musicAssistant';
-import type { TrackMatch, TrackSuggestion } from '@shared/types';
+import { attemptPromise } from "@jfdi/attempt";
+import type { MusicAssistantClient } from "./musicAssistant";
+import type { TrackMatch, TrackSuggestion } from "@shared/types";
 
 export const matchTrack = async (
     suggestion: TrackSuggestion,
@@ -54,7 +54,7 @@ export const matchTrack = async (
 
         const match = results[0];
         const firstArtist = match.artists?.[0];
-        const matchedArtist = firstArtist !== undefined ? firstArtist.name : 'unknown';
+        const matchedArtist = firstArtist !== undefined ? firstArtist.name : "unknown";
         const totalDuration = performance.now() - startTime;
         const durationMs = Math.round(totalDuration);
         console.log(
@@ -79,7 +79,7 @@ export const matchTracksProgressively = async (
 ): Promise<void> => {
     const BATCH_SIZE = 10;
 
-    const { MusicAssistantClient } = await import('./musicAssistant');
+    const { MusicAssistantClient } = await import("./musicAssistant");
     const maClient = new MusicAssistantClient(maUrl);
 
     const [connectErr] = await attemptPromise(async () => maClient.connect());

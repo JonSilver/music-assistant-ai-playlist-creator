@@ -1,13 +1,13 @@
-import React from 'react';
-import type { GetSettingsResponse, PresetPrompt, PromptHistory } from '@shared/types';
-import type { UsePlaylistReturn } from '../hooks/usePlaylist';
-import { Navbar } from './Navbar';
-import { AlertMessage } from './AlertMessage';
-import { PresetPrompts } from './PresetPrompts';
-import { PlaylistCreatorForm } from './PlaylistCreatorForm';
-import { GeneratedTracksDisplay } from './GeneratedTracksDisplay';
-import { HistoryModal } from './HistoryModal';
-import { RefinePlaylistModal } from './RefinePlaylistModal';
+import React from "react";
+import type { GetSettingsResponse, PresetPrompt, PromptHistory } from "@shared/types";
+import type { UsePlaylistReturn } from "../hooks/usePlaylist";
+import { Navbar } from "./Navbar";
+import { AlertMessage } from "./AlertMessage";
+import { PresetPrompts } from "./PresetPrompts";
+import { PlaylistCreatorForm } from "./PlaylistCreatorForm";
+import { GeneratedTracksDisplay } from "./GeneratedTracksDisplay";
+import { HistoryModal } from "./HistoryModal";
+import { RefinePlaylistModal } from "./RefinePlaylistModal";
 
 interface MainViewProps {
     settings: GetSettingsResponse;

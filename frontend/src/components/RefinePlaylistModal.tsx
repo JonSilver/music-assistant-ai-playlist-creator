@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface RefinePlaylistModalProps {
     show: boolean;
@@ -21,7 +21,7 @@ export const RefinePlaylistModal = ({
 
     const handleClose = (): void => {
         onClose();
-        onRefinementPromptChange('');
+        onRefinementPromptChange("");
     };
 
     return (
@@ -58,7 +58,7 @@ export const RefinePlaylistModal = ({
                         disabled={refining || refinementPrompt.trim().length === 0}
                     >
                         {refining && <span className="loading loading-spinner"></span>}
-                        {refining ? 'Refining...' : 'Refine Playlist'}
+                        {refining ? "Refining..." : "Refine Playlist"}
                     </button>
                 </div>
             </div>

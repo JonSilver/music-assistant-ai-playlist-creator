@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface TestResult {
     success: boolean;
@@ -19,11 +19,11 @@ export const TestResultDisplay = ({
     if (result === undefined) return null;
 
     return (
-        <div className={`alert ${result.success ? 'alert-success' : 'alert-error'} mt-2`}>
+        <div className={`alert ${result.success ? "alert-success" : "alert-error"} mt-2`}>
             <span className="text-sm">
                 {result.success
                     ? successMessage
-                    : `${errorPrefix}: ${result.error ?? 'Unknown error'}`}
+                    : `${errorPrefix}: ${result.error ?? "Unknown error"}`}
             </span>
         </div>
     );

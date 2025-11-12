@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react";
 
 interface AlertMessageProps {
-    type: 'error' | 'success';
+    type: "error" | "success";
     message: string;
     onDismiss: () => void;
 }
@@ -61,14 +61,14 @@ export const AlertMessage = ({
     message,
     onDismiss
 }: AlertMessageProps): React.JSX.Element => (
-    <div className={`alert ${type === 'error' ? 'alert-error' : 'alert-success'} mb-4`}>
+    <div className={`alert ${type === "error" ? "alert-error" : "alert-success"} mb-4`}>
         <svg
             xmlns="http://www.w3.org/2000/svg"
             className="stroke-current shrink-0 h-6 w-6"
             fill="none"
             viewBox="0 0 24 24"
         >
-            {type === 'error' ? (
+            {type === "error" ? (
                 <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

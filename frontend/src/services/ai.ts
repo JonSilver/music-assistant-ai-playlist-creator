@@ -1,8 +1,8 @@
-import Anthropic from '@anthropic-ai/sdk';
-import OpenAI from 'openai';
-import { z } from 'zod';
-import { attemptPromise, attempt } from '@jfdi/attempt';
-import type { AIProviderConfig, AIPlaylistResponse } from '../../../shared/types.js';
+import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
+import { z } from "zod";
+import { attemptPromise, attempt } from "@jfdi/attempt";
+import type { AIProviderConfig, AIPlaylistResponse } from "../../../shared/types.js";
 
 const TrackSuggestionSchema = z.object({
     title: z.string(),
@@ -48,9 +48,9 @@ Required JSON format:
 
     const favoriteArtistsSection =
         favoriteArtists !== undefined && favoriteArtists.length > 0
-            ? `\n\nThe user's favorite artists include: ${favoriteArtists.join(', ')}.
+            ? `\n\nThe user's favorite artists include: ${favoriteArtists.join(", ")}.
 When appropriate, consider including tracks from these artists or similar artists.`
-            : '';
+            : "";
 
     const guidelinesSection =
         customPrompt === undefined
@@ -58,7 +58,7 @@ When appropriate, consider including tracks from these artists or similar artist
                   const countGuideline =
                       trackCount !== undefined && trackCount > 0
                           ? `- Create exactly ${trackCount} tracks`
-                          : '- Create 15-30 tracks unless user specifies otherwise';
+                          : "- Create 15-30 tracks unless user specifies otherwise";
 
                   return `\n\nGuidelines:
 ${countGuideline}
@@ -68,7 +68,7 @@ ${countGuideline}
 - Be specific with track titles and artist names
 - Consider the user's favorite artists when relevant`;
               })()
-            : '';
+            : "";
 
     return basePrompt + favoriteArtistsSection + guidelinesSection;
 };
@@ -113,15 +113,15 @@ const generateWithAnthropic = async (request: AIPlaylistRequest): Promise<AIPlay
             system: systemPrompt,
             messages: [
                 {
-                    role: 'user',
+                    role: "user",
                     content: request.prompt
                 }
             ]
         });
 
         const content = response.content[0];
-        if (content.type !== 'text') {
-            throw new Error('Unexpected response type from Claude');
+        if (content.type !== "text") {
+            throw new Error("Unexpected response type from Claude");
         }
 
         return parseAIResponse(content.text);
@@ -155,20 +155,20 @@ const generateWithOpenAICompatible = async (
             model: request.providerConfig.model,
             temperature,
             messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: request.prompt }
+                { role: "system", content: systemPrompt },
+                { role: "user", content: request.prompt }
             ],
-            response_format: { type: 'json_object' }
+            response_format: { type: "json_object" }
         });
 
         const firstChoice = response.choices[0];
         if (firstChoice === null || firstChoice === undefined) {
-            throw new Error('No choices in OpenAI response');
+            throw new Error("No choices in OpenAI response");
         }
 
         const content = firstChoice.message.content;
         if (content === null || content === undefined) {
-            throw new Error('No response from OpenAI');
+            throw new Error("No response from OpenAI");
         }
 
         return parseAIResponse(content);
@@ -182,7 +182,7 @@ const generateWithOpenAICompatible = async (
 };
 
 export const generatePlaylist = async (request: AIPlaylistRequest): Promise<AIPlaylistResponse> => {
-    if (request.providerConfig.type === 'anthropic') {
+    if (request.providerConfig.type === "anthropic") {
         return generateWithAnthropic(request);
     }
     return generateWithOpenAICompatible(request);

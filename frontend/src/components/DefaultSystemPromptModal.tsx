@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface DefaultSystemPromptModalProps {
     show: boolean;
@@ -33,7 +33,7 @@ export const DefaultSystemPromptModal = ({
     show,
     onClose
 }: DefaultSystemPromptModalProps): React.JSX.Element => (
-    <dialog className={`modal ${show ? 'modal-open' : ''}`}>
+    <dialog className={`modal ${show ? "modal-open" : ""}`}>
         <div className="modal-box max-w-2xl">
             <h3 className="font-bold text-lg mb-4">Default System Prompt</h3>
             <div className="mb-4">

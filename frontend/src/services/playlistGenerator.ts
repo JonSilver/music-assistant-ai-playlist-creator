@@ -1,7 +1,7 @@
-import { attemptPromise } from '@jfdi/attempt';
-import { MusicAssistantClient } from './musicAssistant';
-import { generatePlaylist as generatePlaylistAI } from './ai';
-import type { AIProviderConfig, TrackMatch } from '@shared/types';
+import { attemptPromise } from "@jfdi/attempt";
+import { MusicAssistantClient } from "./musicAssistant";
+import { generatePlaylist as generatePlaylistAI } from "./ai";
+import type { AIProviderConfig, TrackMatch } from "@shared/types";
 
 export interface GeneratePlaylistParams {
     prompt: string;

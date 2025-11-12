@@ -1,13 +1,13 @@
-import React from 'react';
-import type { TrackMatch } from '../../../shared/types';
+import React from "react";
+import type { TrackMatch } from "../../../shared/types";
 
 interface GeneratedTracksDisplayProps {
     tracks: TrackMatch[];
     creating: boolean;
     replacingTrackIndex: number | null;
     retryingTrackIndex: number | null;
-    trackFilter: 'all' | 'matched' | 'unmatched';
-    onTrackFilterChange: (filter: 'all' | 'matched' | 'unmatched') => void;
+    trackFilter: "all" | "matched" | "unmatched";
+    onTrackFilterChange: (filter: "all" | "matched" | "unmatched") => void;
     onReplaceTrack: (index: number) => void;
     onRetryTrack: (index: number) => void;
     onRemoveTrack: (index: number) => void;
@@ -39,8 +39,8 @@ export const GeneratedTracksDisplay = ({
     const isMatching = tracks.some(t => t.matching === true);
 
     const filteredTracks = tracks.filter(track => {
-        if (trackFilter === 'matched') return track.matched;
-        if (trackFilter === 'unmatched') return !track.matched;
+        if (trackFilter === "matched") return track.matched;
+        if (trackFilter === "unmatched") return !track.matched;
         return true;
     });
 
@@ -52,7 +52,7 @@ export const GeneratedTracksDisplay = ({
                         <h2 className="card-title mb-2">Generated Tracks</h2>
                         <div className="text-sm space-y-1">
                             <p>
-                                <span className="font-semibold">{matchedCount}</span> of{' '}
+                                <span className="font-semibold">{matchedCount}</span> of{" "}
                                 <span className="font-semibold">{totalCount}</span> tracks found in
                                 your library
                                 {matchPercentage > 0 && (
@@ -65,25 +65,25 @@ export const GeneratedTracksDisplay = ({
                     </div>
                     <div className="btn-group">
                         <button
-                            className={`btn btn-sm ${trackFilter === 'all' ? 'btn-active' : ''}`}
+                            className={`btn btn-sm ${trackFilter === "all" ? "btn-active" : ""}`}
                             onClick={() => {
-                                onTrackFilterChange('all');
+                                onTrackFilterChange("all");
                             }}
                         >
                             All ({totalCount})
                         </button>
                         <button
-                            className={`btn btn-sm ${trackFilter === 'matched' ? 'btn-active' : ''}`}
+                            className={`btn btn-sm ${trackFilter === "matched" ? "btn-active" : ""}`}
                             onClick={() => {
-                                onTrackFilterChange('matched');
+                                onTrackFilterChange("matched");
                             }}
                         >
                             Found ({matchedCount})
                         </button>
                         <button
-                            className={`btn btn-sm ${trackFilter === 'unmatched' ? 'btn-active' : ''}`}
+                            className={`btn btn-sm ${trackFilter === "unmatched" ? "btn-active" : ""}`}
                             onClick={() => {
-                                onTrackFilterChange('unmatched');
+                                onTrackFilterChange("unmatched");
                             }}
                         >
                             Not Found ({totalCount - matchedCount})
@@ -130,7 +130,7 @@ export const GeneratedTracksDisplay = ({
                                     return (
                                         <tr
                                             key={actualIndex}
-                                            className={track.matched ? '' : 'opacity-50'}
+                                            className={track.matched ? "" : "opacity-50"}
                                         >
                                             <td className="text-center opacity-60 font-mono text-sm">
                                                 {actualIndex + 1}
@@ -146,7 +146,7 @@ export const GeneratedTracksDisplay = ({
                                                 )}
                                             </td>
                                             <td>{track.suggestion.artist}</td>
-                                            <td>{track.suggestion.album ?? '-'}</td>
+                                            <td>{track.suggestion.album ?? "-"}</td>
                                             <td>
                                                 {track.matching === true ? (
                                                     <span className="badge badge-warning gap-1">
@@ -207,7 +207,7 @@ export const GeneratedTracksDisplay = ({
                                                                     Retrying...
                                                                 </>
                                                             ) : (
-                                                                'Retry'
+                                                                "Retry"
                                                             )}
                                                         </button>
                                                     )}
@@ -226,7 +226,7 @@ export const GeneratedTracksDisplay = ({
                                                                 Replacing...
                                                             </>
                                                         ) : (
-                                                            'Replace'
+                                                            "Replace"
                                                         )}
                                                     </button>
                                                     <button
@@ -260,7 +260,7 @@ export const GeneratedTracksDisplay = ({
                         disabled={creating || !hasMatchedTracks || isMatching}
                     >
                         {creating && <span className="loading loading-spinner"></span>}
-                        {creating ? 'Creating...' : 'Create Playlist in Music Assistant'}
+                        {creating ? "Creating..." : "Create Playlist in Music Assistant"}
                     </button>
                 </div>
             </div>

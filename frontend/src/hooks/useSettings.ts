@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { AIProviderConfig, GetSettingsResponse } from '@shared/types';
-import { MusicAssistantClient } from '../services/musicAssistant';
-import { attemptPromise } from '@jfdi/attempt';
+import { useState, useEffect, useCallback } from "react";
+import type { AIProviderConfig, GetSettingsResponse } from "@shared/types";
+import { MusicAssistantClient } from "../services/musicAssistant";
+import { attemptPromise } from "@jfdi/attempt";
 
 interface TestResults {
     ma?: { success: boolean; error?: string };
@@ -31,9 +31,9 @@ export const useSettings = (
     setError: (message: string) => void,
     closeSettings: () => void
 ): UseSettingsReturn => {
-    const [musicAssistantUrl, setMusicAssistantUrl] = useState('');
+    const [musicAssistantUrl, setMusicAssistantUrl] = useState("");
     const [aiProviders, setAiProviders] = useState<AIProviderConfig[]>([]);
-    const [customSystemPrompt, setCustomSystemPrompt] = useState('');
+    const [customSystemPrompt, setCustomSystemPrompt] = useState("");
     const [testingMA, setTestingMA] = useState(false);
     const [testResults, setTestResults] = useState<TestResults>({});
 
@@ -41,7 +41,7 @@ export const useSettings = (
         if (settings !== null) {
             setMusicAssistantUrl(settings.musicAssistantUrl);
             setAiProviders(settings.aiProviders);
-            setCustomSystemPrompt(settings.customSystemPrompt ?? '');
+            setCustomSystemPrompt(settings.customSystemPrompt ?? "");
         }
     }, [settings]);
 
@@ -66,12 +66,12 @@ export const useSettings = (
 
     const handleSaveSettings = useCallback(async (): Promise<void> => {
         if (musicAssistantUrl.trim().length === 0) {
-            setError('Music Assistant URL is required');
+            setError("Music Assistant URL is required");
             return;
         }
 
         if (aiProviders.length === 0) {
-            setError('At least one AI provider is required');
+            setError("At least one AI provider is required");
             return;
         }
 
@@ -88,13 +88,20 @@ export const useSettings = (
         }
 
         closeSettings();
-    }, [musicAssistantUrl, aiProviders, customSystemPrompt, updateSettings, setError, closeSettings]);
+    }, [
+        musicAssistantUrl,
+        aiProviders,
+        customSystemPrompt,
+        updateSettings,
+        setError,
+        closeSettings
+    ]);
 
     const handleCancelSettings = useCallback((): void => {
         if (settings !== null) {
             setMusicAssistantUrl(settings.musicAssistantUrl);
             setAiProviders(settings.aiProviders);
-            setCustomSystemPrompt(settings.customSystemPrompt ?? '');
+            setCustomSystemPrompt(settings.customSystemPrompt ?? "");
         }
         closeSettings();
     }, [settings, closeSettings]);
