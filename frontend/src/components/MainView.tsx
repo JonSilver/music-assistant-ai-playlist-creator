@@ -1,12 +1,12 @@
-import React from "react";
 import type { GetSettingsResponse, PresetPrompt, PromptHistory } from "@shared/types";
+import { type FC } from "react";
 import type { UsePlaylistReturn } from "../hooks/usePlaylist";
-import { Navbar } from "./Navbar";
 import { AlertMessage } from "./AlertMessage";
-import { PresetPrompts } from "./PresetPrompts";
-import { PlaylistCreatorForm } from "./PlaylistCreatorForm";
 import { GeneratedTracksDisplay } from "./GeneratedTracksDisplay";
 import { HistoryModal } from "./HistoryModal";
+import { Navbar } from "./Navbar";
+import { PlaylistCreatorForm } from "./PlaylistCreatorForm";
+import { PresetPrompts } from "./PresetPrompts";
 import { RefinePlaylistModal } from "./RefinePlaylistModal";
 
 interface MainViewProps {
@@ -29,7 +29,7 @@ interface MainViewProps {
     closeRefine: () => void;
 }
 
-export const MainView = ({
+export const MainView: FC<MainViewProps> = ({
     settings,
     selectedProviderId,
     setSelectedProviderId,
@@ -47,7 +47,7 @@ export const MainView = ({
     closeHistory,
     openRefine,
     closeRefine
-}: MainViewProps): React.JSX.Element => (
+}) => (
     <div className="min-h-screen bg-base-200">
         <Navbar onShowSettings={openSettings} onShowHistory={openHistory} />
 
