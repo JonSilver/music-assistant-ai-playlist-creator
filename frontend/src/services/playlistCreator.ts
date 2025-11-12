@@ -87,6 +87,7 @@ export const refinePlaylist = async (
 
 export const replaceTrack = async (
     trackToReplace: TrackMatch,
+    currentTracks: TrackMatch[],
     originalPrompt: string,
     playlistName: string,
     musicAssistantUrl: string,
@@ -114,14 +115,22 @@ export const replaceTrack = async (
         throw new Error(`Failed to get favorite artists: ${favoriteErr.message}`);
     }
 
+    const existingTracks = currentTracks
+        .filter(t => t !== trackToReplace)
+        .map(t => `"${t.suggestion.title}" by ${t.suggestion.artist}`)
+        .join("\n");
+
     const replacementPrompt = `Original playlist context: "${originalPrompt}" for playlist "${playlistName}"
 
 Please suggest ONE alternative track to replace "${trackToReplace.suggestion.title}" by ${trackToReplace.suggestion.artist}.
 
 The replacement should:
 - Fit the same playlist context and mood
+- Be a COMPLETELY DIFFERENT song/composition (not just a different version, cover, or recording of an existing track)
 - Be from a different artist
-- Maintain the overall flow and theme`;
+- Maintain the overall flow and theme
+- NOT be any of these tracks (or different versions/covers of them) already in the playlist:
+${existingTracks}`;
 
     const [aiErr, aiResult] = await attemptPromise(async () =>
         generatePlaylistAI({

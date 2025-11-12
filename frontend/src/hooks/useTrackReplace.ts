@@ -15,7 +15,7 @@ export const useTrackReplace = (
     playlistName: string,
     settings: GetSettingsResponse | null,
     selectedProviderId: string | null,
-    setGeneratedTracks: (tracks: TrackMatch[]) => void,
+    setGeneratedTracks: (tracksOrUpdater: TrackMatch[] | ((prev: TrackMatch[]) => TrackMatch[])) => void,
     setError: (message: string) => void
 ): UseTrackReplaceReturn => {
     const [replacingTrackIndex, setReplacingTrackIndex] = useState<number | null>(null);
@@ -40,14 +40,17 @@ export const useTrackReplace = (
                 return;
             }
 
-            const trackToReplace = generatedTracks[index];
-            if (trackToReplace === undefined) return;
+            if (index < 0 || index >= generatedTracks.length) return;
 
+            const trackToReplace = generatedTracks[index];
+            console.log(`[Replace] Replacing track at index ${index}:`, trackToReplace.suggestion);
+            console.log(`[Replace] Current playlist has ${generatedTracks.length} tracks`);
             setReplacingTrackIndex(index);
 
             const [err, replacementTrack] = await attemptPromise(async () =>
                 replaceTrackService(
                     trackToReplace,
+                    generatedTracks,
                     prompt,
                     playlistName,
                     settings.musicAssistantUrl,
@@ -63,21 +66,36 @@ export const useTrackReplace = (
                 return;
             }
 
-            setGeneratedTracks([
-                ...generatedTracks.slice(0, index),
-                replacementTrack,
-                ...generatedTracks.slice(index + 1)
-            ]);
+            console.log(`[Replace] Got replacement for index ${index}:`, replacementTrack.suggestion);
+
+            setGeneratedTracks(prev => {
+                console.log(`[Replace] Updating state at index ${index}, current array length:`, prev.length);
+                const updated = [
+                    ...prev.slice(0, index),
+                    replacementTrack,
+                    ...prev.slice(index + 1)
+                ];
+                console.log(`[Replace] Updated array length:`, updated.length);
+                return updated;
+            });
 
             void matchTracksProgressively(
                 [replacementTrack],
                 settings.musicAssistantUrl,
                 updater => {
-                    setGeneratedTracks([
-                        ...generatedTracks.slice(0, index),
-                        updater([replacementTrack])[0] ?? replacementTrack,
-                        ...generatedTracks.slice(index + 1)
-                    ]);
+                    console.log(`[Replace] Matching callback for index ${index}`);
+                    const matchedTrack = updater([replacementTrack])[0] ?? replacementTrack;
+                    console.log(`[Replace] Matched track for index ${index}:`, matchedTrack.suggestion);
+                    setGeneratedTracks(prev => {
+                        console.log(`[Replace] Final update at index ${index}, prev length:`, prev.length);
+                        const updated = [
+                            ...prev.slice(0, index),
+                            matchedTrack,
+                            ...prev.slice(index + 1)
+                        ];
+                        console.log(`[Replace] Final updated length:`, updated.length);
+                        return updated;
+                    });
                 },
                 setError
             );
