@@ -4,10 +4,15 @@ import express from "express";
 import { mkdirSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import {
+    API_BASE_PATH,
+    API_ENDPOINTS,
+    DEFAULT_BACKEND_PORT,
+    PAYLOAD_LIMIT
+} from "../../shared/constants/index.js";
 import { PlaylistDatabase } from "./db/schema.js";
 import { setupPromptsRoutes } from "./routes/prompts.js";
 import { setupSettingsRoutes } from "./routes/settings.js";
-import { DEFAULT_BACKEND_PORT, PAYLOAD_LIMIT, API_BASE_PATH, API_ENDPOINTS } from "../../shared/constants/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

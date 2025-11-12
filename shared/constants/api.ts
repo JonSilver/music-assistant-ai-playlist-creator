@@ -7,9 +7,6 @@ export const API_ENDPOINTS = {
     SETTINGS: '/settings',
     PROMPTS_HISTORY: '/prompts/history',
     PROMPTS_PRESETS: '/prompts/presets',
-    PLAYLIST_GENERATE: '/playlist/generate',
-    PLAYLIST_CREATE: '/playlist/create',
-    PLAYLIST_REFINE: '/playlist/refine',
     HEALTH: '/health'
 } as const;
 
