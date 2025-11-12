@@ -1,6 +1,7 @@
 {
     "name": "backend",
     "version": "0.5.0",
+    "author": "Jon Silver",
     "description": "AI Playlist Creator Backend API",
     "main": "dist/backend/src/server.js",
     "type": "module",
@@ -13,7 +14,6 @@
         "lint:fix": "eslint . --fix"
     },
     "keywords": [],
-    "author": "",
     "license": "ISC",
     "dependencies": {
         "@anthropic-ai/sdk": "^0.68.0",

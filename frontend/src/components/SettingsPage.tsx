@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import type { AIProviderConfig } from "../../../shared/types";
+import { DefaultSystemPromptModal } from "./DefaultSystemPromptModal";
 import { ProvidersManager } from "./ProvidersManager";
 import { TestResultDisplay } from "./TestResultDisplay";
-import { DefaultSystemPromptModal } from "./DefaultSystemPromptModal";
+import { VersionCopyrightFooter } from "./VersionCopyrightFooter";
 
 interface SettingsPageProps {
     musicAssistantUrl: string;
@@ -118,7 +119,7 @@ export const SettingsPage = ({
                             </label>
                         </div>
 
-                        <div className="card-actions justify-end gap-2">
+                        <div className="relative card-actions justify-end gap-2">
                             {showCancel && onCancel !== undefined && (
                                 <button className="btn btn-ghost" onClick={onCancel}>
                                     Cancel
@@ -127,6 +128,7 @@ export const SettingsPage = ({
                             <button className="btn btn-primary" onClick={onSave}>
                                 Save Settings
                             </button>
+                            <VersionCopyrightFooter />
                         </div>
                     </div>
                 </div>
