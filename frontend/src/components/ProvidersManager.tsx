@@ -3,6 +3,7 @@ import type { AIProviderConfig, ProviderType } from "../../../shared/types";
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 import { attemptPromise } from "@jfdi/attempt";
+import { SearchableSelect } from "./SearchableSelect";
 
 interface ProvidersManagerProps {
     providers: AIProviderConfig[];
@@ -202,23 +203,19 @@ export const ProvidersManager = ({
                                 <div className="space-y-2">
                                     <div className="flex gap-2">
                                         {showModelDropdown && availableModels.length > 0 ? (
-                                            <select
-                                                className="select select-bordered select-sm flex-1"
-                                                value={editForm.model ?? ""}
-                                                onChange={e => {
-                                                    setEditForm({
-                                                        ...editForm,
-                                                        model: e.target.value
-                                                    });
-                                                }}
-                                            >
-                                                <option value="">Select a model</option>
-                                                {availableModels.map(model => (
-                                                    <option key={model.value} value={model.value}>
-                                                        {model.label}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <div className="flex-1">
+                                                <SearchableSelect
+                                                    options={availableModels}
+                                                    value={editForm.model ?? ""}
+                                                    onChange={model => {
+                                                        setEditForm({
+                                                            ...editForm,
+                                                            model
+                                                        });
+                                                    }}
+                                                    placeholder="Select a model..."
+                                                />
+                                            </div>
                                         ) : (
                                             <input
                                                 type="text"

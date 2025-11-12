@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import type { AIProviderConfig } from "../../../shared/types";
 import { DefaultSystemPromptModal } from "./DefaultSystemPromptModal";
 import { ProvidersManager } from "./ProvidersManager";
-import { TestResultDisplay } from "./TestResultDisplay";
 import { VersionCopyrightFooter } from "./VersionCopyrightFooter";
 
 interface SettingsPageProps {
@@ -78,11 +77,15 @@ export const SettingsPage = ({
                                 )}
                                 {testingMA ? "Testing..." : "Test Connection"}
                             </button>
-                            <TestResultDisplay
-                                result={testResults.ma}
-                                successMessage="Connection successful!"
-                                errorPrefix="Connection failed"
-                            />
+                            {testResults.ma !== undefined && (
+                                <div
+                                    className={`alert ${testResults.ma.success ? "alert-success" : "alert-error"} mt-2`}
+                                >
+                                    {testResults.ma.success
+                                        ? "Connection successful!"
+                                        : `Connection failed: ${testResults.ma.error ?? "Unknown error"}`}
+                                </div>
+                            )}
                         </div>
 
                         <div className="divider"></div>
