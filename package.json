@@ -1,36 +1,36 @@
 {
-  "name": "music-assistant-ai-playlist-creator",
-  "version": "1.0.0",
-  "description": "AI-assisted playlist creator for Music Assistant",
-  "private": true,
-  "workspaces": [
-    "frontend",
-    "backend"
-  ],
-  "scripts": {
-    "predev": "npm run build --workspace=backend",
-    "dev": "concurrently -n backend,frontend \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
-    "build": "npm run build --workspaces",
-    "dev:frontend": "npm run dev --workspace=frontend",
-    "dev:backend": "npm run dev --workspace=backend",
-    "type-check": "npm run type-check --workspaces --if-present",
-    "lint": "npm run lint --workspaces -- --fix",
-    "lint:fix": "npm run lint:fix --workspaces",
-    "knip": "knip"
-  },
-  "keywords": [
-    "music-assistant",
-    "ai",
-    "playlist",
-    "claude",
-    "openai"
-  ],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/node": "^24.10.0",
-    "concurrently": "^9.1.2",
-    "knip": "^5.69.0",
-    "typescript": "^5.9.3"
-  }
+    "name": "music-assistant-ai-playlist-creator",
+    "version": "0.5.0",
+    "description": "AI-assisted playlist creator for Music Assistant",
+    "private": true,
+    "workspaces": [
+        "frontend",
+        "backend"
+    ],
+    "scripts": {
+        "predev": "npm run build --workspace=backend",
+        "dev": "concurrently -n backend,frontend \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
+        "build": "npm run build --workspaces",
+        "dev:frontend": "npm run dev --workspace=frontend",
+        "dev:backend": "npm run dev --workspace=backend",
+        "type-check": "npm run type-check --workspaces --if-present",
+        "lint": "npm run lint --workspaces -- --fix",
+        "lint:fix": "npm run lint:fix --workspaces",
+        "knip": "knip"
+    },
+    "keywords": [
+        "music-assistant",
+        "ai",
+        "playlist",
+        "claude",
+        "openai"
+    ],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/node": "^24.10.0",
+        "concurrently": "^9.1.2",
+        "knip": "^5.69.0",
+        "typescript": "^5.9.3"
+    }
 }
