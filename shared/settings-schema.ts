@@ -121,6 +121,26 @@ export const SETTINGS_FIELDS = {
     type: 'string',
     optional: true,
     zodSchema: z.string().optional()
+  } satisfies StringSettingField,
+
+  providerWeights: {
+    key: 'providerWeights',
+    type: 'string',
+    optional: false,
+    defaultValue: '[]',
+    zodSchema: z.string(),
+    dbTransform: {
+      serialize: (value: string) => value,
+      deserialize: (value: string | null) => {
+        if (value === null || value === '') return '[]';
+        try {
+          const parsed = JSON.parse(value);
+          return Array.isArray(parsed) ? value : '[]';
+        } catch {
+          return '[]';
+        }
+      }
+    }
   } satisfies StringSettingField
 } as const;
 
@@ -166,13 +186,15 @@ export type UpdateSettingsRequest = {
 export const AppSettingsSchema = z.object({
   musicAssistantUrl: z.string(),
   aiProviders: z.array(AIProviderConfigSchema),
-  customSystemPrompt: z.string().optional()
+  customSystemPrompt: z.string().optional(),
+  providerWeights: z.string()
 });
 
 export const UpdateSettingsRequestSchema = z.object({
   musicAssistantUrl: z.string().optional(),
   aiProviders: z.array(AIProviderConfigSchema).optional(),
-  customSystemPrompt: z.string().optional()
+  customSystemPrompt: z.string().optional(),
+  providerWeights: z.string().optional()
 });
 
 // Extended response type (no extra computed fields needed)

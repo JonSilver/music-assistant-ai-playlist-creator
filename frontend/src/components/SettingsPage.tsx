@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import type { AIProviderConfig } from "../../../shared/types";
 import { DefaultSystemPromptModal } from "./DefaultSystemPromptModal";
 import { ProvidersManager } from "./ProvidersManager";
+import { ProviderWeightsList } from "./ProviderWeightsList";
 import { VersionCopyrightFooter } from "./VersionCopyrightFooter";
+import { parseProviderKeywords } from "../utils/parseProviderKeywords";
 
 interface SettingsPageProps {
     musicAssistantUrl: string;
@@ -11,6 +13,8 @@ interface SettingsPageProps {
     setAiProviders: (value: AIProviderConfig[]) => void;
     customSystemPrompt: string;
     setCustomSystemPrompt: (value: string) => void;
+    providerWeights: string;
+    setProviderWeights: (value: string) => void;
     testingMA: boolean;
     testResults: {
         ma?: { success: boolean; error?: string };
@@ -28,6 +32,8 @@ export const SettingsPage = ({
     setAiProviders,
     customSystemPrompt,
     setCustomSystemPrompt,
+    providerWeights,
+    setProviderWeights,
     testingMA,
     testResults,
     testMA,
@@ -36,6 +42,11 @@ export const SettingsPage = ({
     showCancel
 }: SettingsPageProps): React.JSX.Element => {
     const [showDefaultPrompt, setShowDefaultPrompt] = useState(false);
+
+    // Handle provider keywords change
+    const handleProviderKeywordsChange = (keywords: string[]): void => {
+        setProviderWeights(JSON.stringify(keywords));
+    };
 
     return (
         <div className="min-h-screen bg-base-200 py-8">
@@ -118,6 +129,23 @@ export const SettingsPage = ({
                             <label className="label">
                                 <span className="label-text-alt">
                                     Customize how the AI curates playlists. Must return JSON format.
+                                </span>
+                            </label>
+                        </div>
+
+                        <div className="divider"></div>
+
+                        <div className="form-control mb-4">
+                            <label className="label">
+                                <span className="label-text">Provider Preferences (Optional)</span>
+                            </label>
+                            <ProviderWeightsList
+                                keywords={parseProviderKeywords(providerWeights)}
+                                onChange={handleProviderKeywordsChange}
+                            />
+                            <label className="label">
+                                <span className="label-text-alt">
+                                    Prioritize music providers when matching tracks
                                 </span>
                             </label>
                         </div>

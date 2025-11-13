@@ -10,6 +10,7 @@ interface SettingsViewProps {
         musicAssistantUrl: string;
         aiProviders: import("@shared/types").AIProviderConfig[];
         customSystemPrompt?: string;
+        providerWeights?: string;
     }) => Promise<Error | undefined>;
     setError: (message: string) => void;
     closeSettings: () => void;
@@ -46,6 +47,8 @@ export const SettingsView = ({
                 setAiProviders={settingsManager.setAiProviders}
                 customSystemPrompt={settingsManager.customSystemPrompt}
                 setCustomSystemPrompt={settingsManager.setCustomSystemPrompt}
+                providerWeights={settingsManager.providerWeights}
+                setProviderWeights={settingsManager.setProviderWeights}
                 testingMA={settingsManager.testingMA}
                 testResults={settingsManager.testResults}
                 testMA={settingsManager.testMA}

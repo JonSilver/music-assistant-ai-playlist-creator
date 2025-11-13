@@ -14,6 +14,8 @@ interface UseSettingsReturn {
     setAiProviders: (providers: AIProviderConfig[]) => void;
     customSystemPrompt: string;
     setCustomSystemPrompt: (prompt: string) => void;
+    providerWeights: string;
+    setProviderWeights: (weights: string) => void;
     testingMA: boolean;
     testResults: TestResults;
     testMA: () => Promise<void>;
@@ -27,6 +29,7 @@ export const useSettings = (
         musicAssistantUrl: string;
         aiProviders: AIProviderConfig[];
         customSystemPrompt?: string;
+        providerWeights?: string;
     }) => Promise<Error | undefined>,
     setError: (message: string) => void,
     closeSettings: () => void
@@ -34,6 +37,7 @@ export const useSettings = (
     const [musicAssistantUrl, setMusicAssistantUrl] = useState("");
     const [aiProviders, setAiProviders] = useState<AIProviderConfig[]>([]);
     const [customSystemPrompt, setCustomSystemPrompt] = useState("");
+    const [providerWeights, setProviderWeights] = useState("[]");
     const [testingMA, setTestingMA] = useState(false);
     const [testResults, setTestResults] = useState<TestResults>({});
 
@@ -42,6 +46,7 @@ export const useSettings = (
             setMusicAssistantUrl(settings.musicAssistantUrl);
             setAiProviders(settings.aiProviders);
             setCustomSystemPrompt(settings.customSystemPrompt ?? "");
+            setProviderWeights(settings.providerWeights);
         }
     }, [settings]);
 
@@ -79,7 +84,8 @@ export const useSettings = (
             musicAssistantUrl,
             aiProviders,
             customSystemPrompt:
-                customSystemPrompt.trim().length > 0 ? customSystemPrompt : undefined
+                customSystemPrompt.trim().length > 0 ? customSystemPrompt : undefined,
+            providerWeights
         });
 
         if (err !== undefined) {
@@ -92,6 +98,7 @@ export const useSettings = (
         musicAssistantUrl,
         aiProviders,
         customSystemPrompt,
+        providerWeights,
         updateSettings,
         setError,
         closeSettings
@@ -102,6 +109,7 @@ export const useSettings = (
             setMusicAssistantUrl(settings.musicAssistantUrl);
             setAiProviders(settings.aiProviders);
             setCustomSystemPrompt(settings.customSystemPrompt ?? "");
+            setProviderWeights(settings.providerWeights);
         }
         closeSettings();
     }, [settings, closeSettings]);
@@ -113,6 +121,8 @@ export const useSettings = (
         setAiProviders,
         customSystemPrompt,
         setCustomSystemPrompt,
+        providerWeights,
+        setProviderWeights,
         testingMA,
         testResults,
         testMA,

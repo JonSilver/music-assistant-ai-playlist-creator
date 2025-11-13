@@ -102,7 +102,8 @@ export const useSettings = (): { settings: GetSettingsResponse } => {
         settings: settings ?? {
             musicAssistantUrl: "",
             aiProviders: [],
-            customSystemPrompt: undefined
+            customSystemPrompt: undefined,
+            providerWeights: "[]"
         }
     };
 };

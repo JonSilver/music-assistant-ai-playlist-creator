@@ -3,6 +3,7 @@ import { attemptPromise } from "@jfdi/attempt";
 import { matchTracksProgressively } from "../services/trackMatching";
 import { replaceTrack as replaceTrackService } from "../services/playlistCreator";
 import type { TrackMatch, GetSettingsResponse } from "@shared/types";
+import { parseProviderKeywords } from "../utils/parseProviderKeywords";
 
 interface UseTrackReplaceReturn {
     replacingTrackIndex: number | null;
@@ -87,6 +88,9 @@ export const useTrackReplace = (
                 return updated;
             });
 
+            // Parse provider keywords from settings
+            const providerKeywords = parseProviderKeywords(settings.providerWeights);
+
             void matchTracksProgressively(
                 [replacementTrack],
                 settings.musicAssistantUrl,
@@ -111,7 +115,8 @@ export const useTrackReplace = (
                         return updated;
                     });
                 },
-                setError
+                setError,
+                providerKeywords
             );
         },
         [

@@ -10,6 +10,7 @@ import {
     refinePlaylist as refinePlaylistService
 } from "../services/playlistCreator";
 import type { TrackMatch } from "@shared/types";
+import { parseProviderKeywords } from "../utils/parseProviderKeywords";
 
 export interface UsePlaylistReturn {
     prompt: string;
@@ -110,11 +111,13 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         setGeneratedTracks(unmatchedTracks);
         onHistoryUpdate();
 
+        const providerKeywords = parseProviderKeywords(settings.providerWeights);
         void matchTracksProgressively(
             unmatchedTracks,
             settings.musicAssistantUrl,
             setGeneratedTracks,
-            setError
+            setError,
+            providerKeywords
         );
     }, [prompt, playlistName, trackCount, settings, selectedProviderId, setError, onHistoryUpdate]);
 
@@ -196,11 +199,13 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         setGeneratedTracks(unmatchedTracks);
         setRefinementPrompt("");
 
+        const providerKeywords = parseProviderKeywords(settings.providerWeights);
         void matchTracksProgressively(
             unmatchedTracks,
             settings.musicAssistantUrl,
             setGeneratedTracks,
-            setError
+            setError,
+            providerKeywords
         );
     }, [refinementPrompt, generatedTracks, settings, selectedProviderId, setError]);
 
@@ -216,6 +221,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
                 return updated;
             });
 
+            const providerKeywords = parseProviderKeywords(settings.providerWeights);
             await matchTracksProgressively(
                 [{ ...track, matching: true, matched: false }],
                 settings.musicAssistantUrl,
@@ -227,7 +233,8 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
                         return updated;
                     });
                 },
-                setError
+                setError,
+                providerKeywords
             );
 
             setRetryingTrackIndex(null);

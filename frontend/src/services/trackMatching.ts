@@ -1,10 +1,12 @@
 import { attemptPromise } from "@jfdi/attempt";
-import type { MusicAssistantClient } from "./musicAssistant";
 import type { TrackMatch, TrackSuggestion } from "@shared/types";
+import { sortByProviderWeight } from "../utils/sortByProviderWeight";
+import type { MusicAssistantClient } from "./musicAssistant";
 
 export const matchTrack = async (
     suggestion: TrackSuggestion,
-    maClient: MusicAssistantClient
+    maClient: MusicAssistantClient,
+    providerKeywords: string[] = []
 ): Promise<TrackMatch> => {
     const searchQuery = `${suggestion.title} ${suggestion.artist}`;
     const startTime = performance.now();
@@ -12,7 +14,7 @@ export const matchTrack = async (
 
     const trySearch = async (attempt: number): Promise<TrackMatch> => {
         const attemptStart = performance.now();
-        const searchLimit = 5;
+        const searchLimit = 50;
         const [err, results] = await attemptPromise(async () =>
             maClient.searchTracks(searchQuery, searchLimit)
         );
@@ -53,12 +55,16 @@ export const matchTrack = async (
             };
         }
 
-        const match = results[0];
+        // Sort results by provider preference
+        const sortedResults = sortByProviderWeight(results, providerKeywords);
+
+        const match = sortedResults[0];
         const firstArtist = match.artists?.[0];
         const matchedArtist = firstArtist !== undefined ? firstArtist.name : "unknown";
         const totalDuration = performance.now() - startTime;
         const durationMs = Math.round(totalDuration);
-        const multipleMatches = results.length > 1 ? ` (${results.length} matches)` : "";
+        const multipleMatches =
+            sortedResults.length > 1 ? ` (${sortedResults.length} matches)` : "";
         console.log(
             `[${new Date().toISOString()}] [MATCH] ✓ "${match.name}" by "${matchedArtist}" (${durationMs}ms)${multipleMatches}`
         );
@@ -67,7 +73,7 @@ export const matchTrack = async (
             suggestion,
             matched: true,
             maTrack: match,
-            maMatches: results.length > 1 ? results : undefined,
+            maMatches: sortedResults.length > 1 ? sortedResults : undefined,
             selectedMatchIndex: 0
         };
     };
@@ -79,7 +85,8 @@ export const matchTracksProgressively = async (
     tracks: TrackMatch[],
     maUrl: string,
     onUpdate: (updater: (prev: TrackMatch[]) => TrackMatch[]) => void,
-    onError: (message: string) => void
+    onError: (message: string) => void,
+    providerKeywords: string[] = []
 ): Promise<void> => {
     const BATCH_SIZE = 10;
 
@@ -101,7 +108,7 @@ export const matchTracksProgressively = async (
                 );
 
                 const [err, matchedTrack] = await attemptPromise(async () =>
-                    matchTrack(track.suggestion, maClient)
+                    matchTrack(track.suggestion, maClient, providerKeywords)
                 );
 
                 if (err === undefined) {
