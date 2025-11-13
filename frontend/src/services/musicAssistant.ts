@@ -1,14 +1,14 @@
-import { attemptPromise, attempt } from "@jfdi/attempt";
-import type { MATrack } from "@shared/types";
+import { attempt, attemptPromise } from "@jfdi/attempt";
 import {
+    ERROR_MESSAGES,
+    LIMITS,
     MA_COMMANDS,
     MEDIA_TYPES,
-    WS_MESSAGE_PREFIX,
-    WS_PATH,
     TIMEOUTS,
-    LIMITS,
-    ERROR_MESSAGES
+    WS_MESSAGE_PREFIX,
+    WS_PATH
 } from "@shared/constants";
+import type { MATrack } from "@shared/types";
 
 interface MAResponse {
     message_id: string;
@@ -181,26 +181,40 @@ export class MusicAssistantClient {
         });
     }
 
-    async searchTracks(query: string, limit = LIMITS.SEARCH_TRACKS): Promise<MATrack[]> {
+    async searchTracks(
+        trackName: string,
+        artistName: string,
+        limit = LIMITS.SEARCH_TRACKS
+    ): Promise<MATrack[]> {
+        const searchQuery = trackName;
+        console.log("[MA Search] Searching:", { searchQuery, limit });
+
         const result = await this.sendCommand<MASearchResults>(MA_COMMANDS.SEARCH, {
-            search_query: query,
+            search_query: searchQuery,
             media_types: [MEDIA_TYPES.TRACK],
-            limit
+            artist: artistName,
+            limit,
+            library_only: false
         });
 
+        console.log("[MA Search] Raw result:", result);
+
         if (result === null || result === undefined) {
+            console.error("[MA Search] Result is null/undefined");
             return [];
         }
 
-        if (
-            result.tracks === null ||
-            result.tracks === undefined ||
-            !Array.isArray(result.tracks)
-        ) {
-            return [];
-        }
+        const tracks = result.tracks ?? [];
+        console.log("[MA Search] Parsed result:", {
+            count: tracks.length,
+            first3: tracks.slice(0, 3).map(t => ({
+                name: t.name,
+                artist: t.artists[0]?.name,
+                provider: t.provider
+            }))
+        });
 
-        return result.tracks;
+        return tracks;
     }
 
     async getFavoriteArtists(): Promise<string[]> {

@@ -8,15 +8,16 @@ export const matchTrack = async (
     maClient: MusicAssistantClient,
     providerKeywords: string[] = []
 ): Promise<TrackMatch> => {
-    const searchQuery = `${suggestion.title} ${suggestion.artist}`;
     const startTime = performance.now();
-    console.log(`[${new Date().toISOString()}] [MATCH] Searching: "${searchQuery}"`);
+    console.log(
+        `[${new Date().toISOString()}] [MATCH] Searching: "${suggestion.title}" by "${suggestion.artist}"`
+    );
 
     const trySearch = async (attempt: number): Promise<TrackMatch> => {
         const attemptStart = performance.now();
-        const searchLimit = 50;
+        const searchLimit = 5;
         const [err, results] = await attemptPromise(async () =>
-            maClient.searchTracks(searchQuery, searchLimit)
+            maClient.searchTracks(suggestion.title, suggestion.artist, searchLimit)
         );
         const attemptDuration = performance.now() - attemptStart;
         const attemptDurationMs = Math.round(attemptDuration);
@@ -34,7 +35,7 @@ export const matchTrack = async (
             const totalDuration = performance.now() - startTime;
             const totalDurationMs = Math.round(totalDuration);
             console.error(
-                `[${new Date().toISOString()}] [MATCH] ❌ Failed after 3 attempts (${totalDurationMs}ms total): "${searchQuery}"`,
+                `[${new Date().toISOString()}] [MATCH] ❌ Failed after 3 attempts (${totalDurationMs}ms total): "${suggestion.title}" by "${suggestion.artist}"`,
                 err.message
             );
             return {
@@ -47,7 +48,7 @@ export const matchTrack = async (
             const totalDuration = performance.now() - startTime;
             const totalDurationMs = Math.round(totalDuration);
             console.warn(
-                `[${new Date().toISOString()}] [MATCH] ❌ No results after ${totalDurationMs}ms for "${searchQuery}"`
+                `[${new Date().toISOString()}] [MATCH] ❌ No results after ${totalDurationMs}ms for "${suggestion.title}" by "${suggestion.artist}"`
             );
             return {
                 suggestion,
