@@ -5,15 +5,16 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 ## Features
 
 - **AI-Powered Suggestions**: Uses Claude or OpenAI to generate playlist suggestions based on natural language descriptions
-- **Smart Library Matching**: Matches AI suggestions to your Music Assistant library using search
-- **Iterative Refinement**: Refine generated playlists with additional instructions
-- **Enhanced Visualization**: Match statistics, progress bars, and track filters
-- **Connection Testing**: Test Music Assistant and AI API connections before saving settings
-- **Customizable AI**: Adjust temperature, custom system prompts, and model selection
-- **Model Selection**: Choose from any available Claude or OpenAI model
+- **Smart Library Matching**: Matches AI suggestions to your Music Assistant library using intelligent search with provider weighting
+- **Provider Weighting**: Prioritize specific music providers (e.g., Spotify, Tidal) when matching tracks
+- **Multi-Provider Support**: Configure multiple AI providers (Claude, OpenAI, compatible endpoints) with individual settings
+- **Enhanced Track Matching**: Select from multiple matching results when replacing tracks
 - **Track Management**: Replace or retry individual tracks, remove tracks from preview
+- **Iterative Refinement**: Refine generated playlists with additional instructions
+- **Enhanced Visualization**: Match statistics, progress bars, and track filters (All/Found/Not Found)
+- **Direct Playlist Links**: One-click access to created playlists in Music Assistant
 - **Prompt History**: Track previously used prompts
-- **Preset Prompts**: Quick access to common playlist types (workout, chill, party, focus, road trip, etc.)
+- **Preset Prompts**: Quick access to common playlist types (workout, chill, party, focus, road trip, dinner party, study, throwback)
 
 ## Architecture
 
@@ -70,11 +71,11 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 
 5. Go to Settings and configure:
    - Music Assistant URL (e.g., `http://192.168.1.100:8095`)
-   - AI Provider (Claude or OpenAI)
-   - AI Model (select from available models)
-   - API Key
+   - Add one or more AI providers (Claude, OpenAI, or compatible endpoints)
+   - For each provider: name, API key, model selection, optional base URL and temperature
+   - Optionally configure provider weights (prioritize specific music sources like Spotify, Tidal, etc.)
    - Test the connections to verify
-   - Optionally customize temperature and system prompt
+   - Optionally customize system prompt
 
 ### Development Setup (Local)
 
@@ -97,8 +98,11 @@ Default dev ports (configurable in `.env`):
 3. Click "Generate Playlist"
 4. Review the AI-suggested tracks
 5. Use filters to view All/Found/Not Found tracks
-6. For individual tracks: click "Retry" to search again or "Replace" to get an AI substitute
-7. Remove unwanted tracks or click "Refine Playlist" for batch adjustments
+6. For individual tracks:
+   - Click "Retry" to search again
+   - Click "Replace" to get AI substitutes and select from multiple matching results
+   - Remove unwanted tracks manually
+7. Click "Refine Playlist" for batch adjustments with AI
 8. Click "Create Playlist in Music Assistant"
 9. Click the provided link to view your new playlist in Music Assistant
 
@@ -132,17 +136,20 @@ Default dev ports (configurable in `.env`):
 All application settings are configured through the web interface and stored in SQLite:
 
 - **Music Assistant URL**: WebSocket endpoint for your Music Assistant instance
-- **AI Provider**: Choose between Claude (Anthropic) or OpenAI
-- **AI Model**: Select from available models for the selected provider
-- **API Keys**: Anthropic API key and/or OpenAI API key
-- **OpenAI Base URL**: Optional custom endpoint for OpenAI-compatible services
-- **Temperature**: AI creativity level (0-2, default: 0.7)
+- **AI Providers**: Add multiple providers with individual configuration:
+  - Name (e.g., "Claude Sonnet", "OpenAI GPT-4")
+  - Type (Anthropic or OpenAI-compatible)
+  - API Key
+  - Model selection (dropdown of available models)
+  - Base URL (for OpenAI-compatible endpoints)
+  - Temperature (0-2, optional per-provider setting)
+- **Provider Weights**: Ordered list of keywords to prioritize music providers (e.g., "spotify", "tidal")
 - **System Prompt**: Custom instructions for the AI (preview default prompt in UI)
 
 ## Data Storage
 
 The SQLite database is stored in the directory specified by `DATA_PATH` (defaults to `./data`). This contains:
-- Application settings
+- Application settings (Music Assistant URL, AI providers, provider weights, system prompt)
 - Prompt history
 - Preset prompts
 
@@ -173,23 +180,25 @@ To use a different location, edit `DATA_PATH` in your `.env` file.
 │
 ├── Dockerfile            # Single container build
 ├── docker-compose.yml    # Docker orchestration
-├── nginx.conf            # Nginx configuration
-└── supervisord.conf      # Process manager
+└── entrypoint.sh         # Docker startup validation
 ```
 
 ## Build Commands
 
 ```bash
-# Run development servers
+# Development (runs both frontend and backend)
 npm run dev
 
-# Build for production
+# Development build
 npm run build
 
-# Run linter
-npm run lint
+# Production build
+npm run build:prod
 
-# Build Docker image
+# Lint and auto-fix
+npm run lint --fix
+
+# Docker build and run
 docker-compose up --build
 ```
 
@@ -205,28 +214,38 @@ This application connects to Music Assistant via WebSocket to:
 
 ## AI Integration
 
-### Supported Providers
+### Multi-Provider Support
 
-1. **Claude (Anthropic)**
-   - Select from available Claude models via dropdown
+Configure one or more AI providers, each with individual settings:
+
+1. **Anthropic (Claude)**
+   - Models: Claude 3.5 Sonnet, Claude 3.7 Sonnet, Claude Opus 4, and more
    - Requires: Anthropic API key
 
 2. **OpenAI**
-   - Select from available OpenAI models via dropdown
+   - Models: GPT-4, GPT-4 Turbo, GPT-4o, GPT-4o Mini, and more
    - Requires: OpenAI API key
-   - Supports custom base URLs for compatible endpoints
+
+3. **OpenAI-Compatible Endpoints**
+   - Any service with OpenAI-compatible API (e.g., local LLMs, third-party services)
+   - Requires: Custom base URL and API key
+   - Model selection via dropdown
 
 ### How AI Generates Playlists
 
 The AI receives:
 - Your natural language prompt
-- Your favorite artists from Music Assistant (for context)
+- Your favorite artists from Music Assistant (for better recommendations)
 - Custom system prompt (if configured)
 
 The AI returns a structured JSON list of tracks with:
 - Track title
 - Artist name
 - Album name (optional)
+
+### Provider Weighting
+
+Configure an ordered list of provider keywords (e.g., "spotify", "tidal", "local") to prioritize specific music sources when matching tracks. Higher-weighted providers are preferred when multiple matches are found.
 
 ## Updating
 
@@ -249,12 +268,8 @@ docker-compose up -d
 - Verify your Music Assistant library contains the suggested tracks
 - Try refining your prompt to be more specific to your library
 - Check that favorite artists are set in Music Assistant for better context
-
-## Planned Features
-
-- Investigate possible Spotify integration
-- A proper logo and icon
-- Clear Query button to reset prompt
+- Adjust provider weights to prioritize specific music sources
+- Use the "Replace" feature to get alternative suggestions from AI
 
 ## License
 
