@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: playlist-creator
+    ports:
+      - "${APP_PORT:-9876}:${APP_PORT:-9876}"
+    environment:
+      - PORT=${APP_PORT:-9876} # set APP_PORT env var to customise
+      - DATABASE_PATH=/app/data/playlists.db
+    volumes:
+      - "${DATA_PATH:-./data}:/app/data" # set DATA_PATH env var to customise
+    restart: unless-stopped

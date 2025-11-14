@@ -49,7 +49,23 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 
 ## Installation
 
-### Using Docker (Recommended)
+### Production Deployment (from Docker Hub)
+
+For production deployment on a server, pre-built images are available on Docker Hub:
+
+```bash
+# Quick start
+curl -O https://raw.githubusercontent.com/JonSilver/music-assistant-ai-playlist-creator/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/JonSilver/music-assistant-ai-playlist-creator/main/.env.production.example
+mv .env.production.example .env
+mkdir -p data
+docker-compose pull
+docker-compose up -d
+```
+
+**See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete deployment guide including CI/CD setup.**
+
+### Local Development with Docker
 
 1. Copy the environment file:
    ```bash
@@ -62,9 +78,9 @@ An AI-powered web application for creating intelligent playlists in Music Assist
    APP_PORT=9876        # Port to access the web UI
    ```
 
-3. Start the container:
+3. Build and start the container:
    ```bash
-   docker-compose up -d
+   docker-compose -f docker-compose.dev.yml up --build
    ```
 
 4. Open http://localhost:9876 in your browser
@@ -159,47 +175,57 @@ To use a different location, edit `DATA_PATH` in your `.env` file.
 
 ```
 /
-├── frontend/               # React application
+├── frontend/                      # React application
 │   ├── src/
-│   │   ├── contexts/      # React Context providers
-│   │   ├── services/      # API clients
-│   │   ├── App.tsx        # Main application
-│   │   └── main.tsx       # Entry point
+│   │   ├── contexts/             # React Context providers
+│   │   ├── services/             # API clients
+│   │   ├── App.tsx               # Main application
+│   │   └── main.tsx              # Entry point
 │   └── package.json
 │
-├── backend/               # Express API server
+├── backend/                      # Express API server
 │   ├── src/
-│   │   ├── routes/       # Express routes
-│   │   ├── services/     # AI and Music Assistant services
-│   │   ├── db/           # SQLite database
-│   │   └── server.ts     # Express app
+│   │   ├── routes/              # Express routes
+│   │   ├── services/            # AI and Music Assistant services
+│   │   ├── db/                  # SQLite database
+│   │   └── server.ts            # Express app
 │   └── package.json
 │
-├── shared/               # Shared TypeScript types
+├── shared/                       # Shared TypeScript types
 │   └── types.ts
 │
-├── Dockerfile            # Single container build
-├── docker-compose.yml    # Docker orchestration
-└── entrypoint.sh         # Docker startup validation
+├── .github/
+│   └── workflows/
+│       └── docker-publish.yml   # CI/CD pipeline for Docker Hub
+│
+├── Dockerfile                   # Production container build
+├── docker-compose.yml           # Production deployment (Docker Hub)
+├── docker-compose.dev.yml       # Development deployment (local build)
+├── entrypoint.sh                # Docker startup validation
+├── DEPLOYMENT.md                # Deployment and CI/CD guide
+└── .env.production.example      # Production environment template
 ```
 
 ## Build Commands
 
 ```bash
-# Development (runs both frontend and backend)
+# Development (runs both frontend and backend with hot reload)
 npm run dev
 
 # Development build
 npm run build
 
-# Production build
+# Production build (bumps version)
 npm run build:prod
 
 # Lint and auto-fix
 npm run lint --fix
 
-# Docker build and run
-docker-compose up --build
+# Docker - Development (local build)
+docker-compose -f docker-compose.dev.yml up --build
+
+# Docker - Production (from Docker Hub)
+docker-compose pull && docker-compose up -d
 ```
 
 ## Music Assistant Integration
@@ -249,11 +275,19 @@ Configure an ordered list of provider keywords (e.g., "spotify", "tidal", "local
 
 ## Updating
 
+### Production Deployment
 ```bash
-docker-compose down
-docker-compose pull
-docker-compose up -d
+docker-compose pull    # Pull latest image from Docker Hub
+docker-compose up -d   # Restart with new image
 ```
+
+### Local Development
+```bash
+docker-compose -f docker-compose.dev.yml down
+docker-compose -f docker-compose.dev.yml up --build
+```
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for version management and release procedures.
 
 ## Troubleshooting
 
