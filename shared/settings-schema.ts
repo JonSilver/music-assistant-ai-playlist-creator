@@ -10,6 +10,7 @@ export type SettingFieldType = 'string' | 'number' | 'boolean' | 'enum' | 'provi
 
 // Provider types
 export const PROVIDER_TYPES = ['anthropic', 'openai-compatible'] as const;
+/** @public */
 export type ProviderType = typeof PROVIDER_TYPES[number];
 
 // AI Provider Configuration
@@ -27,6 +28,7 @@ export type AIProviderConfig = z.infer<typeof AIProviderConfigSchema>;
 
 // Legacy provider enum (deprecated but kept for backwards compatibility)
 export const AI_PROVIDERS = ['claude', 'openai'] as const;
+/** @public */
 export type AIProvider = typeof AI_PROVIDERS[number];
 
 // Setting field definition with full type safety
@@ -183,6 +185,7 @@ export type UpdateSettingsRequest = {
 };
 
 // Build Zod schemas directly - type inference handles the rest
+/** @public */
 export const AppSettingsSchema = z.object({
   musicAssistantUrl: z.string(),
   aiProviders: z.array(AIProviderConfigSchema),
@@ -199,8 +202,6 @@ export const UpdateSettingsRequestSchema = z.object({
 
 // Extended response type (no extra computed fields needed)
 export type GetSettingsResponse = AppSettings;
-
-export const GetSettingsResponseSchema = AppSettingsSchema;
 
 // Success response schema
 export const SuccessResponseSchema = z.object({

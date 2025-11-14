@@ -5,6 +5,7 @@ import { ProvidersManager } from "./ProvidersManager";
 import { ProviderWeightsList } from "./ProviderWeightsList";
 import { VersionCopyrightFooter } from "./VersionCopyrightFooter";
 import { parseProviderKeywords } from "../utils/parseProviderKeywords";
+import { SUCCESS_MESSAGES } from "@shared/constants";
 
 interface SettingsPageProps {
     musicAssistantUrl: string;
@@ -93,7 +94,7 @@ export const SettingsPage = ({
                                     className={`alert ${testResults.ma.success ? "alert-success" : "alert-error"} mt-2`}
                                 >
                                     {testResults.ma.success
-                                        ? "Connection successful!"
+                                        ? SUCCESS_MESSAGES.CONNECTION_OK
                                         : `Connection failed: ${testResults.ma.error ?? "Unknown error"}`}
                                 </div>
                             )}

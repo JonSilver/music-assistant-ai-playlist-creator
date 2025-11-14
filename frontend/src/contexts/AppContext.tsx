@@ -95,15 +95,3 @@ export const useApp = (): AppContextType => {
     }
     return context;
 };
-
-export const useSettings = (): { settings: GetSettingsResponse } => {
-    const { settings } = useApp();
-    return {
-        settings: settings ?? {
-            musicAssistantUrl: "",
-            aiProviders: [],
-            customSystemPrompt: undefined,
-            providerWeights: "[]"
-        }
-    };
-};

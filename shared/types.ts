@@ -16,16 +16,14 @@ export {
   AI_PROVIDERS,
   PROVIDER_TYPES,
   AIProviderConfigSchema,
-  AppSettingsSchema,
   UpdateSettingsRequestSchema,
-  GetSettingsResponseSchema,
   settingsUtils,
   SETTINGS_FIELDS
 } from './settings-schema.js'
 
 // AI Provider schemas (for backwards compatibility)
+/** @public */
 export const AIProviderSchema = z.enum(['claude', 'openai'])
-export type AIProviderLegacy = z.infer<typeof AIProviderSchema>
 
 // Track suggestion from AI
 export const TrackSuggestionSchema = z.object({
@@ -40,6 +38,7 @@ export const AIPlaylistResponseSchema = z.object({
   tracks: z.array(TrackSuggestionSchema),
   reasoning: z.string().optional()
 })
+/** @public */
 export type AIPlaylistResponse = z.infer<typeof AIPlaylistResponseSchema>
 
 // Music Assistant Track
@@ -66,15 +65,16 @@ export const TrackMatchSchema = z.object({
 export type TrackMatch = z.infer<typeof TrackMatchSchema>
 
 // Playlist creation request
+/** @public */
 export const CreatePlaylistRequestSchema = z.object({
   prompt: z.string(),
   playlistName: z.string().optional(),
   providerId: z.string().optional(),
   trackCount: z.number().optional()
 })
-export type CreatePlaylistRequest = z.infer<typeof CreatePlaylistRequestSchema>
 
 // Playlist creation response
+/** @public */
 export const CreatePlaylistResponseSchema = z.object({
   success: z.boolean(),
   playlistId: z.string().optional(),
@@ -84,16 +84,15 @@ export const CreatePlaylistResponseSchema = z.object({
   totalMatched: z.number(),
   error: z.string().optional()
 })
-export type CreatePlaylistResponse = z.infer<typeof CreatePlaylistResponseSchema>
 
 // Refinement request
+/** @public */
 export const RefinePlaylistRequestSchema = z.object({
   originalPrompt: z.string(),
   refinementPrompt: z.string(),
   currentTracks: z.array(TrackMatchSchema),
   providerId: z.string().optional()
 })
-export type RefinePlaylistRequest = z.infer<typeof RefinePlaylistRequestSchema>
 
 // Prompt history entry
 export const PromptHistorySchema = z.object({
@@ -127,11 +126,11 @@ export const PresetPromptSchema = z.object({
 export type PresetPrompt = z.infer<typeof PresetPromptSchema>
 
 // API Error response
+/** @public */
 export const APIErrorSchema = z.object({
   error: z.string(),
   details: z.string().optional()
 })
-export type APIError = z.infer<typeof APIErrorSchema>
 
 // Settings schemas removed - now imported from settings-schema.ts above
 
@@ -139,45 +138,49 @@ export type APIError = z.infer<typeof APIErrorSchema>
 export const GetPromptHistoryResponseSchema = z.object({
   history: z.array(PromptHistorySchema)
 })
+/** @public */
 export type GetPromptHistoryResponse = z.infer<typeof GetPromptHistoryResponseSchema>
 
 // Preset prompts response
 export const GetPresetPromptsResponseSchema = z.object({
   presets: z.array(PresetPromptSchema)
 })
+/** @public */
 export type GetPresetPromptsResponse = z.infer<typeof GetPresetPromptsResponseSchema>
 
 // Create playlist in MA response
+/** @public */
 export const CreatePlaylistInMAResponseSchema = z.object({
   success: z.boolean(),
   playlistId: z.string(),
   tracksAdded: z.number()
 })
-export type CreatePlaylistInMAResponse = z.infer<typeof CreatePlaylistInMAResponseSchema>
 
 // Refine playlist response
+/** @public */
 export const RefinePlaylistResponseSchema = z.object({
   success: z.boolean(),
   matches: z.array(TrackMatchSchema),
   totalSuggested: z.number(),
   totalMatched: z.number()
 })
-export type RefinePlaylistResponse = z.infer<typeof RefinePlaylistResponseSchema>
 
 // Test connection response
+/** @public */
 export const TestConnectionResponseSchema = z.object({
   success: z.boolean(),
   error: z.string().optional()
 })
-export type TestConnectionResponse = z.infer<typeof TestConnectionResponseSchema>
 
 // Generic success response
 export const SuccessResponseSchema = z.object({
   success: z.boolean()
 })
+/** @public */
 export type SuccessResponse = z.infer<typeof SuccessResponseSchema>
 
 // Helper to convert database row to PromptHistory (snake_case to camelCase)
+/** @public */
 export const convertPromptHistoryRow = (row: PromptHistoryRow): PromptHistory => ({
   id: row.id,
   prompt: row.prompt,

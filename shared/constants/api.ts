@@ -13,13 +13,6 @@ export const API_ENDPOINTS = {
 // Base paths
 export const API_BASE_PATH = '/api';
 
-// Port numbers
-export const PORTS = {
-    FRONTEND_DEV: 5555,
-    BACKEND_DEV: 3333,
-    MUSIC_ASSISTANT_DEFAULT: 8095
-} as const;
-
 // Default URLs
 export const DEFAULT_BACKEND_PORT = '3333';
 

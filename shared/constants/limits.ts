@@ -14,10 +14,3 @@ export const LIMITS = {
     /** Batch size for processing */
     BATCH_SIZE: 10
 };
-
-// Default AI configuration
-export const AI_DEFAULTS = {
-    TEMPERATURE: 1.0,
-    MIN_TEMPERATURE: 0,
-    MAX_TEMPERATURE: 2
-} as const;

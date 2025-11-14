@@ -1,3 +1,3 @@
 import packageJson from "../../package.json" with { type: "json" };
 
-export const { author, description, name, version } = packageJson;
+export const { author, version } = packageJson;
