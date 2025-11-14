@@ -1,0 +1,36 @@
+{
+    "$schema": "https://unpkg.com/knip@5/schema.json",
+    "workspaces": {
+        ".": {
+            "project": ["shared/**/*.ts"]
+        },
+        "frontend": {
+            "entry": ["src/main.tsx"],
+            "project": ["src/**/*.{ts,tsx}", "../shared/**/*.ts"]
+        },
+        "backend": {
+            "entry": ["src/server.ts"],
+            "project": ["src/**/*.ts", "../shared/**/*.ts"]
+        }
+    },
+    "ignore": [
+        "dist/**",
+        "build/**",
+        "coverage/**",
+        "node_modules/**",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx"
+    ],
+    "ignoreExportsUsedInFile": true,
+    "ignoreDependencies": [
+        "zod",
+        "tailwindcss",
+        "daisyui",
+        "postcss",
+        "autoprefixer",
+        "rollup",
+        "dotenv"
+    ]
+}
