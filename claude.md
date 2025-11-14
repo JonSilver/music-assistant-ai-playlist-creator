@@ -17,6 +17,7 @@
 - ✅ **Read documentation first**
 - ✅ **Ask when unclear**
 - ✅ **Verify builds** - both frontend and backend must compile
+- ✅ **Run knip regularly** - prevent accumulation of unused code/exports
 
 ## Code Standards
 
@@ -120,13 +121,24 @@ shared/
 }
 ```
 
-## Common Mistakes
+## Code Quality & Maintenance
+
+### Knip - Unused Code Detection
+
+Run `npm run knip` before commits to catch unused code:
+
+- Detects unused exports, types, dependencies, and files
+- Shared library exports used cross-workspace must be tagged `/** @public */`
+- If knip reports something as unused, it probably is - delete it
+
+### Common Mistakes
 
 1. Writing manual track matching (use MA search API)
 2. Multi-container setups (single container only)
 3. Fake metrics/confidence scores (we don't have them)
 4. Port conflicts (avoid 80, 3000, 8080, 8095)
 5. Adding player/export/analytics features (out of scope)
+6. Letting unused code accumulate (run knip regularly)
 
 ## Project Scope
 
