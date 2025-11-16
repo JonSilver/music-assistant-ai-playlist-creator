@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { useState, useCallback } from "react";
 import { attemptPromise } from "@jfdi/attempt";
 import { useAlerts } from "./useAlerts";

@@ -56,7 +56,7 @@ export const SearchableSelect = ({
                             const opt = options.find(o => o.value === val);
                             return opt?.label ?? val;
                         }}
-                        onChange={event => {
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                             setQuery(event.target.value);
                         }}
                         placeholder={placeholder}

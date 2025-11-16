@@ -1,5 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import React, {
+    createContext,
+    useContext,
+    useState,
+    useEffect,
+    useCallback,
+    type ReactNode
+} from "react";
 import type { GetSettingsResponse, UpdateSettingsRequest } from "@shared/types";
 import { api } from "../services/api";
 
@@ -30,12 +37,12 @@ export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.El
     }, []);
 
     // Persist to localStorage when changed
-    const setSelectedProviderId = (id: string): void => {
+    const setSelectedProviderId = useCallback((id: string): void => {
         setSelectedProviderIdState(id);
         localStorage.setItem("selectedProviderId", id);
-    };
+    }, []);
 
-    const refreshSettings = async (): Promise<void> => {
+    const refreshSettings = useCallback(async (): Promise<void> => {
         setLoading(true);
         setError(null);
 
@@ -53,7 +60,7 @@ export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.El
         }
 
         setLoading(false);
-    };
+    }, [selectedProviderId, setSelectedProviderId]);
 
     const updateSettings = async (updates: UpdateSettingsRequest): Promise<Error | undefined> => {
         const [err] = await api.updateSettings(updates);
@@ -69,7 +76,7 @@ export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.El
 
     useEffect(() => {
         void refreshSettings();
-    }, []);
+    }, [refreshSettings]);
 
     return (
         <AppContext.Provider

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { attemptPromise, attempt } from "@jfdi/attempt";
 import { API_BASE_PATH, API_ENDPOINTS } from "@shared/constants";
 import type { TrackMatch } from "@shared/types";

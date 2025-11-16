@@ -338,7 +338,7 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
     router.post("/playlists/test-ma", async (req: Request, res: Response) => {
         const { musicAssistantUrl } = req.body as { musicAssistantUrl?: string };
 
-        if (!musicAssistantUrl) {
+        if (musicAssistantUrl === undefined || musicAssistantUrl === "") {
             res.status(400).json({ error: "musicAssistantUrl is required" });
             return;
         }
