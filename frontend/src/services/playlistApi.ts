@@ -131,3 +131,112 @@ export const createPlaylistViaBackend = async (
 
     return result;
 };
+
+export const refinePlaylistViaBackend = async (
+    refinementPrompt: string,
+    currentTracks: TrackMatch[],
+    providerPreference?: string
+): Promise<TrackMatch[]> => {
+    const backendUrl =
+        import.meta.env.MODE === "development"
+            ? `http://localhost:3333${API_BASE_PATH}`
+            : API_BASE_PATH;
+
+    const [err, result] = await attemptPromise(async () => {
+        const response = await fetch(`${backendUrl}${API_ENDPOINTS.PLAYLISTS_REFINE}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ refinementPrompt, currentTracks, providerPreference })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: response.statusText }));
+            throw new Error(errorData.error ?? response.statusText);
+        }
+
+        return response.json() as Promise<{ tracks: TrackMatch[] }>;
+    });
+
+    if (err !== undefined) {
+        throw new Error(`Failed to refine playlist: ${err.message}`);
+    }
+
+    return result.tracks;
+};
+
+export const retryTrackViaBackend = async (
+    track: TrackMatch,
+    providerKeywords: string[] = []
+): Promise<TrackMatch> => {
+    const backendUrl =
+        import.meta.env.MODE === "development"
+            ? `http://localhost:3333${API_BASE_PATH}`
+            : API_BASE_PATH;
+
+    const [err, result] = await attemptPromise(async () => {
+        const response = await fetch(`${backendUrl}${API_ENDPOINTS.PLAYLISTS_TRACKS_RETRY}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ track, providerKeywords })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: response.statusText }));
+            throw new Error(errorData.error ?? response.statusText);
+        }
+
+        return response.json() as Promise<{ track: TrackMatch }>;
+    });
+
+    if (err !== undefined) {
+        throw new Error(`Failed to retry track: ${err.message}`);
+    }
+
+    return result.track;
+};
+
+export const replaceTrackViaBackend = async (
+    trackToReplace: TrackMatch,
+    currentTracks: TrackMatch[],
+    originalPrompt: string,
+    playlistName: string,
+    providerPreference?: string
+): Promise<TrackMatch> => {
+    const backendUrl =
+        import.meta.env.MODE === "development"
+            ? `http://localhost:3333${API_BASE_PATH}`
+            : API_BASE_PATH;
+
+    const [err, result] = await attemptPromise(async () => {
+        const response = await fetch(`${backendUrl}${API_ENDPOINTS.PLAYLISTS_TRACKS_REPLACE}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                trackToReplace,
+                currentTracks,
+                originalPrompt,
+                playlistName,
+                providerPreference
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: response.statusText }));
+            throw new Error(errorData.error ?? response.statusText);
+        }
+
+        return response.json() as Promise<{ track: TrackMatch }>;
+    });
+
+    if (err !== undefined) {
+        throw new Error(`Failed to replace track: ${err.message}`);
+    }
+
+    return result.track;
+};
