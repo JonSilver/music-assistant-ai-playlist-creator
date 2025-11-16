@@ -333,4 +333,27 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
 
         res.json({ track: replacementTrack });
     });
+
+    // POST /api/playlists/test-ma - Test Music Assistant connection
+    router.post("/playlists/test-ma", async (req: Request, res: Response) => {
+        const { musicAssistantUrl } = req.body as { musicAssistantUrl?: string };
+
+        if (!musicAssistantUrl) {
+            res.status(400).json({ error: "musicAssistantUrl is required" });
+            return;
+        }
+
+        const [err] = await attemptPromise(async () => {
+            const maClient = new MusicAssistantClient(musicAssistantUrl);
+            await maClient.connect();
+            maClient.disconnect();
+        });
+
+        if (err !== undefined) {
+            res.json({ success: false, error: err.message });
+            return;
+        }
+
+        res.json({ success: true });
+    });
 };

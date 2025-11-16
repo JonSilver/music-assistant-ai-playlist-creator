@@ -1,4 +1,4 @@
-import { attemptPromise } from "@jfdi/attempt";
+import { attemptPromise, attempt } from "@jfdi/attempt";
 import { API_BASE_PATH, API_ENDPOINTS } from "@shared/constants";
 import type { TrackMatch } from "@shared/types";
 
@@ -65,9 +65,9 @@ export const generatePlaylistViaBackend = async (
     return new Promise((resolve, reject) => {
         const eventSource = new EventSource(streamUrl);
 
-        eventSource.onmessage = event => {
-            const [parseErr, update] = attemptPromise<JobProgressUpdate>(async () =>
-                JSON.parse(event.data)
+        eventSource.onmessage = (event: MessageEvent) => {
+            const [parseErr, data] = attempt<unknown>(
+                () => JSON.parse(event.data as string) as unknown
             );
 
             if (parseErr !== undefined) {
@@ -75,6 +75,7 @@ export const generatePlaylistViaBackend = async (
                 return;
             }
 
+            const update = data as JobProgressUpdate;
             onProgress(update);
 
             if (update.status === "completed") {
@@ -114,7 +115,9 @@ export const createPlaylistViaBackend = async (
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: response.statusText }));
+            const errorData = (await response
+                .json()
+                .catch(() => ({ error: response.statusText }))) as { error?: string };
             throw new Error(errorData.error ?? response.statusText);
         }
 
@@ -152,7 +155,9 @@ export const refinePlaylistViaBackend = async (
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: response.statusText }));
+            const errorData = (await response
+                .json()
+                .catch(() => ({ error: response.statusText }))) as { error?: string };
             throw new Error(errorData.error ?? response.statusText);
         }
 
@@ -185,7 +190,9 @@ export const retryTrackViaBackend = async (
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: response.statusText }));
+            const errorData = (await response
+                .json()
+                .catch(() => ({ error: response.statusText }))) as { error?: string };
             throw new Error(errorData.error ?? response.statusText);
         }
 
@@ -227,7 +234,9 @@ export const replaceTrackViaBackend = async (
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: response.statusText }));
+            const errorData = (await response
+                .json()
+                .catch(() => ({ error: response.statusText }))) as { error?: string };
             throw new Error(errorData.error ?? response.statusText);
         }
 
@@ -239,4 +248,35 @@ export const replaceTrackViaBackend = async (
     }
 
     return result.track;
+};
+
+export const testMusicAssistantConnection = async (
+    musicAssistantUrl: string
+): Promise<{ success: boolean; error?: string }> => {
+    const backendUrl =
+        import.meta.env.MODE === "development"
+            ? `http://localhost:3333${API_BASE_PATH}`
+            : API_BASE_PATH;
+
+    const [err, result] = await attemptPromise(async () => {
+        const response = await fetch(`${backendUrl}${API_ENDPOINTS.PLAYLISTS_TEST_MA}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ musicAssistantUrl })
+        });
+
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+
+        return response.json() as Promise<{ success: boolean; error?: string }>;
+    });
+
+    if (err !== undefined) {
+        return { success: false, error: err.message };
+    }
+
+    return result;
 };

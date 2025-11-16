@@ -313,7 +313,6 @@ export const settingsUtils = {
     providerWeights: string;
     defaultProvider: AIProviderConfig;
     providers: AIProviderConfig[];
-    musicAssistantUrl: string;
     providerPreference: string[];
   } => {
     const settings: Record<string, unknown> = {};

@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
     PLAYLISTS_REFINE: '/playlists/refine',
     PLAYLISTS_TRACKS_RETRY: '/playlists/tracks/retry',
     PLAYLISTS_TRACKS_REPLACE: '/playlists/tracks/replace',
+    PLAYLISTS_TEST_MA: '/playlists/test-ma',
     PLAYLISTS_JOB: '/playlists/jobs/:jobId',
     PLAYLISTS_JOB_STREAM: '/playlists/jobs/:jobId/stream'
 } as const;

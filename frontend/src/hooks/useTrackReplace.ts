@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { attemptPromise } from "@jfdi/attempt";
-import { matchTracksProgressively } from "../services/trackMatching";
-import { replaceTrack as replaceTrackService } from "../services/playlistCreator";
+import { replaceTrackViaBackend, retryTrackViaBackend } from "../services/playlistApi";
 import type { TrackMatch, GetSettingsResponse } from "@shared/types";
 import { parseProviderKeywords } from "../utils/parseProviderKeywords";
 
@@ -36,12 +35,6 @@ export const useTrackReplace = (
             }
 
             const providerId = selectedProviderId ?? settings.aiProviders[0].id;
-            const providerConfig = settings.aiProviders.find(p => p.id === providerId);
-
-            if (providerConfig === undefined) {
-                setError("Selected AI provider not found");
-                return;
-            }
 
             if (index < 0 || index >= generatedTracks.length) return;
 
@@ -51,20 +44,17 @@ export const useTrackReplace = (
             setReplacingTrackIndex(index);
 
             const [err, replacementTrack] = await attemptPromise(async () =>
-                replaceTrackService(
+                replaceTrackViaBackend(
                     trackToReplace,
                     generatedTracks,
                     prompt,
                     playlistName,
-                    settings.musicAssistantUrl,
-                    providerConfig,
-                    settings.customSystemPrompt
+                    providerId
                 )
             );
 
-            setReplacingTrackIndex(null);
-
             if (err !== undefined) {
+                setReplacingTrackIndex(null);
                 setError(`Failed to replace track: ${err.message}`);
                 return;
             }
@@ -88,36 +78,26 @@ export const useTrackReplace = (
                 return updated;
             });
 
-            // Parse provider keywords from settings
+            // Match the replacement track
             const providerKeywords = parseProviderKeywords(settings.providerWeights);
-
-            void matchTracksProgressively(
-                [replacementTrack],
-                settings.musicAssistantUrl,
-                updater => {
-                    console.log(`[Replace] Matching callback for index ${index}`);
-                    const matchedTrack = updater([replacementTrack])[0] ?? replacementTrack;
-                    console.log(
-                        `[Replace] Matched track for index ${index}:`,
-                        matchedTrack.suggestion
-                    );
-                    setGeneratedTracks(prev => {
-                        console.log(
-                            `[Replace] Final update at index ${index}, prev length:`,
-                            prev.length
-                        );
-                        const updated = [
-                            ...prev.slice(0, index),
-                            matchedTrack,
-                            ...prev.slice(index + 1)
-                        ];
-                        console.log(`[Replace] Final updated length:`, updated.length);
-                        return updated;
-                    });
-                },
-                setError,
-                providerKeywords
+            const [matchErr, matchedTrack] = await attemptPromise(async () =>
+                retryTrackViaBackend(replacementTrack, providerKeywords)
             );
+
+            setReplacingTrackIndex(null);
+
+            if (matchErr !== undefined) {
+                setError(`Failed to match replacement track: ${matchErr.message}`);
+                return;
+            }
+
+            console.log(`[Replace] Matched track for index ${index}:`, matchedTrack.suggestion);
+            setGeneratedTracks(prev => {
+                console.log(`[Replace] Final update at index ${index}, prev length:`, prev.length);
+                const updated = [...prev.slice(0, index), matchedTrack, ...prev.slice(index + 1)];
+                console.log(`[Replace] Final updated length:`, updated.length);
+                return updated;
+            });
         },
         [
             generatedTracks,
