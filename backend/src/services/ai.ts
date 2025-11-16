@@ -78,7 +78,7 @@ const parseAIResponse = (content: string): AIPlaylistResponse => {
     const jsonMatch = /```(?:json)?\s*(\{[\s\S]*\})\s*```/.exec(trimmedContent);
     const jsonContent = jsonMatch !== null ? jsonMatch[1] : trimmedContent;
 
-    const [parseErr, data] = attempt(() => JSON.parse(jsonContent));
+    const [parseErr, data] = attempt<unknown>(() => JSON.parse(jsonContent));
     if (parseErr !== undefined) {
         const preview = content.substring(0, 200);
         throw new Error(`Failed to parse AI response as JSON. Response start: ${preview}`);
@@ -160,12 +160,8 @@ const generateWithOpenAICompatible = async (
         });
 
         const firstChoice = response.choices[0];
-        if (firstChoice === null || firstChoice === undefined) {
-            throw new Error("No choices in OpenAI response");
-        }
-
         const content = firstChoice.message.content;
-        if (content === null || content === undefined) {
+        if (content === null) {
             throw new Error("No response from OpenAI");
         }
 

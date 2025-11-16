@@ -6,19 +6,41 @@ import type { PlaylistDatabase } from "../db/schema.js";
 import { jobStore } from "../services/jobStore.js";
 import { generatePlaylistJob } from "../services/playlistGenerator.js";
 import { createPlaylist } from "../services/playlistCreator.js";
+import { refinePlaylist, replaceTrack } from "../services/playlistRefine.js";
+import { matchTrack } from "../services/trackMatching.js";
+import { MusicAssistantClient } from "../services/musicAssistant.js";
 import { settingsUtils } from "../../../shared/settings-schema.js";
 import { TrackMatchSchema } from "../../../shared/types.js";
 
 const GeneratePlaylistRequestSchema = z.object({
     prompt: z.string().min(1),
     providerPreference: z.string().optional(),
-    webhookUrl: z.string().url().optional()
+    webhookUrl: z.string().optional()
 });
 
 const CreatePlaylistRequestSchema = z.object({
     playlistName: z.string().min(1),
     prompt: z.string(),
     tracks: z.array(TrackMatchSchema)
+});
+
+const RefinePlaylistRequestSchema = z.object({
+    refinementPrompt: z.string().min(1),
+    currentTracks: z.array(TrackMatchSchema),
+    providerPreference: z.string().optional()
+});
+
+const RetryTrackRequestSchema = z.object({
+    track: TrackMatchSchema,
+    providerKeywords: z.array(z.string()).optional()
+});
+
+const ReplaceTrackRequestSchema = z.object({
+    trackToReplace: TrackMatchSchema,
+    currentTracks: z.array(TrackMatchSchema),
+    originalPrompt: z.string(),
+    playlistName: z.string(),
+    providerPreference: z.string().optional()
 });
 
 export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void => {
@@ -63,7 +85,7 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
                 webhookUrl
             },
             db
-        ).catch(err => {
+        ).catch((err: unknown) => {
             console.error(`[Job ${jobId}] Unhandled error:`, err);
         });
 
@@ -179,5 +201,136 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
             playlistUrl: result.playlistUrl,
             tracksAdded: result.tracksAdded
         });
+    });
+
+    // POST /api/playlists/refine - Refine existing playlist with AI
+    router.post("/playlists/refine", async (req: Request, res: Response) => {
+        const parseResult = RefinePlaylistRequestSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            res.status(400).json({
+                error: "Invalid request",
+                details: parseResult.error.message
+            });
+            return;
+        }
+
+        const { refinementPrompt, currentTracks, providerPreference } = parseResult.data;
+
+        // Get settings from database
+        const settings = settingsUtils.getSettings(db);
+
+        // Determine which provider to use
+        let providerConfig = settings.defaultProvider;
+        if (providerPreference !== undefined) {
+            const preferredProvider = settings.providers.find(p => p.id === providerPreference);
+            if (preferredProvider !== undefined) {
+                providerConfig = preferredProvider;
+            }
+        }
+
+        const [err, refinedTracks] = await attemptPromise(async () =>
+            refinePlaylist(
+                refinementPrompt,
+                currentTracks,
+                settings.musicAssistantUrl,
+                providerConfig,
+                settings.customSystemPrompt
+            )
+        );
+
+        if (err !== undefined) {
+            res.status(500).json({
+                error: "Failed to refine playlist",
+                details: err.message
+            });
+            return;
+        }
+
+        res.json({ tracks: refinedTracks });
+    });
+
+    // POST /api/playlists/tracks/retry - Retry matching a single track
+    router.post("/playlists/tracks/retry", async (req: Request, res: Response) => {
+        const parseResult = RetryTrackRequestSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            res.status(400).json({
+                error: "Invalid request",
+                details: parseResult.error.message
+            });
+            return;
+        }
+
+        const { track, providerKeywords = [] } = parseResult.data;
+
+        // Get settings from database
+        const settings = settingsUtils.getSettings(db);
+
+        const maClient = new MusicAssistantClient(settings.musicAssistantUrl);
+        await maClient.connect();
+
+        const [err, matchedTrack] = await attemptPromise(async () =>
+            matchTrack(track.suggestion, maClient, providerKeywords)
+        );
+
+        maClient.disconnect();
+
+        if (err !== undefined) {
+            res.status(500).json({
+                error: "Failed to retry track matching",
+                details: err.message
+            });
+            return;
+        }
+
+        res.json({ track: matchedTrack });
+    });
+
+    // POST /api/playlists/tracks/replace - Replace a track with AI suggestion
+    router.post("/playlists/tracks/replace", async (req: Request, res: Response) => {
+        const parseResult = ReplaceTrackRequestSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            res.status(400).json({
+                error: "Invalid request",
+                details: parseResult.error.message
+            });
+            return;
+        }
+
+        const { trackToReplace, currentTracks, originalPrompt, playlistName, providerPreference } =
+            parseResult.data;
+
+        // Get settings from database
+        const settings = settingsUtils.getSettings(db);
+
+        // Determine which provider to use
+        let providerConfig = settings.defaultProvider;
+        if (providerPreference !== undefined) {
+            const preferredProvider = settings.providers.find(p => p.id === providerPreference);
+            if (preferredProvider !== undefined) {
+                providerConfig = preferredProvider;
+            }
+        }
+
+        const [err, replacementTrack] = await attemptPromise(async () =>
+            replaceTrack(
+                trackToReplace,
+                currentTracks,
+                originalPrompt,
+                playlistName,
+                settings.musicAssistantUrl,
+                providerConfig,
+                settings.customSystemPrompt
+            )
+        );
+
+        if (err !== undefined) {
+            res.status(500).json({
+                error: "Failed to replace track",
+                details: err.message
+            });
+            return;
+        }
+
+        res.json({ track: replacementTrack });
     });
 };

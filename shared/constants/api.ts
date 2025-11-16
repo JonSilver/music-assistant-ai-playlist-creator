@@ -10,6 +10,9 @@ export const API_ENDPOINTS = {
     HEALTH: '/health',
     PLAYLISTS_GENERATE: '/playlists/generate',
     PLAYLISTS_CREATE: '/playlists/create',
+    PLAYLISTS_REFINE: '/playlists/refine',
+    PLAYLISTS_TRACKS_RETRY: '/playlists/tracks/retry',
+    PLAYLISTS_TRACKS_REPLACE: '/playlists/tracks/replace',
     PLAYLISTS_JOB: '/playlists/jobs/:jobId',
     PLAYLISTS_JOB_STREAM: '/playlists/jobs/:jobId/stream'
 } as const;

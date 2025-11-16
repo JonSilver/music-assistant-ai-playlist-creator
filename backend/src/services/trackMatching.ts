@@ -60,8 +60,7 @@ export const matchTrack = async (
         const sortedResults = sortByProviderWeight(results, providerKeywords);
 
         const match = sortedResults[0];
-        const firstArtist = match.artists?.[0];
-        const matchedArtist = firstArtist !== undefined ? firstArtist.name : "unknown";
+        const matchedArtist = match.artists.length > 0 ? match.artists[0].name : "unknown";
         const totalDuration = performance.now() - startTime;
         const durationMs = Math.round(totalDuration);
         const multipleMatches =
