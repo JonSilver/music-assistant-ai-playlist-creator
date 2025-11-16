@@ -7,7 +7,11 @@ export const API_ENDPOINTS = {
     SETTINGS: '/settings',
     PROMPTS_HISTORY: '/prompts/history',
     PROMPTS_PRESETS: '/prompts/presets',
-    HEALTH: '/health'
+    HEALTH: '/health',
+    PLAYLISTS_GENERATE: '/playlists/generate',
+    PLAYLISTS_CREATE: '/playlists/create',
+    PLAYLISTS_JOB: '/playlists/jobs/:jobId',
+    PLAYLISTS_JOB_STREAM: '/playlists/jobs/:jobId/stream'
 } as const;
 
 // Base paths

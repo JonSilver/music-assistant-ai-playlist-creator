@@ -3,12 +3,9 @@ import { attemptPromise } from "@jfdi/attempt";
 import { useAlerts } from "./useAlerts";
 import { useApp } from "../contexts/AppContext";
 import { useTrackReplace } from "./useTrackReplace";
+import { generatePlaylistViaBackend, createPlaylistViaBackend } from "../services/playlistApi";
+import { refinePlaylist as refinePlaylistService } from "../services/playlistCreator";
 import { matchTracksProgressively } from "../services/trackMatching";
-import { generatePlaylist as generatePlaylistService } from "../services/playlistGenerator";
-import {
-    createPlaylist as createPlaylistService,
-    refinePlaylist as refinePlaylistService
-} from "../services/playlistCreator";
 import type { TrackMatch } from "@shared/types";
 import { parseProviderKeywords } from "../utils/parseProviderKeywords";
 
@@ -81,24 +78,23 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         }
 
         const providerId = selectedProviderId ?? settings.aiProviders[0].id;
-        const providerConfig = settings.aiProviders.find(p => p.id === providerId);
-
-        if (providerConfig === undefined) {
-            setError("Selected AI provider not found");
-            return;
-        }
 
         setGeneratedTracks([]);
         setGenerating(true);
 
-        const [err, unmatchedTracks] = await attemptPromise(async () =>
-            generatePlaylistService({
-                prompt,
-                trackCount,
-                musicAssistantUrl: settings.musicAssistantUrl,
-                providerConfig,
-                customSystemPrompt: settings.customSystemPrompt
-            })
+        const [err] = await attemptPromise(async () =>
+            generatePlaylistViaBackend(
+                {
+                    prompt,
+                    providerPreference: providerId
+                },
+                update => {
+                    // Update tracks progressively as they're matched
+                    if (update.tracks !== undefined) {
+                        setGeneratedTracks(update.tracks);
+                    }
+                }
+            )
         );
 
         setGenerating(false);
@@ -108,18 +104,8 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
             return;
         }
 
-        setGeneratedTracks(unmatchedTracks);
         onHistoryUpdate();
-
-        const providerKeywords = parseProviderKeywords(settings.providerWeights);
-        void matchTracksProgressively(
-            unmatchedTracks,
-            settings.musicAssistantUrl,
-            setGeneratedTracks,
-            setError,
-            providerKeywords
-        );
-    }, [prompt, playlistName, trackCount, settings, selectedProviderId, setError, onHistoryUpdate]);
+    }, [prompt, playlistName, settings, selectedProviderId, setError, onHistoryUpdate]);
 
     const createPlaylist = useCallback(async (): Promise<void> => {
         if (generatedTracks.length === 0) {
@@ -135,7 +121,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         setCreating(true);
 
         const [err, result] = await attemptPromise(async () =>
-            createPlaylistService(playlistName, generatedTracks, settings.musicAssistantUrl)
+            createPlaylistViaBackend(playlistName, prompt, generatedTracks)
         );
 
         setCreating(false);
@@ -151,7 +137,8 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         setPrompt("");
         setPlaylistName("");
         setGeneratedTracks([]);
-    }, [generatedTracks, playlistName, settings, setError, setSuccess]);
+        onHistoryUpdate();
+    }, [generatedTracks, playlistName, prompt, settings, setError, setSuccess, onHistoryUpdate]);
 
     const refinePlaylist = useCallback(async (): Promise<void> => {
         if (refinementPrompt.trim().length === 0) {

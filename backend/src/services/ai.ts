@@ -94,8 +94,7 @@ const parseAIResponse = (content: string): AIPlaylistResponse => {
 
 const generateWithAnthropic = async (request: AIPlaylistRequest): Promise<AIPlaylistResponse> => {
     const anthropic = new Anthropic({
-        apiKey: request.providerConfig.apiKey,
-        dangerouslyAllowBrowser: true
+        apiKey: request.providerConfig.apiKey
     });
 
     const systemPrompt = buildSystemPrompt(
@@ -139,8 +138,7 @@ const generateWithOpenAICompatible = async (
 ): Promise<AIPlaylistResponse> => {
     const openai = new OpenAI({
         apiKey: request.providerConfig.apiKey,
-        baseURL: request.providerConfig.baseUrl,
-        dangerouslyAllowBrowser: true
+        baseURL: request.providerConfig.baseUrl
     });
 
     const systemPrompt = buildSystemPrompt(

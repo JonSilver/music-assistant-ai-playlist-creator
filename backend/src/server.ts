@@ -13,6 +13,7 @@ import {
 import { PlaylistDatabase } from "./db/schema.js";
 import { setupPromptsRoutes } from "./routes/prompts.js";
 import { setupSettingsRoutes } from "./routes/settings.js";
+import { setupPlaylistsRoutes } from "./routes/playlists.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,6 +62,7 @@ const apiRouter = express.Router();
 // Setup routes
 setupSettingsRoutes(apiRouter, db);
 setupPromptsRoutes(apiRouter, db);
+setupPlaylistsRoutes(apiRouter, db);
 
 // Health check
 apiRouter.get(API_ENDPOINTS.HEALTH, (_req, res) => {
