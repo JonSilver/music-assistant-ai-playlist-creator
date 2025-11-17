@@ -6,6 +6,7 @@ import type { TrackMatch } from "@shared/types";
 interface GeneratePlaylistRequest {
     prompt: string;
     providerPreference?: string;
+    trackCount?: number;
 }
 
 interface GeneratePlaylistResponse {

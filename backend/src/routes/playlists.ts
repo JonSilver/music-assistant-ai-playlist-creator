@@ -29,7 +29,7 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
             return;
         }
 
-        const { prompt, providerPreference, webhookUrl } = parseResult.data;
+        const { prompt, providerPreference, webhookUrl, trackCount } = parseResult.data;
 
         // Get settings from database
         const settings = settingsUtils.getSettings(db);
@@ -56,7 +56,8 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
                 providerConfig,
                 customSystemPrompt: settings.customSystemPrompt,
                 providerKeywords: settings.providerPreference,
-                webhookUrl
+                webhookUrl,
+                trackCount
             },
             db
         ).catch((err: unknown) => {

@@ -90,7 +90,8 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
             generatePlaylistViaBackend(
                 {
                     prompt,
-                    providerPreference: providerId
+                    providerPreference: providerId,
+                    trackCount: parseInt(trackCount, 10)
                 },
                 update => {
                     // Update tracks progressively as they're matched

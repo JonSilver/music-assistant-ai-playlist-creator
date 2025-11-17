@@ -16,6 +16,7 @@ interface GeneratePlaylistParams {
     customSystemPrompt?: string;
     providerKeywords?: string[];
     webhookUrl?: string;
+    trackCount?: number;
 }
 
 export const generatePlaylistJob = async (
@@ -29,7 +30,8 @@ export const generatePlaylistJob = async (
         providerConfig,
         customSystemPrompt,
         providerKeywords = [],
-        webhookUrl
+        webhookUrl,
+        trackCount
     } = params;
 
     // eslint-disable-next-line no-restricted-syntax
@@ -48,7 +50,8 @@ export const generatePlaylistJob = async (
                 prompt,
                 favoriteArtists,
                 providerConfig,
-                customSystemPrompt
+                customSystemPrompt,
+                trackCount
             })
         );
 

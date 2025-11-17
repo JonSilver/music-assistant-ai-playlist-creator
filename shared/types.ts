@@ -77,7 +77,8 @@ export const CreatePlaylistRequestSchema = z.object({
 export const BackendGeneratePlaylistRequestSchema = z.object({
   prompt: z.string().min(1),
   providerPreference: z.string().optional(),
-  webhookUrl: z.string().optional()
+  webhookUrl: z.string().optional(),
+  trackCount: z.number().optional()
 })
 export type BackendGeneratePlaylistRequest = z.infer<typeof BackendGeneratePlaylistRequestSchema>
 
