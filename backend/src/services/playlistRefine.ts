@@ -2,6 +2,7 @@ import { attemptPromise } from "@jfdi/attempt";
 import type { AIProviderConfig, TrackMatch } from "../../../shared/types.js";
 import { generatePlaylist as generatePlaylistAI } from "./ai.js";
 import { MusicAssistantClient } from "./musicAssistant.js";
+import { matchTracksProgressively } from "./trackMatching.js";
 
 export const refinePlaylist = async (
     refinementPrompt: string,
@@ -10,29 +11,28 @@ export const refinePlaylist = async (
     providerConfig: AIProviderConfig,
     customSystemPrompt?: string
 ): Promise<TrackMatch[]> => {
-    const [maConnectErr, maClient] = await attemptPromise(async () => {
-        const client = new MusicAssistantClient(musicAssistantUrl);
-        await client.connect();
-        return client;
-    });
-
-    if (maConnectErr !== undefined) {
-        throw new Error(`Failed to connect to Music Assistant: ${maConnectErr.message}`);
-    }
+    const maClient = new MusicAssistantClient(musicAssistantUrl);
+    await maClient.connect();
 
     const [favoriteErr, favoriteArtists] = await attemptPromise(async () =>
         maClient.getFavoriteArtists()
     );
-    maClient.disconnect();
 
     if (favoriteErr !== undefined) {
+        maClient.disconnect();
         throw new Error(`Failed to get favorite artists: ${favoriteErr.message}`);
     }
 
     const trackList = currentTracks.map(
         (m: TrackMatch) => `${m.suggestion.title} by ${m.suggestion.artist}`
     );
-    const refinementContext = `Current playlist:\n${trackList.join("\n")}\n\nRefinement request: ${refinementPrompt.trim()}`;
+
+    // Check if this is an "add" request
+    const isAddRequest = /\b(add|append|include)\b/i.test(refinementPrompt);
+
+    const refinementContext = isAddRequest
+        ? `Current playlist:\n${trackList.join("\n")}\n\n${refinementPrompt.trim()}\n\nReturn ONLY the new tracks to add, not the existing ones.`
+        : `Current playlist:\n${trackList.join("\n")}\n\nRefinement request: ${refinementPrompt.trim()}`;
 
     const [aiErr, aiResult] = await attemptPromise(async () =>
         generatePlaylistAI({
@@ -44,14 +44,26 @@ export const refinePlaylist = async (
     );
 
     if (aiErr !== undefined) {
+        maClient.disconnect();
         throw new Error(`Failed to refine playlist: ${aiErr.message}`);
     }
 
-    return aiResult.tracks.map(suggestion => ({
+    // Initialize tracks with unmatched state
+    const newTracks: TrackMatch[] = aiResult.tracks.map(suggestion => ({
         suggestion,
         matched: false,
         matching: false
     }));
+
+    // Use the same matching logic as main generation
+    await matchTracksProgressively(newTracks, maClient, (index, updatedTrack) => {
+        newTracks[index] = updatedTrack;
+    }, []);
+
+    maClient.disconnect();
+
+    // If it's an add request, append to existing tracks; otherwise replace
+    return isAddRequest ? [...currentTracks, ...newTracks] : newTracks;
 };
 
 export const replaceTrack = async (
@@ -63,22 +75,15 @@ export const replaceTrack = async (
     providerConfig: AIProviderConfig,
     customSystemPrompt?: string
 ): Promise<TrackMatch> => {
-    const [maConnectErr, maClient] = await attemptPromise(async () => {
-        const client = new MusicAssistantClient(musicAssistantUrl);
-        await client.connect();
-        return client;
-    });
-
-    if (maConnectErr !== undefined) {
-        throw new Error(`Failed to connect to Music Assistant: ${maConnectErr.message}`);
-    }
+    const maClient = new MusicAssistantClient(musicAssistantUrl);
+    await maClient.connect();
 
     const [favoriteErr, favoriteArtists] = await attemptPromise(async () =>
         maClient.getFavoriteArtists()
     );
-    maClient.disconnect();
 
     if (favoriteErr !== undefined) {
+        maClient.disconnect();
         throw new Error(`Failed to get favorite artists: ${favoriteErr.message}`);
     }
 
@@ -110,16 +115,28 @@ ${existingTracks}`;
     );
 
     if (aiErr !== undefined) {
+        maClient.disconnect();
         throw new Error(`Failed to get replacement track: ${aiErr.message}`);
     }
 
     if (aiResult.tracks.length === 0) {
+        maClient.disconnect();
         throw new Error("AI did not return a replacement track");
     }
 
-    return {
+    // Initialize and match the replacement track
+    const replacementTracks: TrackMatch[] = [{
         suggestion: aiResult.tracks[0],
         matched: false,
         matching: false
-    };
+    }];
+
+    // Use the same matching logic as main generation
+    await matchTracksProgressively(replacementTracks, maClient, (index, updatedTrack) => {
+        replacementTracks[index] = updatedTrack;
+    }, []);
+
+    maClient.disconnect();
+
+    return replacementTracks[0];
 };
