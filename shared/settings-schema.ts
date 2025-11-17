@@ -303,5 +303,50 @@ export const settingsUtils = {
     }
 
     return String(apiValue);
+  },
+
+  // Get all settings from database
+  getSettings: (db: { getSetting: (key: string) => string | null }): {
+    musicAssistantUrl: string;
+    aiProviders: AIProviderConfig[];
+    customSystemPrompt?: string;
+    providerWeights: string;
+    defaultProvider: AIProviderConfig;
+    providers: AIProviderConfig[];
+    providerPreference: string[];
+  } => {
+    const settings: Record<string, unknown> = {};
+
+    // Iterate through all setting fields defined in schema
+    for (const key of settingsUtils.getAllKeys()) {
+      const dbValue = db.getSetting(key);
+      const deserializedValue = settingsUtils.deserializeFromDB(key, dbValue);
+      settings[key] = deserializedValue ?? settingsUtils.getDefaultValue(key);
+    }
+
+    const aiProviders = (settings.aiProviders as AIProviderConfig[] | undefined) ?? [];
+    const defaultProvider = aiProviders[0] ?? {
+      id: 'default',
+      name: 'Default',
+      type: 'anthropic' as const,
+      apiKey: '',
+      model: 'claude-3-5-sonnet-20241022'
+    };
+
+    const providerWeights = (settings.providerWeights as string | undefined) ?? '';
+    const providerPreference = providerWeights
+      .split(',')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+
+    return {
+      musicAssistantUrl: (settings.musicAssistantUrl as string | undefined) ?? '',
+      aiProviders,
+      customSystemPrompt: settings.customSystemPrompt as string | undefined,
+      providerWeights,
+      defaultProvider,
+      providers: aiProviders,
+      providerPreference
+    };
   }
 };

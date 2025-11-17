@@ -1,4 +1,5 @@
 import { attempt, attemptPromise } from "@jfdi/attempt";
+import WebSocket from "ws";
 import {
     ERROR_MESSAGES,
     LIMITS,
@@ -7,11 +8,11 @@ import {
     TIMEOUTS,
     WS_MESSAGE_PREFIX,
     WS_PATH
-} from "@shared/constants";
-import type { MATrack } from "@shared/types";
+} from "../../../shared/constants/index.js";
+import type { MATrack } from "../../../shared/types.js";
 
 interface MAResponse {
-    message_id: string;
+    message_id?: string;
     result?: unknown;
     error?: {
         error_code: string;
@@ -51,7 +52,7 @@ export class MusicAssistantClient {
         {
             resolve: (value: unknown) => void;
             reject: (error: Error) => void;
-            timeout: number;
+            timeout: NodeJS.Timeout;
         }
     >();
 
@@ -71,15 +72,15 @@ export class MusicAssistantClient {
                     return;
                 }
 
-                this.ws.onopen = (): void => {
+                this.ws.on("open", (): void => {
                     resolve();
-                };
-                this.ws.onerror = (err): void => {
-                    reject(new Error(`WebSocket error: ${err.type}`));
-                };
-                this.ws.onmessage = (event): void => {
-                    this.handleMessage(event.data as string);
-                };
+                });
+                this.ws.on("error", (err): void => {
+                    reject(new Error(`WebSocket error: ${err.message}`));
+                });
+                this.ws.on("message", (data: Buffer): void => {
+                    this.handleMessage(data.toString("utf8"));
+                });
             });
         });
 
@@ -89,24 +90,25 @@ export class MusicAssistantClient {
     }
 
     private handleMessage(data: string): void {
-        const [parseErr, message] = attempt<MAResponse>(() => JSON.parse(data));
+        const [parseErr, message] = attempt<MAResponse>(() => JSON.parse(data) as MAResponse);
         if (parseErr !== undefined) {
             console.error("Failed to parse MA message:", parseErr);
             return;
         }
 
-        if (message.message_id === null || message.message_id === undefined) {
+        // MA can send messages without message_id (events, notifications, etc.)
+        if (message.message_id === undefined || message.message_id.length === 0) {
             return;
         }
 
         const pending = this.pendingRequests.get(message.message_id);
-        if (pending === null || pending === undefined) {
+        if (pending === undefined) {
             return;
         }
 
         clearTimeout(pending.timeout);
 
-        if (message.error !== null && message.error !== undefined) {
+        if (message.error !== undefined) {
             pending.reject(new Error(message.error.message));
         } else {
             pending.resolve(message.result);
@@ -146,7 +148,7 @@ export class MusicAssistantClient {
                     );
                     reject(new Error(`${ERROR_MESSAGES.REQUEST_TIMEOUT}: ${command}`));
                 }
-            }, TIMEOUTS.WS_COMMAND) as unknown as number;
+            }, TIMEOUTS.WS_COMMAND);
 
             this.pendingRequests.set(messageId, {
                 resolve: ((value: unknown) => {
@@ -169,7 +171,7 @@ export class MusicAssistantClient {
                 ws.send(JSON.stringify(message));
             });
 
-            if (sendErr !== null && sendErr !== undefined) {
+            if (sendErr !== undefined) {
                 this.pendingRequests.delete(messageId);
                 clearTimeout(timeoutId);
                 console.error(
@@ -199,12 +201,7 @@ export class MusicAssistantClient {
 
         console.log("[MA Search] Raw result:", result);
 
-        if (result === null || result === undefined) {
-            console.error("[MA Search] Result is null/undefined");
-            return [];
-        }
-
-        const tracks = result.tracks ?? [];
+        const tracks = result.tracks;
         console.log("[MA Search] Parsed result:", {
             count: tracks.length,
             first3: tracks.slice(0, 3).map(t => ({

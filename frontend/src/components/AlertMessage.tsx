@@ -23,7 +23,7 @@ const renderMessageWithLinks = (message: string): React.JSX.Element => {
             const fullMatch = match[0];
             const linkText = match[1];
             const url = match[2];
-            const matchIndex = match.index ?? 0;
+            const matchIndex = match.index;
 
             if (matchIndex > acc.lastIndex) {
                 acc.parts.push(messageText.substring(acc.lastIndex, matchIndex));

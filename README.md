@@ -33,13 +33,17 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 
 ### How It Works
 
-1. User enters a natural language playlist description
-2. Frontend fetches user's favorite artists from Music Assistant for context
-3. AI service (Claude or OpenAI) generates structured track list
-4. Frontend searches Music Assistant library for each suggested track
-5. Matched tracks are displayed with Found/Not Found badges
-6. User can retry individual tracks, replace tracks, refine the entire playlist, or create playlist in Music Assistant
-7. After creation, a direct link to the new playlist in Music Assistant is displayed
+1. User enters a natural language playlist description in the web UI
+2. Backend receives generation request and starts a background job
+3. Backend fetches user's favorite artists from Music Assistant for AI context
+4. Backend calls AI service (Claude or OpenAI) to generate structured track list
+5. Backend progressively matches tracks in Music Assistant library using batched search
+6. Frontend receives real-time progress updates via Server-Sent Events (SSE)
+7. Matched tracks are displayed with Found/Not Found badges
+8. User can retry individual tracks, replace tracks with AI alternatives, refine the playlist, or create it in Music Assistant
+9. After creation, a direct link to the new playlist in Music Assistant is displayed
+
+**Note**: All AI generation and Music Assistant operations run on the backend server. The web UI receives real-time progress updates and can be integrated with other local applications via the REST API.
 
 ## Prerequisites
 
@@ -124,15 +128,247 @@ Default dev ports (configurable in `.env`):
 
 ## API Endpoints
 
+The backend provides a REST API for third-party integration. All endpoints return JSON and use standard HTTP status codes.
+
+### Playlist Generation
+
+#### Generate Playlist (Async)
+```http
+POST /api/playlists/generate
+Content-Type: application/json
+
+{
+  "prompt": "Upbeat 80s rock for a road trip",
+  "trackCount": 25,
+  "providerPreference": "claude-sonnet",  // Optional: AI provider ID
+  "webhookUrl": "http://localhost:8080/webhook"  // Optional: callback URL
+}
+
+Response: { "jobId": "uuid" }
+```
+
+Starts an async playlist generation job. Returns immediately with a job ID for status polling or SSE streaming.
+
+If `webhookUrl` is provided, the playlist will be automatically created in Music Assistant upon completion, and the webhook will be called with the result:
+```json
+{
+  "jobId": "uuid",
+  "success": true,
+  "playlistUrl": "http://192.168.1.100:8095/..."
+}
+```
+
+#### Get Job Status (Polling)
+```http
+GET /api/playlists/jobs/:jobId
+
+Response: {
+  "jobId": "uuid",
+  "status": "generating_ai" | "matching_tracks" | "creating_playlist" | "completed" | "failed",
+  "playlistUrl": "...",  // Present when completed
+  "error": "..."         // Present when failed
+}
+```
+
+#### Stream Job Progress (SSE)
+```http
+GET /api/playlists/jobs/:jobId/stream
+
+Server-Sent Events stream with real-time updates:
+{
+  "jobId": "uuid",
+  "status": "matching_tracks",
+  "tracks": [...],           // Array of TrackMatch objects
+  "totalTracks": 25,
+  "matchedTracks": 18,
+  "playlistUrl": "...",      // Present when completed
+  "error": "..."             // Present when failed
+}
+```
+
+Connection closes automatically when job completes or fails.
+
+#### Create Playlist in Music Assistant
+```http
+POST /api/playlists/create
+Content-Type: application/json
+
+{
+  "playlistName": "My Road Trip Mix",
+  "prompt": "Original prompt for history",
+  "tracks": [...]  // Array of TrackMatch objects with matched tracks
+}
+
+Response: {
+  "success": true,
+  "playlistId": "library://playlist/123",
+  "playlistUrl": "http://192.168.1.100:8095/...",
+  "tracksAdded": 20
+}
+```
+
+#### Refine Playlist
+```http
+POST /api/playlists/refine
+Content-Type: application/json
+
+{
+  "refinementPrompt": "Add more upbeat songs",
+  "currentTracks": [...],  // Current TrackMatch array
+  "providerPreference": "claude-sonnet"  // Optional
+}
+
+Response: {
+  "tracks": [...]  // Updated TrackMatch array
+}
+```
+
+Detects "add/append/include" keywords and appends new tracks; otherwise replaces entire playlist.
+
+#### Retry Track Matching
+```http
+POST /api/playlists/tracks/retry
+Content-Type: application/json
+
+{
+  "track": {...},            // TrackMatch object
+  "providerKeywords": []     // Optional provider weighting
+}
+
+Response: {
+  "track": {...}  // Updated TrackMatch with new search results
+}
+```
+
+#### Replace Track with AI Alternative
+```http
+POST /api/playlists/tracks/replace
+Content-Type: application/json
+
+{
+  "trackToReplace": {...},      // TrackMatch to replace
+  "currentTracks": [...],        // Full playlist context
+  "originalPrompt": "...",       // Original generation prompt
+  "playlistName": "...",         // Playlist name for context
+  "providerPreference": "..."    // Optional
+}
+
+Response: {
+  "track": {...}  // New TrackMatch with AI replacement
+}
+```
+
+#### Test Music Assistant Connection
+```http
+POST /api/playlists/test-ma
+Content-Type: application/json
+
+{
+  "musicAssistantUrl": "http://192.168.1.100:8095"
+}
+
+Response: {
+  "success": true,
+  "error": "..."  // Present if failed
+}
+```
+
 ### Settings
-- `GET /api/settings` - Get current settings
-- `PUT /api/settings` - Update settings
+
+```http
+GET /api/settings
+Response: { settings object }
+
+PUT /api/settings
+Body: { settings object }
+Response: { updated settings }
+```
+
+Settings include Music Assistant URL, AI provider configs, provider weights, and custom system prompt.
 
 ### Prompts
-- `GET /api/prompts/history` - Get prompt history
-- `GET /api/prompts/presets` - Get preset prompts
 
-**Note**: All AI and Music Assistant operations are handled directly in the frontend via their respective APIs/WebSockets. The backend only manages settings and prompt storage.
+```http
+GET /api/prompts/history
+Response: [{ prompt, playlistName, tracksAdded, createdAt }, ...]
+
+GET /api/prompts/presets
+Response: [{ id, name, prompt, description }, ...]
+```
+
+## Third-Party Integration
+
+The backend API enables integration with other local applications:
+
+### Home Automation Examples
+
+**Home Assistant Automation**:
+```yaml
+automation:
+  - alias: "Evening Playlist"
+    trigger:
+      - platform: time
+        at: "18:00:00"
+    action:
+      - service: rest_command.generate_playlist
+        data:
+          prompt: "Relaxing jazz for dinner"
+          webhook_url: "http://homeassistant.local:8123/api/webhook/playlist_done"
+```
+
+**Node-RED Flow**: Use HTTP Request nodes to call `/api/playlists/generate` with webhook callbacks.
+
+**Custom Scripts**: Any HTTP client can integrate via the REST API.
+
+### PowerShell CLI
+
+A PowerShell script is provided for command-line playlist generation:
+
+```powershell
+# Basic usage
+.\scripts\New-AIPlaylist.ps1 -Prompt "Upbeat 80s rock for a road trip" -TrackCount 25
+
+# Specify playlist name
+.\scripts\New-AIPlaylist.ps1 `
+    -Prompt "Relaxing jazz for dinner" `
+    -PlaylistName "Evening Jazz" `
+    -TrackCount 15
+
+# Generate without creating (preview only)
+.\scripts\New-AIPlaylist.ps1 `
+    -Prompt "Workout mix" `
+    -NoCreate
+
+# Custom server and AI provider
+.\scripts\New-AIPlaylist.ps1 `
+    -ServerUrl "http://192.168.1.100:9876" `
+    -Prompt "Study music" `
+    -ProviderPreference "claude-sonnet"
+
+# Run test script
+.\scripts\Test-AIPlaylist.ps1
+```
+
+**Parameters**:
+- `-ServerUrl`: API server URL (default: `http://localhost:9876`)
+- `-Prompt`: Natural language playlist description (required)
+- `-TrackCount`: Number of tracks (default: 20)
+- `-PlaylistName`: Playlist name (defaults to prompt text)
+- `-ProviderPreference`: AI provider ID (optional)
+- `-WebhookUrl`: Webhook for async completion (optional)
+- `-NoCreate`: Generate tracks without creating playlist
+- `-PollInterval`: Seconds between status polls (default: 2)
+- `-Timeout`: Max wait time in seconds (default: 300)
+
+**Output**: Returns a PowerShell object with job details, playlist URL, and track information.
+
+### Webhook Integration
+
+When providing a `webhookUrl` in the generation request:
+1. Playlist is automatically created in Music Assistant
+2. Webhook receives POST with job result (success/failure)
+3. No need for polling or SSE streaming
+4. Ideal for fire-and-forget automation scenarios
 
 ## Configuration
 
@@ -194,6 +430,10 @@ To use a different location, edit `DATA_PATH` in your `.env` file.
 ├── shared/                       # Shared TypeScript types
 │   └── types.ts
 │
+├── scripts/                      # Integration scripts
+│   ├── New-AIPlaylist.ps1       # PowerShell CLI for playlist generation
+│   └── Test-AIPlaylist.ps1      # Test script for API
+│
 ├── .github/
 │   └── workflows/
 │       └── docker-publish.yml   # CI/CD pipeline for Docker Hub
@@ -230,11 +470,13 @@ docker-compose pull && docker-compose up -d
 
 ## Music Assistant Integration
 
-This application connects to Music Assistant via WebSocket to:
+The backend connects to Music Assistant via WebSocket to:
 - Search your music library for tracks
 - Retrieve your favorite artists (used as context for AI)
 - Create playlists
 - Add tracks to playlists
+
+All Music Assistant operations are performed server-side with results streamed to connected clients in real-time.
 
 **Note**: No authentication is required as Music Assistant is designed for local network use.
 
@@ -315,4 +557,4 @@ ISC
 - [daisyUI](https://daisyui.com)
 - [Anthropic Claude](https://anthropic.com)
 - [OpenAI](https://openai.com)
-- [@jfdi/attempt](https://github.com/jfdi-dev/iffyjs)
+- [@jfdi/attempt](https://www.npmjs.com/package/@jfdi/attempt)

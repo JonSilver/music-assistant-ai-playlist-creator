@@ -1,7 +1,7 @@
 import { attemptPromise } from "@jfdi/attempt";
-import type { TrackMatch, TrackSuggestion } from "@shared/types";
-import { sortByProviderWeight } from "../utils/sortByProviderWeight";
-import type { MusicAssistantClient } from "./musicAssistant";
+import type { TrackMatch, TrackSuggestion } from "../../../shared/types.js";
+import { sortByProviderWeight } from "../utils/sortByProviderWeight.js";
+import type { MusicAssistantClient } from "./musicAssistant.js";
 
 export const matchTrack = async (
     suggestion: TrackSuggestion,
@@ -22,9 +22,10 @@ export const matchTrack = async (
         const attemptDuration = performance.now() - attemptStart;
         const attemptDurationMs = Math.round(attemptDuration);
 
-        if (err !== undefined) {
+        if (err !== undefined || results.length === 0) {
+            const reason = err !== undefined ? err.message : "No results";
             console.warn(
-                `[${new Date().toISOString()}] [MATCH] Attempt ${attempt}/3 failed after ${attemptDurationMs}ms: ${err.message}`
+                `[${new Date().toISOString()}] [MATCH] Attempt ${attempt}/3 failed after ${attemptDurationMs}ms: ${reason}`
             );
 
             if (attempt < 3) {
@@ -36,19 +37,7 @@ export const matchTrack = async (
             const totalDurationMs = Math.round(totalDuration);
             console.error(
                 `[${new Date().toISOString()}] [MATCH] ❌ Failed after 3 attempts (${totalDurationMs}ms total): "${suggestion.title}" by "${suggestion.artist}"`,
-                err.message
-            );
-            return {
-                suggestion,
-                matched: false
-            };
-        }
-
-        if (results.length === 0) {
-            const totalDuration = performance.now() - startTime;
-            const totalDurationMs = Math.round(totalDuration);
-            console.warn(
-                `[${new Date().toISOString()}] [MATCH] ❌ No results after ${totalDurationMs}ms for "${suggestion.title}" by "${suggestion.artist}"`
+                reason
             );
             return {
                 suggestion,
@@ -60,8 +49,7 @@ export const matchTrack = async (
         const sortedResults = sortByProviderWeight(results, providerKeywords);
 
         const match = sortedResults[0];
-        const firstArtist = match.artists?.[0];
-        const matchedArtist = firstArtist !== undefined ? firstArtist.name : "unknown";
+        const matchedArtist = match.artists.length > 0 ? match.artists[0].name : "unknown";
         const totalDuration = performance.now() - startTime;
         const durationMs = Math.round(totalDuration);
         const multipleMatches =
@@ -84,44 +72,28 @@ export const matchTrack = async (
 
 export const matchTracksProgressively = async (
     tracks: TrackMatch[],
-    maUrl: string,
-    onUpdate: (updater: (prev: TrackMatch[]) => TrackMatch[]) => void,
-    onError: (message: string) => void,
+    maClient: MusicAssistantClient,
+    onUpdate: (index: number, track: TrackMatch) => void,
     providerKeywords: string[] = []
 ): Promise<void> => {
     const BATCH_SIZE = 10;
-
-    const { MusicAssistantClient } = await import("./musicAssistant");
-    const maClient = new MusicAssistantClient(maUrl);
-
-    const [connectErr] = await attemptPromise(async () => maClient.connect());
-    if (connectErr !== undefined) {
-        onError(`Failed to connect to Music Assistant: ${connectErr.message}`);
-        return;
-    }
 
     const processBatch = async (batch: TrackMatch[], startIndex: number): Promise<void> => {
         await Promise.all(
             batch.map(async (track, batchIdx) => {
                 const index = startIndex + batchIdx;
-                onUpdate(prev =>
-                    prev.map((t, idx) => (idx === index ? { ...t, matching: true } : t))
-                );
+
+                // Mark as matching
+                onUpdate(index, { ...track, matching: true });
 
                 const [err, matchedTrack] = await attemptPromise(async () =>
                     matchTrack(track.suggestion, maClient, providerKeywords)
                 );
 
                 if (err === undefined) {
-                    onUpdate(prev =>
-                        prev.map((t, idx) =>
-                            idx === index ? { ...matchedTrack, matching: false } : t
-                        )
-                    );
+                    onUpdate(index, { ...matchedTrack, matching: false });
                 } else {
-                    onUpdate(prev =>
-                        prev.map((t, idx) => (idx === index ? { ...t, matching: false } : t))
-                    );
+                    onUpdate(index, { ...track, matching: false });
                 }
             })
         );
@@ -143,6 +115,4 @@ export const matchTracksProgressively = async (
             await new Promise(resolve => setTimeout(resolve, 100));
         }
     }, Promise.resolve());
-
-    maClient.disconnect();
 };

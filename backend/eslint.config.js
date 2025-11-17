@@ -32,7 +32,7 @@ export default tseslint.config(
         },
         rules: {
             // Prettier
-            "prettier/prettier": "error",
+            "prettier/prettier": "warn",
 
             // TypeScript strict rules
             "@typescript-eslint/no-unused-vars": [

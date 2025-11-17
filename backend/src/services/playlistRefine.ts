@@ -1,36 +1,8 @@
 import { attemptPromise } from "@jfdi/attempt";
-import { MusicAssistantClient } from "./musicAssistant";
-import type { AIProviderConfig, TrackMatch } from "@shared/types";
-
-export const createPlaylist = async (
-    playlistName: string,
-    tracks: TrackMatch[],
-    musicAssistantUrl: string
-): Promise<{ playlistId: string; tracksAdded: number; playlistUrl: string }> => {
-    const maClient = new MusicAssistantClient(musicAssistantUrl);
-    await maClient.connect();
-
-    const playlistId = await maClient.createPlaylist(playlistName.trim());
-
-    const trackUris = tracks
-        .filter(m => m.matched && m.maTrack !== undefined)
-        .map(m => {
-            if (m.maTrack === undefined) {
-                throw new Error("Unexpected undefined maTrack");
-            }
-            return m.maTrack.uri;
-        });
-
-    if (trackUris.length > 0) {
-        await maClient.addTracksToPlaylist(playlistId, trackUris);
-    }
-
-    maClient.disconnect();
-
-    const playlistUrl = `${musicAssistantUrl}/#/playlists/library/${playlistId}`;
-
-    return { playlistId, tracksAdded: trackUris.length, playlistUrl };
-};
+import type { AIProviderConfig, TrackMatch } from "../../../shared/types.js";
+import { generatePlaylist as generatePlaylistAI } from "./ai.js";
+import { MusicAssistantClient } from "./musicAssistant.js";
+import { matchTracksProgressively } from "./trackMatching.js";
 
 export const refinePlaylist = async (
     refinementPrompt: string,
@@ -39,31 +11,28 @@ export const refinePlaylist = async (
     providerConfig: AIProviderConfig,
     customSystemPrompt?: string
 ): Promise<TrackMatch[]> => {
-    const { generatePlaylist: generatePlaylistAI } = await import("./ai");
-
-    const [maConnectErr, maClient] = await attemptPromise(async () => {
-        const client = new MusicAssistantClient(musicAssistantUrl);
-        await client.connect();
-        return client;
-    });
-
-    if (maConnectErr !== undefined) {
-        throw new Error(`Failed to connect to Music Assistant: ${maConnectErr.message}`);
-    }
+    const maClient = new MusicAssistantClient(musicAssistantUrl);
+    await maClient.connect();
 
     const [favoriteErr, favoriteArtists] = await attemptPromise(async () =>
         maClient.getFavoriteArtists()
     );
-    maClient.disconnect();
 
     if (favoriteErr !== undefined) {
+        maClient.disconnect();
         throw new Error(`Failed to get favorite artists: ${favoriteErr.message}`);
     }
 
     const trackList = currentTracks.map(
         (m: TrackMatch) => `${m.suggestion.title} by ${m.suggestion.artist}`
     );
-    const refinementContext = `Current playlist:\n${trackList.join("\n")}\n\nRefinement request: ${refinementPrompt.trim()}`;
+
+    // Check if this is an "add" request
+    const isAddRequest = /\b(add|append|include)\b/i.test(refinementPrompt);
+
+    const refinementContext = isAddRequest
+        ? `Current playlist:\n${trackList.join("\n")}\n\n${refinementPrompt.trim()}\n\nReturn ONLY the new tracks to add, not the existing ones.`
+        : `Current playlist:\n${trackList.join("\n")}\n\nRefinement request: ${refinementPrompt.trim()}`;
 
     const [aiErr, aiResult] = await attemptPromise(async () =>
         generatePlaylistAI({
@@ -75,14 +44,31 @@ export const refinePlaylist = async (
     );
 
     if (aiErr !== undefined) {
+        maClient.disconnect();
         throw new Error(`Failed to refine playlist: ${aiErr.message}`);
     }
 
-    return aiResult.tracks.map(suggestion => ({
+    // Initialize tracks - all marked as matching since we'll process them all
+    const newTracks: TrackMatch[] = aiResult.tracks.map(suggestion => ({
         suggestion,
         matched: false,
         matching: true
     }));
+
+    // Use the same matching logic as main generation
+    await matchTracksProgressively(
+        newTracks,
+        maClient,
+        (index, updatedTrack) => {
+            newTracks[index] = updatedTrack;
+        },
+        []
+    );
+
+    maClient.disconnect();
+
+    // If it's an add request, append to existing tracks; otherwise replace
+    return isAddRequest ? [...currentTracks, ...newTracks] : newTracks;
 };
 
 export const replaceTrack = async (
@@ -94,24 +80,15 @@ export const replaceTrack = async (
     providerConfig: AIProviderConfig,
     customSystemPrompt?: string
 ): Promise<TrackMatch> => {
-    const { generatePlaylist: generatePlaylistAI } = await import("./ai");
-
-    const [maConnectErr, maClient] = await attemptPromise(async () => {
-        const client = new MusicAssistantClient(musicAssistantUrl);
-        await client.connect();
-        return client;
-    });
-
-    if (maConnectErr !== undefined) {
-        throw new Error(`Failed to connect to Music Assistant: ${maConnectErr.message}`);
-    }
+    const maClient = new MusicAssistantClient(musicAssistantUrl);
+    await maClient.connect();
 
     const [favoriteErr, favoriteArtists] = await attemptPromise(async () =>
         maClient.getFavoriteArtists()
     );
-    maClient.disconnect();
 
     if (favoriteErr !== undefined) {
+        maClient.disconnect();
         throw new Error(`Failed to get favorite artists: ${favoriteErr.message}`);
     }
 
@@ -143,16 +120,35 @@ ${existingTracks}`;
     );
 
     if (aiErr !== undefined) {
+        maClient.disconnect();
         throw new Error(`Failed to get replacement track: ${aiErr.message}`);
     }
 
     if (aiResult.tracks.length === 0) {
+        maClient.disconnect();
         throw new Error("AI did not return a replacement track");
     }
 
-    return {
-        suggestion: aiResult.tracks[0],
-        matched: false,
-        matching: true
-    };
+    // Initialize and match the replacement track
+    const replacementTracks: TrackMatch[] = [
+        {
+            suggestion: aiResult.tracks[0],
+            matched: false,
+            matching: true
+        }
+    ];
+
+    // Use the same matching logic as main generation
+    await matchTracksProgressively(
+        replacementTracks,
+        maClient,
+        (index, updatedTrack) => {
+            replacementTracks[index] = updatedTrack;
+        },
+        []
+    );
+
+    maClient.disconnect();
+
+    return replacementTracks[0];
 };

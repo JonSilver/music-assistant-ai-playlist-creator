@@ -31,6 +31,7 @@ export const TrackSuggestionSchema = z.object({
   artist: z.string(),
   album: z.string().optional()
 })
+/** @public */
 export type TrackSuggestion = z.infer<typeof TrackSuggestionSchema>
 
 // AI Response
@@ -46,7 +47,7 @@ export const MATrackSchema = z.object({
   uri: z.string(),
   name: z.string(),
   artists: z.array(z.object({ name: z.string() })),
-  album: z.object({ name: z.string() }).optional(),
+  album: z.object({ name: z.string() }).nullable().optional(),
   provider: z.string(),
   item_id: z.string()
 })
@@ -72,6 +73,107 @@ export const CreatePlaylistRequestSchema = z.object({
   providerId: z.string().optional(),
   trackCount: z.number().optional()
 })
+
+// Backend API schemas
+export const BackendGeneratePlaylistRequestSchema = z.object({
+  prompt: z.string().min(1),
+  providerPreference: z.string().optional(),
+  webhookUrl: z.string().optional(),
+  trackCount: z.number().optional()
+})
+/** @public */
+export type BackendGeneratePlaylistRequest = z.infer<typeof BackendGeneratePlaylistRequestSchema>
+
+export const BackendGeneratePlaylistResponseSchema = z.object({
+  jobId: z.string()
+})
+/** @public */
+export type BackendGeneratePlaylistResponse = z.infer<typeof BackendGeneratePlaylistResponseSchema>
+
+export const BackendJobProgressUpdateSchema = z.object({
+  jobId: z.string(),
+  status: z.enum(["pending", "generating_ai", "matching_tracks", "creating_playlist", "completed", "failed"]),
+  tracks: z.array(TrackMatchSchema).optional(),
+  totalTracks: z.number().optional(),
+  matchedTracks: z.number().optional(),
+  playlistUrl: z.string().optional(),
+  error: z.string().optional()
+})
+/** @public */
+export type BackendJobProgressUpdate = z.infer<typeof BackendJobProgressUpdateSchema>
+
+export const BackendCreatePlaylistRequestSchema = z.object({
+  playlistName: z.string().min(1),
+  prompt: z.string(),
+  tracks: z.array(TrackMatchSchema)
+})
+/** @public */
+export type BackendCreatePlaylistRequest = z.infer<typeof BackendCreatePlaylistRequestSchema>
+
+export const BackendCreatePlaylistResponseSchema = z.object({
+  success: z.boolean(),
+  playlistId: z.string(),
+  playlistUrl: z.string(),
+  tracksAdded: z.number()
+})
+/** @public */
+export type BackendCreatePlaylistResponse = z.infer<typeof BackendCreatePlaylistResponseSchema>
+
+export const BackendRefinePlaylistRequestSchema = z.object({
+  refinementPrompt: z.string().min(1),
+  currentTracks: z.array(TrackMatchSchema),
+  providerPreference: z.string().optional()
+})
+/** @public */
+export type BackendRefinePlaylistRequest = z.infer<typeof BackendRefinePlaylistRequestSchema>
+
+export const BackendRefinePlaylistResponseSchema = z.object({
+  tracks: z.array(TrackMatchSchema)
+})
+/** @public */
+export type BackendRefinePlaylistResponse = z.infer<typeof BackendRefinePlaylistResponseSchema>
+
+export const BackendRetryTrackRequestSchema = z.object({
+  track: TrackMatchSchema,
+  providerKeywords: z.array(z.string()).optional()
+})
+/** @public */
+export type BackendRetryTrackRequest = z.infer<typeof BackendRetryTrackRequestSchema>
+
+export const BackendRetryTrackResponseSchema = z.object({
+  track: TrackMatchSchema
+})
+/** @public */
+export type BackendRetryTrackResponse = z.infer<typeof BackendRetryTrackResponseSchema>
+
+export const BackendReplaceTrackRequestSchema = z.object({
+  trackToReplace: TrackMatchSchema,
+  currentTracks: z.array(TrackMatchSchema),
+  originalPrompt: z.string(),
+  playlistName: z.string(),
+  providerPreference: z.string().optional()
+})
+/** @public */
+export type BackendReplaceTrackRequest = z.infer<typeof BackendReplaceTrackRequestSchema>
+
+export const BackendReplaceTrackResponseSchema = z.object({
+  track: TrackMatchSchema
+})
+/** @public */
+export type BackendReplaceTrackResponse = z.infer<typeof BackendReplaceTrackResponseSchema>
+
+export const BackendTestMARequestSchema = z.object({
+  musicAssistantUrl: z.string()
+})
+/** @public */
+export type BackendTestMARequest = z.infer<typeof BackendTestMARequestSchema>
+
+export const BackendTestMAResponseSchema = z.object({
+  success: z.boolean(),
+  error: z.string().optional()
+})
+/** @public */
+export type BackendTestMAResponse = z.infer<typeof BackendTestMAResponseSchema>
 
 // Playlist creation response
 /** @public */

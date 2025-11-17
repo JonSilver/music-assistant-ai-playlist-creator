@@ -1,14 +1,15 @@
+/* eslint-disable max-lines */
 import { useState, useCallback } from "react";
 import { attemptPromise } from "@jfdi/attempt";
 import { useAlerts } from "./useAlerts";
 import { useApp } from "../contexts/AppContext";
 import { useTrackReplace } from "./useTrackReplace";
-import { matchTracksProgressively } from "../services/trackMatching";
-import { generatePlaylist as generatePlaylistService } from "../services/playlistGenerator";
 import {
-    createPlaylist as createPlaylistService,
-    refinePlaylist as refinePlaylistService
-} from "../services/playlistCreator";
+    generatePlaylistViaBackend,
+    createPlaylistViaBackend,
+    refinePlaylistViaBackend,
+    retryTrackViaBackend
+} from "../services/playlistApi";
 import type { TrackMatch } from "@shared/types";
 import { parseProviderKeywords } from "../utils/parseProviderKeywords";
 
@@ -81,24 +82,24 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         }
 
         const providerId = selectedProviderId ?? settings.aiProviders[0].id;
-        const providerConfig = settings.aiProviders.find(p => p.id === providerId);
-
-        if (providerConfig === undefined) {
-            setError("Selected AI provider not found");
-            return;
-        }
 
         setGeneratedTracks([]);
         setGenerating(true);
 
-        const [err, unmatchedTracks] = await attemptPromise(async () =>
-            generatePlaylistService({
-                prompt,
-                trackCount,
-                musicAssistantUrl: settings.musicAssistantUrl,
-                providerConfig,
-                customSystemPrompt: settings.customSystemPrompt
-            })
+        const [err] = await attemptPromise(async () =>
+            generatePlaylistViaBackend(
+                {
+                    prompt,
+                    providerPreference: providerId,
+                    trackCount: parseInt(trackCount, 10)
+                },
+                update => {
+                    // Update tracks progressively as they're matched
+                    if (update.tracks !== undefined) {
+                        setGeneratedTracks(update.tracks);
+                    }
+                }
+            )
         );
 
         setGenerating(false);
@@ -108,18 +109,8 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
             return;
         }
 
-        setGeneratedTracks(unmatchedTracks);
         onHistoryUpdate();
-
-        const providerKeywords = parseProviderKeywords(settings.providerWeights);
-        void matchTracksProgressively(
-            unmatchedTracks,
-            settings.musicAssistantUrl,
-            setGeneratedTracks,
-            setError,
-            providerKeywords
-        );
-    }, [prompt, playlistName, trackCount, settings, selectedProviderId, setError, onHistoryUpdate]);
+    }, [prompt, playlistName, settings, selectedProviderId, trackCount, setError, onHistoryUpdate]);
 
     const createPlaylist = useCallback(async (): Promise<void> => {
         if (generatedTracks.length === 0) {
@@ -135,7 +126,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         setCreating(true);
 
         const [err, result] = await attemptPromise(async () =>
-            createPlaylistService(playlistName, generatedTracks, settings.musicAssistantUrl)
+            createPlaylistViaBackend(playlistName, prompt, generatedTracks)
         );
 
         setCreating(false);
@@ -151,7 +142,8 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         setPrompt("");
         setPlaylistName("");
         setGeneratedTracks([]);
-    }, [generatedTracks, playlistName, settings, setError, setSuccess]);
+        onHistoryUpdate();
+    }, [generatedTracks, playlistName, prompt, settings, setError, setSuccess, onHistoryUpdate]);
 
     const refinePlaylist = useCallback(async (): Promise<void> => {
         if (refinementPrompt.trim().length === 0) {
@@ -159,8 +151,8 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
             return;
         }
 
-        if (settings === null || settings.musicAssistantUrl.trim().length === 0) {
-            setError("Music Assistant URL not configured");
+        if (settings === null) {
+            setError("Settings not loaded");
             return;
         }
 
@@ -170,23 +162,11 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         }
 
         const providerId = selectedProviderId ?? settings.aiProviders[0].id;
-        const providerConfig = settings.aiProviders.find(p => p.id === providerId);
-
-        if (providerConfig === undefined) {
-            setError("Selected AI provider not found");
-            return;
-        }
 
         setRefining(true);
 
-        const [err, unmatchedTracks] = await attemptPromise(async () =>
-            refinePlaylistService(
-                refinementPrompt,
-                generatedTracks,
-                settings.musicAssistantUrl,
-                providerConfig,
-                settings.customSystemPrompt
-            )
+        const [err, refinedTracks] = await attemptPromise(async () =>
+            refinePlaylistViaBackend(refinementPrompt, generatedTracks, providerId)
         );
 
         setRefining(false);
@@ -196,22 +176,14 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
             return;
         }
 
-        setGeneratedTracks(unmatchedTracks);
+        setGeneratedTracks(refinedTracks);
         setRefinementPrompt("");
-
-        const providerKeywords = parseProviderKeywords(settings.providerWeights);
-        void matchTracksProgressively(
-            unmatchedTracks,
-            settings.musicAssistantUrl,
-            setGeneratedTracks,
-            setError,
-            providerKeywords
-        );
     }, [refinementPrompt, generatedTracks, settings, selectedProviderId, setError]);
 
     const retryTrack = useCallback(
         async (index: number): Promise<void> => {
             const track = generatedTracks[index];
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (track === undefined || settings === null) return;
 
             setRetryingTrackIndex(index);
@@ -222,20 +194,24 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
             });
 
             const providerKeywords = parseProviderKeywords(settings.providerWeights);
-            await matchTracksProgressively(
-                [{ ...track, matching: true, matched: false }],
-                settings.musicAssistantUrl,
-                updater => {
-                    setGeneratedTracks(prev => {
-                        const matched = updater([track]);
-                        const updated = [...prev];
-                        updated[index] = matched[0] ?? track;
-                        return updated;
-                    });
-                },
-                setError,
-                providerKeywords
+            const [err, matchedTrack] = await attemptPromise(async () =>
+                retryTrackViaBackend(track, providerKeywords)
             );
+
+            if (err !== undefined) {
+                setError(`Failed to retry track: ${err.message}`);
+                setGeneratedTracks(prev => {
+                    const updated = [...prev];
+                    updated[index] = { ...track, matching: false };
+                    return updated;
+                });
+            } else {
+                setGeneratedTracks(prev => {
+                    const updated = [...prev];
+                    updated[index] = { ...matchedTrack, matching: false };
+                    return updated;
+                });
+            }
 
             setRetryingTrackIndex(null);
         },
@@ -254,9 +230,11 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         setGeneratedTracks(prev => {
             const updated = [...prev];
             const track = updated[trackIndex];
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (track?.maMatches === undefined) return prev;
 
             const selectedMatch = track.maMatches[matchIndex];
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (selectedMatch === undefined) return prev;
 
             updated[trackIndex] = {

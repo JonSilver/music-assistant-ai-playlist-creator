@@ -78,7 +78,7 @@ const parseAIResponse = (content: string): AIPlaylistResponse => {
     const jsonMatch = /```(?:json)?\s*(\{[\s\S]*\})\s*```/.exec(trimmedContent);
     const jsonContent = jsonMatch !== null ? jsonMatch[1] : trimmedContent;
 
-    const [parseErr, data] = attempt(() => JSON.parse(jsonContent));
+    const [parseErr, data] = attempt<unknown>(() => JSON.parse(jsonContent));
     if (parseErr !== undefined) {
         const preview = content.substring(0, 200);
         throw new Error(`Failed to parse AI response as JSON. Response start: ${preview}`);
@@ -94,8 +94,7 @@ const parseAIResponse = (content: string): AIPlaylistResponse => {
 
 const generateWithAnthropic = async (request: AIPlaylistRequest): Promise<AIPlaylistResponse> => {
     const anthropic = new Anthropic({
-        apiKey: request.providerConfig.apiKey,
-        dangerouslyAllowBrowser: true
+        apiKey: request.providerConfig.apiKey
     });
 
     const systemPrompt = buildSystemPrompt(
@@ -139,8 +138,7 @@ const generateWithOpenAICompatible = async (
 ): Promise<AIPlaylistResponse> => {
     const openai = new OpenAI({
         apiKey: request.providerConfig.apiKey,
-        baseURL: request.providerConfig.baseUrl,
-        dangerouslyAllowBrowser: true
+        baseURL: request.providerConfig.baseUrl
     });
 
     const systemPrompt = buildSystemPrompt(
@@ -162,12 +160,8 @@ const generateWithOpenAICompatible = async (
         });
 
         const firstChoice = response.choices[0];
-        if (firstChoice === null || firstChoice === undefined) {
-            throw new Error("No choices in OpenAI response");
-        }
-
         const content = firstChoice.message.content;
-        if (content === null || content === undefined) {
+        if (content === null) {
             throw new Error("No response from OpenAI");
         }
 

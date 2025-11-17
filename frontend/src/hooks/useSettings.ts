@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import type { AIProviderConfig, GetSettingsResponse } from "@shared/types";
-import { MusicAssistantClient } from "../services/musicAssistant";
-import { attemptPromise } from "@jfdi/attempt";
+import { testMusicAssistantConnection } from "../services/playlistApi";
 
 interface TestResults {
     ma?: { success: boolean; error?: string };
@@ -54,17 +53,8 @@ export const useSettings = (
         setTestingMA(true);
         setTestResults({ ...testResults, ma: undefined });
 
-        const [err] = await attemptPromise(async () => {
-            const client = new MusicAssistantClient(musicAssistantUrl);
-            await client.connect();
-            client.disconnect();
-        });
-
-        if (err !== undefined) {
-            setTestResults({ ...testResults, ma: { success: false, error: err.message } });
-        } else {
-            setTestResults({ ...testResults, ma: { success: true } });
-        }
+        const result = await testMusicAssistantConnection(musicAssistantUrl);
+        setTestResults({ ...testResults, ma: result });
 
         setTestingMA(false);
     };

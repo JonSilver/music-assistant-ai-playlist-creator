@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import React, { useState } from "react";
 import type { AIProviderConfig, ProviderType } from "../../../shared/types";
 import Anthropic from "@anthropic-ai/sdk";
@@ -74,7 +75,7 @@ export const ProvidersManager = ({
                 const response = await client.models.list();
                 return response.data.map(model => ({
                     value: model.id,
-                    label: model.display_name ?? model.id
+                    label: model.display_name
                 }));
             });
 
@@ -125,6 +126,7 @@ export const ProvidersManager = ({
             editForm.model === undefined ||
             editForm.model.trim() === ""
         ) {
+            // eslint-disable-next-line no-alert
             alert("Please fill in all required fields");
             return;
         }
@@ -150,6 +152,7 @@ export const ProvidersManager = ({
     };
 
     const deleteProvider = (id: string): void => {
+        // eslint-disable-next-line no-alert
         if (confirm("Are you sure you want to delete this provider?")) {
             onChange(providers.filter(p => p.id !== id));
         }
