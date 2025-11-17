@@ -1,147 +1,208 @@
-# Music Assistant AI Playlist Creator - Operational Instructions
+# Music Assistant AI Playlist Creator - Development Guide
 
-## CRITICAL: Read This First
+## Code Quality Standards
 
-### DO NOT:
-- ❌ **Proliferate code volume** - minimal code only
-- ❌ **Create massive modules** - max 200 lines per file
-- ❌ **Overcomplicate** - use existing APIs
-- ❌ **Add unrequested features**
-- ❌ **Assume** - read docs, then ask
-- ❌ **Use try/catch** - use @jfdi/attempt only
-- ❌ **Use common ports** - 80, 3000, 8080, 8095 reserved
+### Critical Rules
+- **NO code duplication** - Define entities (types/schemas/interfaces) AND functions in ONE place only
+- **Shared types in shared/** - All API contracts live in `shared/types.ts`
+- **Import types correctly** - Use `import type {}` for type-only imports, not `import { type ... }`
+- **Max 200 lines per file** - Break up larger modules
+- **No `any` types** - Explicit types always
+- **Use @jfdi/attempt** - Never use try/catch, always use `attempt` (sync) or `attemptPromise` (async)
+- **Run knip regularly** - Delete unused code/exports immediately
+- **Explicit return types** - All functions must have return types
+- **TypeScript strict mode** - Enforced
 
-### DO:
-- ✅ **Small modules** - single responsibility
-- ✅ **Use Music Assistant search API** - don't write matching logic
-- ✅ **Read documentation first**
-- ✅ **Ask when unclear**
-- ✅ **Verify builds** - both frontend and backend must compile
-- ✅ **Run knip regularly** - prevent accumulation of unused code/exports
-
-## Code Standards
-
-### TypeScript Rules
+### Error Handling
 ```typescript
-// Strict mode: true
-// No any types
-// Explicit return types required
-// Max 200 lines per file
-
-// ✅ Error handling - ONLY way allowed
+// ✅ Async operations
 const [err, result] = await attemptPromise(async () => fetchData())
 if (err !== undefined) {
   handleError(err)
   return
 }
 
-// ❌ BANNED - never use try/catch
-try { const result = await fetchData() } catch (err) { }
-```
-
-### Prettier Config (Enforced)
-```json
-{
-  "singleQuote": false,
-  "trailingComma": "none",
-  "semi": true,
-  "printWidth": 100,
-  "tabWidth": 4
+// ✅ Sync operations
+const [err, result] = attempt(() => JSON.parse(data))
+if (err !== undefined) {
+  handleError(err)
+  return
 }
+
+// ❌ BANNED
+try { ... } catch { ... }
 ```
 
-### React Rules
-- Functional components only
-- `React.JSX.Element` return type
-- `void` for fire-and-forget async: `void myAsyncFunction()`
-- React Context for state (no prop drilling)
-- Proper dependency arrays
+### Shared Types Pattern
+```typescript
+// shared/types.ts - Single source of truth
+export const FooSchema = z.object({ ... })
+export type Foo = z.infer<typeof FooSchema>
 
-## Project Architecture
+// Backend - uses for validation + response typing
+import { FooSchema } from "@shared/types.js"
+import type { Foo } from "@shared/types.js"
 
-**Single Container:** Express serves static React frontend + API
-**Frontend:** React 19.2 + Vite + TypeScript + Tailwind + daisyUI
-**Backend:** Express + SQLite (settings/history/presets only)
-**AI:** Direct browser calls to Claude/OpenAI APIs
-**Music Assistant:** Direct browser WebSocket connection
-
-### Data Flow
+// Frontend - uses for API typing
+import type { Foo } from "@shared/types"
 ```
-User → Frontend → Music Assistant WS (get favorites)
-     → Frontend → AI API (generate tracks)
-     → Frontend → Music Assistant WS (search/match)
-     → Frontend → Music Assistant WS (create playlist)
+
+### Import Syntax
+```typescript
+// ✅ Correct
+import type { Foo, Bar } from "./types.js"
+import { schema, function } from "./file.js"
+
+// ❌ Wrong
+import { type Foo, type Bar } from "./types.js"
+```
+
+## Architecture
+
+### Tech Stack
+- **Frontend:** React 19 + TypeScript + Vite + Tailwind + daisyUI
+- **Backend:** Express + TypeScript + SQLite
+- **Deployment:** Single Docker container (port 9876)
+- **AI Providers:** Claude (Anthropic), OpenAI (configurable endpoints)
+- **Music Assistant:** WebSocket client
+
+### Request Flow
+```
+User → Frontend UI
+     → Backend API (Express)
+        → AI Provider (track suggestions)
+        → Music Assistant WebSocket (search/match/create)
+        → SQLite (settings/history)
+     ← Server-Sent Events (progress updates)
+     ← JSON responses
 ```
 
 ### Directory Structure
 ```
 frontend/src/
-  contexts/        # React Context
-  services/        # API clients (use @jfdi/attempt)
   components/      # React components
+  contexts/        # React Context (state management)
+  hooks/           # Custom React hooks
+  services/        # Backend API clients
 
 backend/src/
-  routes/          # Express routes
-  services/        # MA WebSocket, AI clients
+  routes/          # Express route handlers
+  services/        # Business logic
   db/              # SQLite schema
 
 shared/
-  types.ts         # Shared types
-  constants/       # Organized constants
+  types.ts         # ALL shared types/schemas
+  constants/       # Shared constants
+  settings-schema.ts
 ```
+
+## Key Backend Services
+
+- **playlistGenerator.ts** - Main playlist generation job with SSE progress updates
+- **playlistRefine.ts** - Refine existing playlist, replace individual tracks
+- **trackMatching.ts** - Batch track matching with retry logic (3 attempts, exponential backoff)
+- **musicAssistant.ts** - WebSocket client for Music Assistant API
+- **ai.ts** - AI provider clients (Claude, OpenAI, custom endpoints)
+- **playlistCreator.ts** - Create playlists in Music Assistant
+- **jobStore.ts** - In-memory job state with SSE listeners
+
+## Key Frontend Services
+
+- **playlistApi.ts** - Backend API client (all endpoints)
+- **usePlaylist.ts** - Main playlist generation hook
+- **useApp.ts** - Global app state (settings, providers)
 
 ## Music Assistant Integration
 
-**Base URL:** User-configured (e.g., `http://192.168.1.100:8095`)
-**WebSocket:** `ws://<server_ip>:8095/ws`
-**Auth:** None (local network)
-
-**Use These APIs:**
-- `searchTracks(query, limit)` - DON'T write matching logic
-- `getFavoriteArtists()` - for AI context
-- `createPlaylist(name, provider)`
-- `addTracksToPlaylist(playlistId, trackUris)`
-
-**Docs:** `http://<MA_SERVER_IP>:8095/api-docs`
+- **WebSocket:** `ws://<server>:8095/ws`
+- **Search API:** Returns max 5 results per query
+- **Retry Logic:** 3 attempts with exponential backoff (1s, 2s delay)
+- **Batch Processing:** Matches tracks in batches of 10, 100ms delay between batches
+- **Provider Keywords:** Optional filtering for preferred music providers
 
 ## AI Integration
 
-**Providers:** Claude (Anthropic), OpenAI
-**Keys:** User-provided via UI
-**Claude Models:** claude-3-5-sonnet-20241022, claude-3-7-sonnet-20250219, claude-opus-4-1-20250805
-**OpenAI Models:** gpt-4, gpt-4-turbo-preview, gpt-4o, gpt-4o-mini
-**Custom Endpoints:** OpenAI base URL configurable
+- **Providers:** Claude (Anthropic), OpenAI
+- **Track Count:** User-configurable (default 25)
+- **System Prompt:** Customizable per-installation
+- **Response Format:** JSON with playlistName + array of {title, artist, album}
 
-**Response Format:**
-```json
-{
-  "tracks": [
-    { "title": "Track", "artist": "Artist", "album": "Album (optional)" }
-  ]
+## Common Patterns
+
+### Backend Response Construction
+```typescript
+// Always use typed variable
+const response: BackendFooResponse = {
+  success: true,
+  data: result
 }
+res.json(response)
+
+// Never inline
+res.json({ success: true, data: result })  // Wrong!
 ```
 
-## Code Quality & Maintenance
+### Frontend API Calls
+```typescript
+const [err, result] = await attemptPromise(async () => {
+  const response = await fetch(url, options)
+  if (!response.ok) {
+    throw new Error(response.statusText)
+  }
+  return response.json() as Promise<BackendFooResponse>
+})
+if (err !== undefined) {
+  setError(err.message)
+  return
+}
+// Use result
+```
 
-### Knip - Unused Code Detection
+### Track Initialization
+```typescript
+// ALL tracks MUST start with matching: true
+const tracks: TrackMatch[] = suggestions.map(s => ({
+  suggestion: s,
+  matched: false,
+  matching: true  // Critical - prevents "NOT FOUND" flash
+}))
+```
 
-Run `npm run knip` before commits to catch unused code:
+### React Patterns
+- Functional components only (React.FC)
+- `void` for fire-and-forget async: `void myAsyncFunction()`
+- React Context for state (no prop drilling)
+- Proper dependency arrays in useEffect/useCallback
 
-- Detects unused exports, types, dependencies, and files
-- Shared library exports used cross-workspace must be tagged `/** @public */`
-- If knip reports something as unused, it probably is - delete it
+## Common Mistakes to Avoid
 
-### Common Mistakes
+1. **Duplicate type definitions** - Same interface in frontend + backend
+2. **Inline response objects** - Not using typed variables
+3. **Wrong import syntax** - `import { type Foo }` instead of `import type { Foo }`
+4. **Initializing with `matching: false`** - Causes UI to show "NOT FOUND" before matching starts
+5. **Not retrying on 0 results** - Music Assistant search can return empty on first try
+6. **Using try/catch** - Banned, use @jfdi/attempt
+7. **Letting unused code accumulate** - Run knip regularly
+8. **Forgetting `/** @public */`** - Required for cross-workspace exports
 
-1. Writing manual track matching (use MA search API)
-2. Multi-container setups (single container only)
-3. Fake metrics/confidence scores (we don't have them)
-4. Port conflicts (avoid 80, 3000, 8080, 8095)
-5. Adding player/export/analytics features (out of scope)
-6. Letting unused code accumulate (run knip regularly)
+## Development Workflow
+
+1. `npm run build` - Verify both frontend and backend compile
+2. `npm run lint` - Fix all linting errors
+3. `npm run knip` - Check for unused code/exports
+4. Test full flow: generate → match → refine → create playlist
+5. Verify SSE progress updates display correctly in UI
 
 ## Project Scope
 
-**This is:** Simple home server app, single-user, local network, Docker deployment (port 9876)
+**This is:**
+- Simple home server app
+- Single-user, local network
+- Docker deployment
+- No authentication required
 
-**This is NOT:** Enterprise/multi-tenant, a music player, requiring authentication
+**This is NOT:**
+- Enterprise/multi-tenant system
+- A music player
+- Requiring user authentication
+- Supporting remote/cloud deployment
