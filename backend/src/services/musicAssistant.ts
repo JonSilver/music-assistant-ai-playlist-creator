@@ -12,7 +12,7 @@ import {
 import type { MATrack } from "../../../shared/types.js";
 
 interface MAResponse {
-    message_id: string;
+    message_id?: string;
     result?: unknown;
     error?: {
         error_code: string;
@@ -96,7 +96,8 @@ export class MusicAssistantClient {
             return;
         }
 
-        if (message.message_id.length === 0) {
+        // MA can send messages without message_id (events, notifications, etc.)
+        if (message.message_id === undefined || message.message_id.length === 0) {
             return;
         }
 

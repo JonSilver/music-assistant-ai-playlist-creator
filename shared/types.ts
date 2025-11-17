@@ -46,7 +46,7 @@ export const MATrackSchema = z.object({
   uri: z.string(),
   name: z.string(),
   artists: z.array(z.object({ name: z.string() })),
-  album: z.object({ name: z.string() }).optional(),
+  album: z.object({ name: z.string() }).nullable().optional(),
   provider: z.string(),
   item_id: z.string()
 })
@@ -72,6 +72,43 @@ export const CreatePlaylistRequestSchema = z.object({
   providerId: z.string().optional(),
   trackCount: z.number().optional()
 })
+
+// Backend API schemas
+export const BackendGeneratePlaylistRequestSchema = z.object({
+  prompt: z.string().min(1),
+  providerPreference: z.string().optional(),
+  webhookUrl: z.string().optional()
+})
+export type BackendGeneratePlaylistRequest = z.infer<typeof BackendGeneratePlaylistRequestSchema>
+
+export const BackendCreatePlaylistRequestSchema = z.object({
+  playlistName: z.string().min(1),
+  prompt: z.string(),
+  tracks: z.array(TrackMatchSchema)
+})
+export type BackendCreatePlaylistRequest = z.infer<typeof BackendCreatePlaylistRequestSchema>
+
+export const BackendRefinePlaylistRequestSchema = z.object({
+  refinementPrompt: z.string().min(1),
+  currentTracks: z.array(TrackMatchSchema),
+  providerPreference: z.string().optional()
+})
+export type BackendRefinePlaylistRequest = z.infer<typeof BackendRefinePlaylistRequestSchema>
+
+export const BackendRetryTrackRequestSchema = z.object({
+  track: TrackMatchSchema,
+  providerKeywords: z.array(z.string()).optional()
+})
+export type BackendRetryTrackRequest = z.infer<typeof BackendRetryTrackRequestSchema>
+
+export const BackendReplaceTrackRequestSchema = z.object({
+  trackToReplace: TrackMatchSchema,
+  currentTracks: z.array(TrackMatchSchema),
+  originalPrompt: z.string(),
+  playlistName: z.string(),
+  providerPreference: z.string().optional()
+})
+export type BackendReplaceTrackRequest = z.infer<typeof BackendReplaceTrackRequestSchema>
 
 // Playlist creation response
 /** @public */

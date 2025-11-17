@@ -1,5 +1,4 @@
 import type { Router, Request, Response } from "express";
-import { z } from "zod";
 import { randomUUID } from "crypto";
 import { attemptPromise } from "@jfdi/attempt";
 import type { PlaylistDatabase } from "../db/schema.js";
@@ -10,43 +9,18 @@ import { refinePlaylist, replaceTrack } from "../services/playlistRefine.js";
 import { matchTrack } from "../services/trackMatching.js";
 import { MusicAssistantClient } from "../services/musicAssistant.js";
 import { settingsUtils } from "../../../shared/settings-schema.js";
-import { TrackMatchSchema } from "../../../shared/types.js";
-
-const GeneratePlaylistRequestSchema = z.object({
-    prompt: z.string().min(1),
-    providerPreference: z.string().optional(),
-    webhookUrl: z.string().optional()
-});
-
-const CreatePlaylistRequestSchema = z.object({
-    playlistName: z.string().min(1),
-    prompt: z.string(),
-    tracks: z.array(TrackMatchSchema)
-});
-
-const RefinePlaylistRequestSchema = z.object({
-    refinementPrompt: z.string().min(1),
-    currentTracks: z.array(TrackMatchSchema),
-    providerPreference: z.string().optional()
-});
-
-const RetryTrackRequestSchema = z.object({
-    track: TrackMatchSchema,
-    providerKeywords: z.array(z.string()).optional()
-});
-
-const ReplaceTrackRequestSchema = z.object({
-    trackToReplace: TrackMatchSchema,
-    currentTracks: z.array(TrackMatchSchema),
-    originalPrompt: z.string(),
-    playlistName: z.string(),
-    providerPreference: z.string().optional()
-});
+import {
+    BackendGeneratePlaylistRequestSchema,
+    BackendCreatePlaylistRequestSchema,
+    BackendRefinePlaylistRequestSchema,
+    BackendRetryTrackRequestSchema,
+    BackendReplaceTrackRequestSchema
+} from "../../../shared/types.js";
 
 export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void => {
     // POST /api/playlists/generate - Start playlist generation
     router.post("/playlists/generate", (req: Request, res: Response) => {
-        const parseResult = GeneratePlaylistRequestSchema.safeParse(req.body);
+        const parseResult = BackendGeneratePlaylistRequestSchema.safeParse(req.body);
         if (!parseResult.success) {
             res.status(400).json({
                 error: "Invalid request",
@@ -166,11 +140,13 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
 
     // POST /api/playlists/create - Create playlist in Music Assistant
     router.post("/playlists/create", async (req: Request, res: Response) => {
-        const parseResult = CreatePlaylistRequestSchema.safeParse(req.body);
+        const parseResult = BackendCreatePlaylistRequestSchema.safeParse(req.body);
         if (!parseResult.success) {
+            console.error("[Create Playlist] Validation error:", JSON.stringify(parseResult.error.format(), null, 2));
+            console.error("[Create Playlist] Sample track data:", JSON.stringify(req.body.tracks?.[0], null, 2));
             res.status(400).json({
                 error: "Invalid request",
-                details: parseResult.error.message
+                details: parseResult.error.format()
             });
             return;
         }
@@ -205,7 +181,7 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
 
     // POST /api/playlists/refine - Refine existing playlist with AI
     router.post("/playlists/refine", async (req: Request, res: Response) => {
-        const parseResult = RefinePlaylistRequestSchema.safeParse(req.body);
+        const parseResult = BackendRefinePlaylistRequestSchema.safeParse(req.body);
         if (!parseResult.success) {
             res.status(400).json({
                 error: "Invalid request",
@@ -251,7 +227,7 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
 
     // POST /api/playlists/tracks/retry - Retry matching a single track
     router.post("/playlists/tracks/retry", async (req: Request, res: Response) => {
-        const parseResult = RetryTrackRequestSchema.safeParse(req.body);
+        const parseResult = BackendRetryTrackRequestSchema.safeParse(req.body);
         if (!parseResult.success) {
             res.status(400).json({
                 error: "Invalid request",
@@ -287,7 +263,7 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
 
     // POST /api/playlists/tracks/replace - Replace a track with AI suggestion
     router.post("/playlists/tracks/replace", async (req: Request, res: Response) => {
-        const parseResult = ReplaceTrackRequestSchema.safeParse(req.body);
+        const parseResult = BackendReplaceTrackRequestSchema.safeParse(req.body);
         if (!parseResult.success) {
             res.status(400).json({
                 error: "Invalid request",
