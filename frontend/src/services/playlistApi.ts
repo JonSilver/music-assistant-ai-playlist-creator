@@ -1,37 +1,21 @@
 /* eslint-disable max-lines */
 import { attemptPromise, attempt } from "@jfdi/attempt";
 import { API_BASE_PATH, API_ENDPOINTS } from "@shared/constants";
-import type { TrackMatch } from "@shared/types";
-
-interface GeneratePlaylistRequest {
-    prompt: string;
-    providerPreference?: string;
-    trackCount?: number;
-}
-
-interface GeneratePlaylistResponse {
-    jobId: string;
-}
-
-interface JobProgressUpdate {
-    jobId: string;
-    status:
-        | "pending"
-        | "generating_ai"
-        | "matching_tracks"
-        | "creating_playlist"
-        | "completed"
-        | "failed";
-    tracks?: TrackMatch[];
-    totalTracks?: number;
-    matchedTracks?: number;
-    playlistUrl?: string;
-    error?: string;
-}
+import type {
+    BackendGeneratePlaylistRequest,
+    BackendGeneratePlaylistResponse,
+    BackendJobProgressUpdate,
+    BackendCreatePlaylistResponse,
+    BackendRefinePlaylistResponse,
+    BackendRetryTrackResponse,
+    BackendReplaceTrackResponse,
+    BackendTestMAResponse,
+    TrackMatch
+} from "@shared/types";
 
 export const generatePlaylistViaBackend = async (
-    request: GeneratePlaylistRequest,
-    onProgress: (update: JobProgressUpdate) => void
+    request: BackendGeneratePlaylistRequest,
+    onProgress: (update: BackendJobProgressUpdate) => void
 ): Promise<void> => {
     // Start generation
     const backendUrl =
@@ -52,7 +36,7 @@ export const generatePlaylistViaBackend = async (
             throw new Error(`Failed to start generation: ${response.statusText}`);
         }
 
-        return response.json() as Promise<GeneratePlaylistResponse>;
+        return response.json() as Promise<BackendGeneratePlaylistResponse>;
     });
 
     if (startErr !== undefined) {
@@ -77,7 +61,7 @@ export const generatePlaylistViaBackend = async (
                 return;
             }
 
-            const update = data as JobProgressUpdate;
+            const update = data as BackendJobProgressUpdate;
             onProgress(update);
 
             if (update.status === "completed") {
@@ -101,7 +85,7 @@ export const createPlaylistViaBackend = async (
     playlistName: string,
     prompt: string,
     tracks: TrackMatch[]
-): Promise<{ playlistId: string; playlistUrl: string; tracksAdded: number }> => {
+): Promise<BackendCreatePlaylistResponse> => {
     const backendUrl =
         import.meta.env.MODE === "development"
             ? `http://localhost:3333${API_BASE_PATH}`
@@ -123,11 +107,7 @@ export const createPlaylistViaBackend = async (
             throw new Error(errorData.error ?? response.statusText);
         }
 
-        return response.json() as Promise<{
-            playlistId: string;
-            playlistUrl: string;
-            tracksAdded: number;
-        }>;
+        return response.json() as Promise<BackendCreatePlaylistResponse>;
     });
 
     if (err !== undefined) {
@@ -163,7 +143,7 @@ export const refinePlaylistViaBackend = async (
             throw new Error(errorData.error ?? response.statusText);
         }
 
-        return response.json() as Promise<{ tracks: TrackMatch[] }>;
+        return response.json() as Promise<BackendRefinePlaylistResponse>;
     });
 
     if (err !== undefined) {
@@ -198,7 +178,7 @@ export const retryTrackViaBackend = async (
             throw new Error(errorData.error ?? response.statusText);
         }
 
-        return response.json() as Promise<{ track: TrackMatch }>;
+        return response.json() as Promise<BackendRetryTrackResponse>;
     });
 
     if (err !== undefined) {
@@ -242,7 +222,7 @@ export const replaceTrackViaBackend = async (
             throw new Error(errorData.error ?? response.statusText);
         }
 
-        return response.json() as Promise<{ track: TrackMatch }>;
+        return response.json() as Promise<BackendReplaceTrackResponse>;
     });
 
     if (err !== undefined) {
@@ -254,7 +234,7 @@ export const replaceTrackViaBackend = async (
 
 export const testMusicAssistantConnection = async (
     musicAssistantUrl: string
-): Promise<{ success: boolean; error?: string }> => {
+): Promise<BackendTestMAResponse> => {
     const backendUrl =
         import.meta.env.MODE === "development"
             ? `http://localhost:3333${API_BASE_PATH}`
@@ -273,7 +253,7 @@ export const testMusicAssistantConnection = async (
             throw new Error(response.statusText);
         }
 
-        return response.json() as Promise<{ success: boolean; error?: string }>;
+        return response.json() as Promise<BackendTestMAResponse>;
     });
 
     if (err !== undefined) {

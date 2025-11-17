@@ -16,6 +16,14 @@ import {
     BackendRetryTrackRequestSchema,
     BackendReplaceTrackRequestSchema
 } from "../../../shared/types.js";
+import type {
+    BackendGeneratePlaylistResponse,
+    BackendCreatePlaylistResponse,
+    BackendRefinePlaylistResponse,
+    BackendRetryTrackResponse,
+    BackendReplaceTrackResponse,
+    BackendTestMAResponse
+} from "../../../shared/types.js";
 
 export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void => {
     // POST /api/playlists/generate - Start playlist generation
@@ -64,7 +72,8 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
             console.error(`[Job ${jobId}] Unhandled error:`, err);
         });
 
-        res.json({ jobId });
+        const response: BackendGeneratePlaylistResponse = { jobId };
+        res.json(response);
     });
 
     // GET /api/playlists/jobs/:jobId - Get job status (for polling)
@@ -172,12 +181,13 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
         // Save to history
         db.addPromptHistory(prompt, playlistName, result.tracksAdded);
 
-        res.json({
+        const response: BackendCreatePlaylistResponse = {
             success: true,
             playlistId: result.playlistId,
             playlistUrl: result.playlistUrl,
             tracksAdded: result.tracksAdded
-        });
+        };
+        res.json(response);
     });
 
     // POST /api/playlists/refine - Refine existing playlist with AI
@@ -223,7 +233,8 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
             return;
         }
 
-        res.json({ tracks: refinedTracks });
+        const response: BackendRefinePlaylistResponse = { tracks: refinedTracks };
+        res.json(response);
     });
 
     // POST /api/playlists/tracks/retry - Retry matching a single track
@@ -259,7 +270,8 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
             return;
         }
 
-        res.json({ track: matchedTrack });
+        const response: BackendRetryTrackResponse = { track: matchedTrack };
+        res.json(response);
     });
 
     // POST /api/playlists/tracks/replace - Replace a track with AI suggestion
@@ -308,7 +320,8 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
             return;
         }
 
-        res.json({ track: replacementTrack });
+        const response: BackendReplaceTrackResponse = { track: replacementTrack };
+        res.json(response);
     });
 
     // POST /api/playlists/test-ma - Test Music Assistant connection
@@ -327,10 +340,12 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
         });
 
         if (err !== undefined) {
-            res.json({ success: false, error: err.message });
+            const response: BackendTestMAResponse = { success: false, error: err.message };
+            res.json(response);
             return;
         }
 
-        res.json({ success: true });
+        const response: BackendTestMAResponse = { success: true };
+        res.json(response);
     });
 };
