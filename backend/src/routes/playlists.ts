@@ -152,17 +152,18 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
     router.post("/playlists/create", async (req: Request, res: Response) => {
         const parseResult = BackendCreatePlaylistRequestSchema.safeParse(req.body);
         if (!parseResult.success) {
+            const requestBody = req.body as { tracks?: unknown[] };
             console.error(
                 "[Create Playlist] Validation error:",
-                JSON.stringify(parseResult.error.format(), null, 2)
+                JSON.stringify(parseResult.error.issues, null, 2)
             );
             console.error(
                 "[Create Playlist] Sample track data:",
-                JSON.stringify(req.body.tracks?.[0], null, 2)
+                JSON.stringify(requestBody.tracks?.[0], null, 2)
             );
             res.status(400).json({
                 error: "Invalid request",
-                details: parseResult.error.format()
+                details: parseResult.error.issues
             });
             return;
         }

@@ -110,7 +110,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         }
 
         onHistoryUpdate();
-    }, [prompt, playlistName, settings, selectedProviderId, setError, onHistoryUpdate]);
+    }, [prompt, playlistName, settings, selectedProviderId, trackCount, setError, onHistoryUpdate]);
 
     const createPlaylist = useCallback(async (): Promise<void> => {
         if (generatedTracks.length === 0) {
