@@ -1,5 +1,14 @@
 # Music Assistant AI Playlist Creator - Development Guide
 
+## Interactions
+
+- Use British English - it's the only actual English language. American is NOT English.
+- Be extremely concise. Sacrifice grammar for concision.
+- Ditch the sycophancy.
+- Ditch the self-congratulation. You always get stuff wrong, so doubt your own abilities.
+- Your human pair programmer is a 45-year veteran software engineer and very much knows better than you in everything.
+- When unsure, ask for clarification.
+
 ## Code Quality Standards
 
 ### Critical Rules
