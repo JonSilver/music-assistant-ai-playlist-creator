@@ -22,9 +22,10 @@ export const matchTrack = async (
         const attemptDuration = performance.now() - attemptStart;
         const attemptDurationMs = Math.round(attemptDuration);
 
-        if (err !== undefined) {
+        if (err !== undefined || results.length === 0) {
+            const reason = err !== undefined ? err.message : "No results";
             console.warn(
-                `[${new Date().toISOString()}] [MATCH] Attempt ${attempt}/3 failed after ${attemptDurationMs}ms: ${err.message}`
+                `[${new Date().toISOString()}] [MATCH] Attempt ${attempt}/3 failed after ${attemptDurationMs}ms: ${reason}`
             );
 
             if (attempt < 3) {
@@ -36,19 +37,7 @@ export const matchTrack = async (
             const totalDurationMs = Math.round(totalDuration);
             console.error(
                 `[${new Date().toISOString()}] [MATCH] ❌ Failed after 3 attempts (${totalDurationMs}ms total): "${suggestion.title}" by "${suggestion.artist}"`,
-                err.message
-            );
-            return {
-                suggestion,
-                matched: false
-            };
-        }
-
-        if (results.length === 0) {
-            const totalDuration = performance.now() - startTime;
-            const totalDurationMs = Math.round(totalDuration);
-            console.warn(
-                `[${new Date().toISOString()}] [MATCH] ❌ No results after ${totalDurationMs}ms for "${suggestion.title}" by "${suggestion.artist}"`
+                reason
             );
             return {
                 suggestion,

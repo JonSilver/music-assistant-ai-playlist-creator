@@ -56,11 +56,11 @@ export const generatePlaylistJob = async (
             throw new Error(`AI generation failed: ${aiErr.message}`);
         }
 
-        // Initialize tracks
+        // Initialize tracks - all marked as matching since we'll process them all
         const initialTracks: TrackMatch[] = aiResult.tracks.map(suggestion => ({
             suggestion,
             matched: false,
-            matching: false
+            matching: true
         }));
 
         jobStore.updateJob(jobId, {

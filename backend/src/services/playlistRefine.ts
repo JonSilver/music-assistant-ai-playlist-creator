@@ -48,11 +48,11 @@ export const refinePlaylist = async (
         throw new Error(`Failed to refine playlist: ${aiErr.message}`);
     }
 
-    // Initialize tracks with unmatched state
+    // Initialize tracks - all marked as matching since we'll process them all
     const newTracks: TrackMatch[] = aiResult.tracks.map(suggestion => ({
         suggestion,
         matched: false,
-        matching: false
+        matching: true
     }));
 
     // Use the same matching logic as main generation
@@ -128,7 +128,7 @@ ${existingTracks}`;
     const replacementTracks: TrackMatch[] = [{
         suggestion: aiResult.tracks[0],
         matched: false,
-        matching: false
+        matching: true
     }];
 
     // Use the same matching logic as main generation
