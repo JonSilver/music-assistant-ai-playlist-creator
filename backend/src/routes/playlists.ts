@@ -89,6 +89,9 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
         res.json({
             jobId: job.jobId,
             status: job.status,
+            tracks: job.tracks,
+            totalTracks: job.totalTracks,
+            matchedTracks: job.matchedTracks,
             playlistUrl: job.playlistUrl,
             error: job.error
         });

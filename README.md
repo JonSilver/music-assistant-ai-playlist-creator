@@ -320,6 +320,48 @@ automation:
 
 **Custom Scripts**: Any HTTP client can integrate via the REST API.
 
+### PowerShell CLI
+
+A PowerShell script is provided for command-line playlist generation:
+
+```powershell
+# Basic usage
+.\scripts\New-AIPlaylist.ps1 -Prompt "Upbeat 80s rock for a road trip" -TrackCount 25
+
+# Specify playlist name
+.\scripts\New-AIPlaylist.ps1 `
+    -Prompt "Relaxing jazz for dinner" `
+    -PlaylistName "Evening Jazz" `
+    -TrackCount 15
+
+# Generate without creating (preview only)
+.\scripts\New-AIPlaylist.ps1 `
+    -Prompt "Workout mix" `
+    -NoCreate
+
+# Custom server and AI provider
+.\scripts\New-AIPlaylist.ps1 `
+    -ServerUrl "http://192.168.1.100:9876" `
+    -Prompt "Study music" `
+    -ProviderPreference "claude-sonnet"
+
+# Run test script
+.\scripts\Test-AIPlaylist.ps1
+```
+
+**Parameters**:
+- `-ServerUrl`: API server URL (default: `http://localhost:9876`)
+- `-Prompt`: Natural language playlist description (required)
+- `-TrackCount`: Number of tracks (default: 20)
+- `-PlaylistName`: Playlist name (defaults to prompt text)
+- `-ProviderPreference`: AI provider ID (optional)
+- `-WebhookUrl`: Webhook for async completion (optional)
+- `-NoCreate`: Generate tracks without creating playlist
+- `-PollInterval`: Seconds between status polls (default: 2)
+- `-Timeout`: Max wait time in seconds (default: 300)
+
+**Output**: Returns a PowerShell object with job details, playlist URL, and track information.
+
 ### Webhook Integration
 
 When providing a `webhookUrl` in the generation request:
@@ -387,6 +429,10 @@ To use a different location, edit `DATA_PATH` in your `.env` file.
 │
 ├── shared/                       # Shared TypeScript types
 │   └── types.ts
+│
+├── scripts/                      # Integration scripts
+│   ├── New-AIPlaylist.ps1       # PowerShell CLI for playlist generation
+│   └── Test-AIPlaylist.ps1      # Test script for API
 │
 ├── .github/
 │   └── workflows/
