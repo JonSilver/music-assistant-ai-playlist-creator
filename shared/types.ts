@@ -31,6 +31,7 @@ export const TrackSuggestionSchema = z.object({
   artist: z.string(),
   album: z.string().optional()
 })
+/** @public */
 export type TrackSuggestion = z.infer<typeof TrackSuggestionSchema>
 
 // AI Response
