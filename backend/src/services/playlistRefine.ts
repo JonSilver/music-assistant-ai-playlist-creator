@@ -56,9 +56,14 @@ export const refinePlaylist = async (
     }));
 
     // Use the same matching logic as main generation
-    await matchTracksProgressively(newTracks, maClient, (index, updatedTrack) => {
-        newTracks[index] = updatedTrack;
-    }, []);
+    await matchTracksProgressively(
+        newTracks,
+        maClient,
+        (index, updatedTrack) => {
+            newTracks[index] = updatedTrack;
+        },
+        []
+    );
 
     maClient.disconnect();
 
@@ -125,16 +130,23 @@ ${existingTracks}`;
     }
 
     // Initialize and match the replacement track
-    const replacementTracks: TrackMatch[] = [{
-        suggestion: aiResult.tracks[0],
-        matched: false,
-        matching: true
-    }];
+    const replacementTracks: TrackMatch[] = [
+        {
+            suggestion: aiResult.tracks[0],
+            matched: false,
+            matching: true
+        }
+    ];
 
     // Use the same matching logic as main generation
-    await matchTracksProgressively(replacementTracks, maClient, (index, updatedTrack) => {
-        replacementTracks[index] = updatedTrack;
-    }, []);
+    await matchTracksProgressively(
+        replacementTracks,
+        maClient,
+        (index, updatedTrack) => {
+            replacementTracks[index] = updatedTrack;
+        },
+        []
+    );
 
     maClient.disconnect();
 
