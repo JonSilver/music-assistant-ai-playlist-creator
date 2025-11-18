@@ -7,9 +7,10 @@ interface NavbarProps {
 
 export const Navbar = ({ onShowHistory, onShowSettings }: NavbarProps): React.JSX.Element => (
     <div className="navbar bg-base-100 shadow-lg">
-        <div className="flex-1">
-            <div className="btn btn-ghost text-xl flex flex-col items-start">
-                <span>AI Playlist Creator</span>
+        <div className="flex-1 flex items-start gap-3 pl-4">
+            <img src="/logo.png" alt="Logo" className="h-12" />
+            <div className="flex flex-col items-start">
+                <span className="text-xl">AI Playlist Creator</span>
                 <span className="text-xs opacity-60 font-normal">for Music Assistant</span>
             </div>
         </div>
