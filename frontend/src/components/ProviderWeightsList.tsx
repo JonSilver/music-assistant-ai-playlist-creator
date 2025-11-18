@@ -60,7 +60,7 @@ export const ProviderWeightsList: React.FC<IProviderWeightsListProps> = ({
             <div className="flex gap-2">
                 <input
                     type="text"
-                    placeholder="Enter provider keyword (e.g., local, spotify, tidal)"
+                    placeholder="Enter a provider keyword (e.g., library, spotify, apple)"
                     className="input input-bordered flex-1"
                     value={inputValue}
                     onChange={e => setInputValue(e.target.value)}
@@ -122,12 +122,6 @@ export const ProviderWeightsList: React.FC<IProviderWeightsListProps> = ({
                     ))}
                 </div>
             )}
-
-            <div className="text-xs opacity-60 space-y-1">
-                <p>• Keywords are matched case-insensitively anywhere in the provider name</p>
-                <p>• If a provider matches multiple keywords, their weights are summed</p>
-                <p>• Providers without keyword matches appear in their original order</p>
-            </div>
         </div>
     );
 };
