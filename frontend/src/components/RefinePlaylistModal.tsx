@@ -1,4 +1,5 @@
 import React from "react";
+import { LoadingButton } from "./LoadingButton";
 
 interface IRefinePlaylistModalProps {
     show: boolean;
@@ -52,14 +53,14 @@ export const RefinePlaylistModal: React.FC<IRefinePlaylistModalProps> = ({
                     <button className="btn btn-ghost" onClick={handleClose}>
                         Cancel
                     </button>
-                    <button
-                        className="btn btn-primary"
+                    <LoadingButton
+                        loading={refining}
                         onClick={onRefine}
-                        disabled={refining || refinementPrompt.trim().length === 0}
+                        disabled={refinementPrompt.trim().length === 0}
+                        loadingText="Refining..."
                     >
-                        {refining && <span className="loading loading-spinner"></span>}
-                        {refining ? "Refining..." : "Refine Playlist"}
-                    </button>
+                        Refine Playlist
+                    </LoadingButton>
                 </div>
             </div>
         </div>

@@ -1,6 +1,7 @@
+import { MATCH_THRESHOLDS, TRACK_FILTERS, UI_LABELS } from "@shared/constants";
 import React from "react";
 import type { TrackMatch } from "../../../shared/types";
-import { UI_LABELS, TRACK_FILTERS, MATCH_THRESHOLDS } from "@shared/constants";
+import { LoadingButton } from "./LoadingButton";
 import { TrackRow } from "./TrackRow";
 
 interface IGeneratedTracksDisplayProps {
@@ -153,20 +154,28 @@ export const GeneratedTracksDisplay: React.FC<IGeneratedTracksDisplayProps> = ({
                 </div>
 
                 <div className="card-actions justify-end mt-4">
-                    <button className="btn btn-outline" onClick={onClear}>
+                    <button
+                        className="btn btn-outline"
+                        onClick={onClear}
+                        disabled={!hasMatchedTracks || isMatching}
+                    >
                         {UI_LABELS.CLEAR}
                     </button>
-                    <button className="btn btn-secondary" onClick={onRefine}>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={onRefine}
+                        disabled={!hasMatchedTracks || isMatching}
+                    >
                         {UI_LABELS.REFINE}
                     </button>
-                    <button
-                        className="btn btn-primary"
+                    <LoadingButton
+                        loading={creating}
                         onClick={onCreate}
-                        disabled={creating || !hasMatchedTracks || isMatching}
+                        disabled={!hasMatchedTracks || isMatching}
+                        loadingText={UI_LABELS.CREATING}
                     >
-                        {creating && <span className="loading loading-spinner"></span>}
-                        {creating ? UI_LABELS.CREATING : UI_LABELS.CREATE}
-                    </button>
+                        {UI_LABELS.CREATE}
+                    </LoadingButton>
                 </div>
             </div>
         </div>

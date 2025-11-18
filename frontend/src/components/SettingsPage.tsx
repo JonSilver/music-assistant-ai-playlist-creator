@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import type { AIProviderConfig } from "../../../shared/types";
 import { parseProviderKeywords } from "../utils/parseProviderKeywords";
 import { DefaultSystemPromptModal } from "./DefaultSystemPromptModal";
+import { LoadingButton } from "./LoadingButton";
 import { ProvidersManager } from "./ProvidersManager";
 import { ProviderWeightsList } from "./ProviderWeightsList";
 import { SettingsHeader } from "./SettingsHeader";
@@ -71,18 +72,17 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
                                         setMusicAssistantUrl(e.target.value);
                                     }}
                                 />
-                                <button
+                                <LoadingButton
                                     className="btn btn-primary test-btn"
+                                    loading={testingMA}
                                     onClick={() => {
                                         void testMA();
                                     }}
-                                    disabled={testingMA || musicAssistantUrl.trim().length === 0}
+                                    disabled={musicAssistantUrl.trim().length === 0}
+                                    loadingText="Testing..."
                                 >
-                                    {testingMA && (
-                                        <span className="loading loading-spinner loading-xs"></span>
-                                    )}
-                                    {testingMA ? "Testing..." : "Test Connection"}
-                                </button>
+                                    Test Connection
+                                </LoadingButton>
                             </div>
                             <label className="label">
                                 <span className="label-text-alt">

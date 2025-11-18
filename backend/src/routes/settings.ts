@@ -3,11 +3,13 @@ import type { PlaylistDatabase } from "../db/schema.js";
 import {
     type GetSettingsResponse,
     type SuccessResponse,
+    type UpdateSettingsRequest,
     UpdateSettingsRequestSchema,
     settingsUtils,
     type SettingKey
 } from "../../../shared/settings-schema.js";
-import { API_ENDPOINTS, ERROR_MESSAGES } from "../../../shared/constants/index.js";
+import { API_ENDPOINTS } from "../../../shared/constants/index.js";
+import { validateRequest } from "../middleware/validation.js";
 
 export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void => {
     // Get settings - iterate through schema instead of hardcoding
@@ -27,29 +29,23 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
     });
 
     // Update settings - iterate through schema instead of hardcoding
-    router.put(API_ENDPOINTS.SETTINGS, (req: Request, res: Response) => {
-        // Validate request body
-        const parseResult = UpdateSettingsRequestSchema.safeParse(req.body);
-        if (!parseResult.success) {
-            res.status(400).json({
-                error: ERROR_MESSAGES.INVALID_SETTINGS,
-                details: parseResult.error.message
-            });
-            return;
-        }
+    router.put(
+        API_ENDPOINTS.SETTINGS,
+        validateRequest(UpdateSettingsRequestSchema),
+        (req: Request, res: Response) => {
+            const updates = req.body as UpdateSettingsRequest;
 
-        const updates = parseResult.data;
-
-        // Iterate through all provided updates
-        for (const key of Object.keys(updates) as SettingKey[]) {
-            const value = updates[key];
-            if (value !== undefined) {
-                const serialisedValue = settingsUtils.serialiseForDB(key, value as never);
-                db.setSetting(key, serialisedValue);
+            // Iterate through all provided updates
+            for (const key of Object.keys(updates) as SettingKey[]) {
+                const value = updates[key];
+                if (value !== undefined) {
+                    const serialisedValue = settingsUtils.serialiseForDB(key, value as never);
+                    db.setSetting(key, serialisedValue);
+                }
             }
-        }
 
-        const response: SuccessResponse = { success: true };
-        res.json(response);
-    });
+            const response: SuccessResponse = { success: true };
+            res.json(response);
+        }
+    );
 };

@@ -1,28 +1,15 @@
-/* eslint-disable max-lines */
-import Anthropic from "@anthropic-ai/sdk";
-import { attemptPromise } from "@jfdi/attempt";
-import OpenAI from "openai";
 import React, { useState } from "react";
-import type { AIProviderConfig, ProviderType } from "../../../shared/types";
-import { SearchableSelect } from "./SearchableSelect";
+import type { AIProviderConfig } from "../../../shared/types";
+import { ProviderForm } from "./ProviderForm";
 
 interface IProvidersManagerProps {
     providers: AIProviderConfig[];
     onChange: (providers: AIProviderConfig[]) => void;
 }
 
-interface ModelOption {
-    value: string;
-    label: string;
-}
-
 export const ProvidersManager: React.FC<IProvidersManagerProps> = ({ providers, onChange }) => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Partial<AIProviderConfig>>({});
-    const [availableModels, setAvailableModels] = useState<ModelOption[]>([]);
-    const [loadingModels, setLoadingModels] = useState(false);
-    const [modelsError, setModelsError] = useState<string | null>(null);
-    const [showModelDropdown, setShowModelDropdown] = useState(false);
 
     const startAdd = (): void => {
         setEditingId("new");
@@ -44,100 +31,9 @@ export const ProvidersManager: React.FC<IProvidersManagerProps> = ({ providers, 
     const cancelEdit = (): void => {
         setEditingId(null);
         setEditForm({});
-        setAvailableModels([]);
-        setModelsError(null);
-        setShowModelDropdown(false);
     };
 
-    const loadModels = async (): Promise<void> => {
-        if (editForm.apiKey === undefined || editForm.apiKey.trim() === "") {
-            setModelsError("Please enter an API key first");
-            return;
-        }
-
-        if (editForm.type === undefined) {
-            setModelsError("Please select a provider type first");
-            return;
-        }
-
-        const apiKey = editForm.apiKey;
-        const providerType = editForm.type;
-
-        setLoadingModels(true);
-        setModelsError(null);
-
-        if (providerType === "anthropic") {
-            const [err, models] = await attemptPromise(async () => {
-                const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
-                const response = await client.models.list();
-                return response.data.map(model => ({
-                    value: model.id,
-                    label: model.display_name
-                }));
-            });
-
-            setLoadingModels(false);
-
-            if (err !== undefined) {
-                setModelsError(`Failed to load models: ${err.message}`);
-                return;
-            }
-
-            setAvailableModels(models);
-            setShowModelDropdown(true);
-        } else {
-            const baseUrl = editForm.baseUrl;
-            const [err, models] = await attemptPromise(async () => {
-                const client = new OpenAI({
-                    apiKey,
-                    baseURL: baseUrl !== undefined && baseUrl.trim() !== "" ? baseUrl : undefined,
-                    dangerouslyAllowBrowser: true
-                });
-                const response = await client.models.list();
-                return response.data.map(model => ({
-                    value: model.id,
-                    label: model.id
-                }));
-            });
-
-            setLoadingModels(false);
-
-            if (err !== undefined) {
-                setModelsError(`Failed to load models: ${err.message}`);
-                return;
-            }
-
-            setAvailableModels(models);
-            setShowModelDropdown(true);
-        }
-    };
-
-    const saveProvider = (): void => {
-        if (
-            editForm.id === undefined ||
-            editForm.name === undefined ||
-            editForm.name.trim() === "" ||
-            editForm.type === undefined ||
-            editForm.apiKey === undefined ||
-            editForm.apiKey.trim() === "" ||
-            editForm.model === undefined ||
-            editForm.model.trim() === ""
-        ) {
-            // eslint-disable-next-line no-alert
-            alert("Please fill in all required fields");
-            return;
-        }
-
-        const newProvider: AIProviderConfig = {
-            id: editForm.id,
-            name: editForm.name,
-            type: editForm.type,
-            apiKey: editForm.apiKey,
-            model: editForm.model,
-            baseUrl: editForm.baseUrl,
-            temperature: editForm.temperature
-        };
-
+    const handleSave = (newProvider: AIProviderConfig): void => {
         if (editingId === "new") {
             onChange([...providers, newProvider]);
         } else {
@@ -168,125 +64,13 @@ export const ProvidersManager: React.FC<IProvidersManagerProps> = ({ providers, 
                 {providers.map(provider => (
                     <div key={provider.id} className="card bg-base-200 p-4">
                         {editingId === provider.id ? (
-                            <div className="space-y-3">
-                                <input
-                                    type="text"
-                                    placeholder="Provider Name (e.g., Claude 3.5)"
-                                    className="input input-bordered input-sm w-full"
-                                    value={editForm.name ?? ""}
-                                    onChange={e => {
-                                        setEditForm({ ...editForm, name: e.target.value });
-                                    }}
-                                />
-                                <select
-                                    className="select select-bordered select-sm w-full"
-                                    value={editForm.type ?? "anthropic"}
-                                    onChange={e => {
-                                        setEditForm({
-                                            ...editForm,
-                                            type: e.target.value as ProviderType
-                                        });
-                                    }}
-                                >
-                                    <option value="anthropic">Anthropic</option>
-                                    <option value="openai-compatible">OpenAI-Compatible</option>
-                                </select>
-                                <input
-                                    type="password"
-                                    placeholder="API Key"
-                                    className="input input-bordered input-sm w-full"
-                                    value={editForm.apiKey ?? ""}
-                                    onChange={e => {
-                                        setEditForm({ ...editForm, apiKey: e.target.value });
-                                    }}
-                                />
-                                <div className="space-y-2">
-                                    <div className="flex gap-2">
-                                        {showModelDropdown && availableModels.length > 0 ? (
-                                            <div className="flex-1">
-                                                <SearchableSelect
-                                                    options={availableModels}
-                                                    value={editForm.model ?? ""}
-                                                    onChange={model => {
-                                                        setEditForm({
-                                                            ...editForm,
-                                                            model
-                                                        });
-                                                    }}
-                                                    placeholder="Select a model..."
-                                                />
-                                            </div>
-                                        ) : (
-                                            <input
-                                                type="text"
-                                                placeholder="Click 'Load Models' to fetch available models"
-                                                className="input input-bordered input-sm flex-1"
-                                                value={editForm.model ?? ""}
-                                                onChange={e => {
-                                                    setEditForm({
-                                                        ...editForm,
-                                                        model: e.target.value
-                                                    });
-                                                }}
-                                            />
-                                        )}
-                                        <button
-                                            type="button"
-                                            className="btn btn-sm btn-secondary"
-                                            onClick={() => {
-                                                void loadModels();
-                                            }}
-                                            disabled={loadingModels}
-                                        >
-                                            {loadingModels ? "Loading..." : "Load Models"}
-                                        </button>
-                                    </div>
-                                    {modelsError !== null && (
-                                        <div className="text-error text-xs">{modelsError}</div>
-                                    )}
-                                </div>
-                                {(editForm.type === "openai-compatible" ||
-                                    editForm.baseUrl !== undefined) && (
-                                    <input
-                                        type="text"
-                                        placeholder="Base URL (optional, e.g., http://localhost:11434/v1)"
-                                        className="input input-bordered input-sm w-full"
-                                        value={editForm.baseUrl ?? ""}
-                                        onChange={e => {
-                                            setEditForm({ ...editForm, baseUrl: e.target.value });
-                                        }}
-                                    />
-                                )}
-                                <input
-                                    type="number"
-                                    min="0"
-                                    max="2"
-                                    step="0.1"
-                                    placeholder="Temperature (0-2)"
-                                    className="input input-bordered input-sm w-full"
-                                    value={editForm.temperature ?? 1.0}
-                                    onChange={e => {
-                                        setEditForm({
-                                            ...editForm,
-                                            temperature: parseFloat(e.target.value)
-                                        });
-                                    }}
-                                />
-                                <div className="flex gap-2">
-                                    <button
-                                        className="btn btn-sm btn-success flex-1"
-                                        onClick={saveProvider}
-                                    >
-                                        Save
-                                    </button>
-                                    <button
-                                        className="btn btn-sm btn-ghost flex-1"
-                                        onClick={cancelEdit}
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </div>
+                            <ProviderForm
+                                provider={editForm}
+                                onSave={handleSave}
+                                onCancel={cancelEdit}
+                                saveButtonText="Save"
+                                saveButtonClass="btn btn-sm btn-success"
+                            />
                         ) : (
                             <div className="flex justify-between items-center">
                                 <div>
@@ -326,123 +110,13 @@ export const ProvidersManager: React.FC<IProvidersManagerProps> = ({ providers, 
 
                 {editingId === "new" && (
                     <div className="card bg-base-200 p-4">
-                        <div className="space-y-3">
-                            <input
-                                type="text"
-                                placeholder="Provider Name (e.g., Local Ollama)"
-                                className="input input-bordered input-sm w-full"
-                                value={editForm.name ?? ""}
-                                onChange={e => {
-                                    setEditForm({ ...editForm, name: e.target.value });
-                                }}
-                            />
-                            <select
-                                className="select select-bordered select-sm w-full"
-                                value={editForm.type ?? "anthropic"}
-                                onChange={e => {
-                                    setEditForm({
-                                        ...editForm,
-                                        type: e.target.value as ProviderType
-                                    });
-                                }}
-                            >
-                                <option value="anthropic">Anthropic</option>
-                                <option value="openai-compatible">OpenAI-Compatible</option>
-                            </select>
-                            <input
-                                type="password"
-                                placeholder="API Key"
-                                className="input input-bordered input-sm w-full"
-                                value={editForm.apiKey ?? ""}
-                                onChange={e => {
-                                    setEditForm({ ...editForm, apiKey: e.target.value });
-                                }}
-                            />
-                            <div className="space-y-2">
-                                <div className="flex gap-2">
-                                    {showModelDropdown && availableModels.length > 0 ? (
-                                        <select
-                                            className="select select-bordered select-sm flex-1"
-                                            value={editForm.model ?? ""}
-                                            onChange={e => {
-                                                setEditForm({ ...editForm, model: e.target.value });
-                                            }}
-                                        >
-                                            <option value="">Select a model</option>
-                                            {availableModels.map(model => (
-                                                <option key={model.value} value={model.value}>
-                                                    {model.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    ) : (
-                                        <input
-                                            type="text"
-                                            placeholder="Click 'Load Models' to fetch available models"
-                                            className="input input-bordered input-sm flex-1"
-                                            value={editForm.model ?? ""}
-                                            onChange={e => {
-                                                setEditForm({ ...editForm, model: e.target.value });
-                                            }}
-                                        />
-                                    )}
-                                    <button
-                                        type="button"
-                                        className="btn btn-sm btn-secondary"
-                                        onClick={() => {
-                                            void loadModels();
-                                        }}
-                                        disabled={loadingModels}
-                                    >
-                                        {loadingModels ? "Loading..." : "Load Models"}
-                                    </button>
-                                </div>
-                                {modelsError !== null && (
-                                    <div className="text-error text-xs">{modelsError}</div>
-                                )}
-                            </div>
-                            {(editForm.type === "openai-compatible" ||
-                                editForm.baseUrl !== undefined) && (
-                                <input
-                                    type="text"
-                                    placeholder="Base URL (e.g., http://localhost:11434/v1)"
-                                    className="input input-bordered input-sm w-full"
-                                    value={editForm.baseUrl ?? ""}
-                                    onChange={e => {
-                                        setEditForm({ ...editForm, baseUrl: e.target.value });
-                                    }}
-                                />
-                            )}
-                            <input
-                                type="number"
-                                min="0"
-                                max="2"
-                                step="0.1"
-                                placeholder="Temperature (0-2)"
-                                className="input input-bordered input-sm w-full"
-                                value={editForm.temperature ?? 1.0}
-                                onChange={e => {
-                                    setEditForm({
-                                        ...editForm,
-                                        temperature: parseFloat(e.target.value)
-                                    });
-                                }}
-                            />
-                            <div className="flex gap-2">
-                                <button
-                                    className="btn btn-sm btn-primary flex-1"
-                                    onClick={saveProvider}
-                                >
-                                    Add Provider
-                                </button>
-                                <button
-                                    className="btn btn-sm btn-ghost flex-1"
-                                    onClick={cancelEdit}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
+                        <ProviderForm
+                            provider={editForm}
+                            onSave={handleSave}
+                            onCancel={cancelEdit}
+                            saveButtonText="Add Provider"
+                            saveButtonClass="btn btn-sm btn-primary"
+                        />
                     </div>
                 )}
 

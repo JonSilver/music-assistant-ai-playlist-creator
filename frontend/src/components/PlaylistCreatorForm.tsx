@@ -1,5 +1,6 @@
 import type { AIProviderConfig } from "@shared/types";
 import React from "react";
+import { LoadingButton } from "./LoadingButton";
 import { VersionCopyrightFooter } from "./VersionCopyrightFooter";
 
 interface IPlaylistCreatorFormProps {
@@ -107,19 +108,18 @@ export const PlaylistCreatorForm: React.FC<IPlaylistCreatorFormProps> = ({
                 </div>
 
                 <div className="relative card-actions justify-end">
-                    <button
-                        className="btn btn-primary"
+                    <LoadingButton
+                        loading={generating}
                         onClick={onGenerate}
                         disabled={
-                            generating ||
                             prompt.trim().length === 0 ||
                             playlistName.trim().length === 0 ||
                             providers.length === 0
                         }
+                        loadingText={`Generating with ${providerName}...`}
                     >
-                        {generating && <span className="loading loading-spinner"></span>}
-                        {generating ? `Generating with ${providerName}...` : "Generate Playlist"}
-                    </button>
+                        Generate Playlist
+                    </LoadingButton>
 
                     <VersionCopyrightFooter />
                 </div>
