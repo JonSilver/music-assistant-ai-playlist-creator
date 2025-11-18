@@ -54,9 +54,12 @@ export const SettingsPage = ({
             <div className="container mx-auto px-4 max-w-2xl">
                 <div className="card bg-base-100 shadow-xl">
                     <div className="card-body">
-                        <div className="mb-6">
-                            <h1 className="card-title text-2xl mb-0">AI Playlist Creator</h1>
-                            <p className="text-sm opacity-70 mt-1">for Music Assistant</p>
+                        <div className="mb-6 flex items-start gap-3">
+                            <img src="/logo.png" alt="Logo" className="h-12" />
+                            <div className="flex flex-col items-start">
+                                <h1 className="card-title text-2xl mb-0">AI Playlist Creator</h1>
+                                <p className="text-sm opacity-70 mt-1">for Music Assistant</p>
+                            </div>
                         </div>
 
                         <div className="form-control mb-4">
