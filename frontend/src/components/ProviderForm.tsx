@@ -30,24 +30,18 @@ export const ProviderForm: React.FC<IProviderFormProps> = ({
     };
 
     const loadModels = async (): Promise<void> => {
-        if (provider.apiKey === undefined || provider.apiKey.trim() === "") {
-            setModelsError("Please enter an API key first");
-            return;
-        }
-
         if (provider.type === undefined) {
             setModelsError("Please select a provider type first");
             return;
         }
 
-        const apiKey = provider.apiKey;
         const providerType = provider.type;
 
         setLoadingModels(true);
         setModelsError(null);
 
         const [err, models] = await attemptPromise(async () =>
-            loadModelsForProvider(providerType, apiKey, provider.baseUrl)
+            loadModelsForProvider(providerType, provider.apiKey, provider.baseUrl)
         );
 
         setLoadingModels(false);
@@ -67,13 +61,21 @@ export const ProviderForm: React.FC<IProviderFormProps> = ({
             provider.name === undefined ||
             provider.name.trim() === "" ||
             provider.type === undefined ||
-            provider.apiKey === undefined ||
-            provider.apiKey.trim() === "" ||
             provider.model === undefined ||
             provider.model.trim() === ""
         ) {
             // eslint-disable-next-line no-alert
             alert("Please fill in all required fields");
+            return;
+        }
+
+        // Anthropic providers require API key
+        if (
+            provider.type === "anthropic" &&
+            (provider.apiKey === undefined || provider.apiKey.trim() === "")
+        ) {
+            // eslint-disable-next-line no-alert
+            alert("API key is required for Anthropic providers");
             return;
         }
 

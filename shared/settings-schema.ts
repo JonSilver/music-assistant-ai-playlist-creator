@@ -18,7 +18,7 @@ export const AIProviderConfigSchema = z.object({
   id: z.string(),
   name: z.string(),
   type: z.enum(PROVIDER_TYPES),
-  apiKey: z.string(),
+  apiKey: z.string().optional(),
   model: z.string(),
   baseUrl: z.string().optional(),
   temperature: z.number().min(0).max(2).optional()

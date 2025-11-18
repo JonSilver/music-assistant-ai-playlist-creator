@@ -10,12 +10,12 @@ export interface IModelOption {
 
 export const loadModelsForProvider = async (
     providerType: ProviderType,
-    apiKey: string,
+    apiKey: string | undefined,
     baseUrl?: string
 ): Promise<IModelOption[]> => {
     if (providerType === "anthropic") {
         const [err, models] = await attemptPromise(async () => {
-            const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
+            const client = new Anthropic({ apiKey: apiKey ?? "", dangerouslyAllowBrowser: true });
             const response = await client.models.list();
             return response.data.map(model => ({
                 value: model.id,
@@ -31,7 +31,7 @@ export const loadModelsForProvider = async (
     } else {
         const [err, models] = await attemptPromise(async () => {
             const client = new OpenAI({
-                apiKey,
+                apiKey: apiKey ?? "not-required",
                 baseURL: baseUrl !== undefined && baseUrl.trim() !== "" ? baseUrl : undefined,
                 dangerouslyAllowBrowser: true
             });

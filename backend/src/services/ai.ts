@@ -93,6 +93,10 @@ const parseAIResponse = (content: string): AIPlaylistResponse => {
 };
 
 const generateWithAnthropic = async (request: AIPlaylistRequest): Promise<AIPlaylistResponse> => {
+    if (request.providerConfig.apiKey === undefined || request.providerConfig.apiKey.trim() === "") {
+        throw new Error("API key required for Anthropic provider");
+    }
+
     const anthropic = new Anthropic({
         apiKey: request.providerConfig.apiKey
     });
@@ -137,7 +141,7 @@ const generateWithOpenAICompatible = async (
     request: AIPlaylistRequest
 ): Promise<AIPlaylistResponse> => {
     const openai = new OpenAI({
-        apiKey: request.providerConfig.apiKey,
+        apiKey: request.providerConfig.apiKey ?? "not-required",
         baseURL: request.providerConfig.baseUrl
     });
 
