@@ -11,6 +11,7 @@ interface ISettingsViewProps {
         aiProviders: import("@shared/types").AIProviderConfig[];
         customSystemPrompt?: string;
         providerWeights?: string;
+        defaultProviderId?: string;
     }) => Promise<Error | undefined>;
     setError: (message: string) => void;
     closeSettings: () => void;
@@ -49,6 +50,8 @@ export const SettingsView: React.FC<ISettingsViewProps> = ({
                 setCustomSystemPrompt={settingsManager.setCustomSystemPrompt}
                 providerWeights={settingsManager.providerWeights}
                 setProviderWeights={settingsManager.setProviderWeights}
+                defaultProviderId={settingsManager.defaultProviderId}
+                setDefaultProviderId={settingsManager.setDefaultProviderId}
                 testingMA={settingsManager.testingMA}
                 testResults={settingsManager.testResults}
                 testMA={settingsManager.testMA}

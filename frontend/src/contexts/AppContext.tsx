@@ -52,10 +52,26 @@ export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.El
             setError(err.message);
         } else {
             setSettings(result);
-            // If no provider selected yet and providers exist, select the first one
+
             const providers = result.aiProviders;
-            if (selectedProviderId === null && providers.length > 0) {
-                setSelectedProviderId(providers[0].id);
+            if (providers.length === 0) {
+                setLoading(false);
+                return;
+            }
+
+            const selectedProviderExists =
+                selectedProviderId !== null && providers.some(p => p.id === selectedProviderId);
+
+            // Initial load or selected provider deleted: use default or first
+            if (selectedProviderId === null || !selectedProviderExists) {
+                if (
+                    result.defaultProviderId !== undefined &&
+                    typeof result.defaultProviderId === "string"
+                ) {
+                    setSelectedProviderId(result.defaultProviderId);
+                } else if (providers.length > 0) {
+                    setSelectedProviderId(providers[0].id);
+                }
             }
         }
 

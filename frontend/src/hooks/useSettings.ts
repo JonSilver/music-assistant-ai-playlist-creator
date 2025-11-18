@@ -15,6 +15,8 @@ interface UseSettingsReturn {
     setCustomSystemPrompt: (prompt: string) => void;
     providerWeights: string;
     setProviderWeights: (weights: string) => void;
+    defaultProviderId: string | undefined;
+    setDefaultProviderId: (id: string | undefined) => void;
     testingMA: boolean;
     testResults: TestResults;
     testMA: () => Promise<void>;
@@ -29,6 +31,7 @@ export const useSettings = (
         aiProviders: AIProviderConfig[];
         customSystemPrompt?: string;
         providerWeights?: string;
+        defaultProviderId?: string;
     }) => Promise<Error | undefined>,
     setError: (message: string) => void,
     closeSettings: () => void
@@ -37,6 +40,7 @@ export const useSettings = (
     const [aiProviders, setAiProviders] = useState<AIProviderConfig[]>([]);
     const [customSystemPrompt, setCustomSystemPrompt] = useState("");
     const [providerWeights, setProviderWeights] = useState("[]");
+    const [defaultProviderId, setDefaultProviderId] = useState<string | undefined>(undefined);
     const [testingMA, setTestingMA] = useState(false);
     const [testResults, setTestResults] = useState<TestResults>({});
 
@@ -46,6 +50,7 @@ export const useSettings = (
             setAiProviders(settings.aiProviders);
             setCustomSystemPrompt(settings.customSystemPrompt ?? "");
             setProviderWeights(settings.providerWeights);
+            setDefaultProviderId(settings.defaultProviderId);
         }
     }, [settings]);
 
@@ -75,7 +80,8 @@ export const useSettings = (
             aiProviders,
             customSystemPrompt:
                 customSystemPrompt.trim().length > 0 ? customSystemPrompt : undefined,
-            providerWeights
+            providerWeights,
+            defaultProviderId
         });
 
         if (err !== undefined) {
@@ -89,6 +95,7 @@ export const useSettings = (
         aiProviders,
         customSystemPrompt,
         providerWeights,
+        defaultProviderId,
         updateSettings,
         setError,
         closeSettings
@@ -100,6 +107,7 @@ export const useSettings = (
             setAiProviders(settings.aiProviders);
             setCustomSystemPrompt(settings.customSystemPrompt ?? "");
             setProviderWeights(settings.providerWeights);
+            setDefaultProviderId(settings.defaultProviderId);
         }
         closeSettings();
     }, [settings, closeSettings]);
@@ -113,6 +121,8 @@ export const useSettings = (
         setCustomSystemPrompt,
         providerWeights,
         setProviderWeights,
+        defaultProviderId,
+        setDefaultProviderId,
         testingMA,
         testResults,
         testMA,

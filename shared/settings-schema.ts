@@ -143,6 +143,13 @@ export const SETTINGS_FIELDS = {
         }
       }
     }
+  } satisfies StringSettingField,
+
+  defaultProviderId: {
+    key: 'defaultProviderId',
+    type: 'string',
+    optional: true,
+    zodSchema: z.string().optional()
   } satisfies StringSettingField
 } as const;
 
@@ -190,14 +197,16 @@ export const AppSettingsSchema = z.object({
   musicAssistantUrl: z.string(),
   aiProviders: z.array(AIProviderConfigSchema),
   customSystemPrompt: z.string().optional(),
-  providerWeights: z.string()
+  providerWeights: z.string(),
+  defaultProviderId: z.string().optional()
 });
 
 export const UpdateSettingsRequestSchema = z.object({
   musicAssistantUrl: z.string().optional(),
   aiProviders: z.array(AIProviderConfigSchema).optional(),
   customSystemPrompt: z.string().optional(),
-  providerWeights: z.string().optional()
+  providerWeights: z.string().optional(),
+  defaultProviderId: z.string().optional()
 });
 
 // Extended response type (no extra computed fields needed)
@@ -311,6 +320,7 @@ export const settingsUtils = {
     aiProviders: AIProviderConfig[];
     customSystemPrompt?: string;
     providerWeights: string;
+    defaultProviderId?: string;
     defaultProvider: AIProviderConfig;
     providers: AIProviderConfig[];
     providerPreference: string[];
@@ -325,13 +335,28 @@ export const settingsUtils = {
     }
 
     const aiProviders = (settings.aiProviders as AIProviderConfig[] | undefined) ?? [];
-    const defaultProvider = aiProviders[0] ?? {
-      id: 'default',
-      name: 'Default',
-      type: 'anthropic' as const,
-      apiKey: '',
-      model: 'claude-3-5-sonnet-20241022'
-    };
+    const defaultProviderId = settings.defaultProviderId as string | undefined;
+
+    // Find default provider by ID, or fall back to first provider
+    let defaultProvider: AIProviderConfig;
+    if (defaultProviderId !== undefined) {
+      const foundProvider = aiProviders.find(p => p.id === defaultProviderId);
+      defaultProvider = foundProvider ?? aiProviders[0] ?? {
+        id: 'default',
+        name: 'Default',
+        type: 'anthropic' as const,
+        apiKey: '',
+        model: 'claude-3-5-sonnet-20241022'
+      };
+    } else {
+      defaultProvider = aiProviders[0] ?? {
+        id: 'default',
+        name: 'Default',
+        type: 'anthropic' as const,
+        apiKey: '',
+        model: 'claude-3-5-sonnet-20241022'
+      };
+    }
 
     const providerWeights = (settings.providerWeights as string | undefined) ?? '';
     const providerPreference = providerWeights
@@ -344,6 +369,7 @@ export const settingsUtils = {
       aiProviders,
       customSystemPrompt: settings.customSystemPrompt as string | undefined,
       providerWeights,
+      defaultProviderId,
       defaultProvider,
       providers: aiProviders,
       providerPreference

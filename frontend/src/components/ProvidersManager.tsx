@@ -5,9 +5,16 @@ import { ProviderForm } from "./ProviderForm";
 interface IProvidersManagerProps {
     providers: AIProviderConfig[];
     onChange: (providers: AIProviderConfig[]) => void;
+    defaultProviderId: string | undefined;
+    onDefaultProviderChange: (id: string | undefined) => void;
 }
 
-export const ProvidersManager: React.FC<IProvidersManagerProps> = ({ providers, onChange }) => {
+export const ProvidersManager: React.FC<IProvidersManagerProps> = ({
+    providers,
+    onChange,
+    defaultProviderId,
+    onDefaultProviderChange
+}) => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Partial<AIProviderConfig>>({});
 
@@ -48,6 +55,9 @@ export const ProvidersManager: React.FC<IProvidersManagerProps> = ({ providers, 
         // eslint-disable-next-line no-alert
         if (confirm("Are you sure you want to delete this provider?")) {
             onChange(providers.filter(p => p.id !== id));
+            if (defaultProviderId === id) {
+                onDefaultProviderChange(undefined);
+            }
         }
     };
 
@@ -72,17 +82,37 @@ export const ProvidersManager: React.FC<IProvidersManagerProps> = ({ providers, 
                                 saveButtonClass="btn btn-sm btn-success"
                             />
                         ) : (
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <div className="font-semibold">{provider.name}</div>
-                                    <div className="text-sm opacity-70">
-                                        {provider.type === "anthropic"
-                                            ? "Anthropic"
-                                            : "OpenAI-Compatible"}{" "}
-                                        • {provider.model}
-                                        {provider.baseUrl !== undefined && ` • ${provider.baseUrl}`}
-                                        {provider.temperature !== undefined &&
-                                            ` • T: ${provider.temperature}`}
+                            <div className="flex justify-between items-center gap-4">
+                                <div className="flex items-center gap-3 flex-1">
+                                    <input
+                                        type="radio"
+                                        name="defaultProvider"
+                                        className="radio radio-primary"
+                                        checked={defaultProviderId === provider.id}
+                                        onChange={() => {
+                                            onDefaultProviderChange(provider.id);
+                                        }}
+                                        title="Set as default provider"
+                                    />
+                                    <div>
+                                        <div className="font-semibold">
+                                            {provider.name}
+                                            {defaultProviderId === provider.id && (
+                                                <span className="ml-2 badge badge-primary badge-sm">
+                                                    Default
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="text-sm opacity-70">
+                                            {provider.type === "anthropic"
+                                                ? "Anthropic"
+                                                : "OpenAI-Compatible"}{" "}
+                                            • {provider.model}
+                                            {provider.baseUrl !== undefined &&
+                                                ` • ${provider.baseUrl}`}
+                                            {provider.temperature !== undefined &&
+                                                ` • T: ${provider.temperature}`}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="flex gap-2">

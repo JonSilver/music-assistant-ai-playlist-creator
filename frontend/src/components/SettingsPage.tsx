@@ -18,6 +18,8 @@ interface ISettingsPageProps {
     setCustomSystemPrompt: (value: string) => void;
     providerWeights: string;
     setProviderWeights: (value: string) => void;
+    defaultProviderId: string | undefined;
+    setDefaultProviderId: (value: string | undefined) => void;
     testingMA: boolean;
     testResults: {
         ma?: { success: boolean; error?: string };
@@ -37,6 +39,8 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
     setCustomSystemPrompt,
     providerWeights,
     setProviderWeights,
+    defaultProviderId,
+    setDefaultProviderId,
     testingMA,
     testResults,
     testMA,
@@ -102,7 +106,12 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
 
                         <div className="divider"></div>
 
-                        <ProvidersManager providers={aiProviders} onChange={setAiProviders} />
+                        <ProvidersManager
+                            providers={aiProviders}
+                            onChange={setAiProviders}
+                            defaultProviderId={defaultProviderId}
+                            onDefaultProviderChange={setDefaultProviderId}
+                        />
 
                         <div className="divider"></div>
 
