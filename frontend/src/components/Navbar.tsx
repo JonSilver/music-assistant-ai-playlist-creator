@@ -39,7 +39,7 @@ export const Navbar: React.FC<INavbarProps> = ({ onShowHistory, onShowSettings }
                     <img src="/docker-icon.svg" alt="Docker" className="w-4 h-4 sm:w-5 sm:h-5" />
                 </a>
                 <button
-                    className="btn btn-ghost btn-sm btn-square sm:btn-md sm:px-4"
+                    className="btn btn-ghost btn-sm max-sm:btn-square sm:btn-md"
                     onClick={onShowHistory}
                     title="History"
                 >
@@ -56,10 +56,10 @@ export const Navbar: React.FC<INavbarProps> = ({ onShowHistory, onShowSettings }
                             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                         ></path>
                     </svg>
-                    <span className="hidden sm:inline ml-1">History</span>
+                    <span className="hidden sm:inline sm:ml-2">History</span>
                 </button>
                 <button
-                    className="btn btn-ghost btn-sm btn-square sm:btn-md sm:px-4"
+                    className="btn btn-ghost btn-sm max-sm:btn-square sm:btn-md"
                     onClick={onShowSettings}
                     title="Settings"
                 >
@@ -82,7 +82,7 @@ export const Navbar: React.FC<INavbarProps> = ({ onShowHistory, onShowSettings }
                             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                         ></path>
                     </svg>
-                    <span className="hidden sm:inline ml-1">Settings</span>
+                    <span className="hidden sm:inline sm:ml-2">Settings</span>
                 </button>
             </div>
         </div>
