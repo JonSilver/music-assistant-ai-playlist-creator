@@ -21,6 +21,8 @@
 - **Run knip regularly** - Delete unused code/exports immediately
 - **Explicit return types** - All functions must have return types
 - **TypeScript strict mode** - Enforced
+- **React functional components only** (typed as `React.FC<IPropsInterface>`) - No class components
+- **Prefix interfaces with I** - e.g., `IUser`, `IApiResponse`
 
 ### Error Handling
 ```typescript
