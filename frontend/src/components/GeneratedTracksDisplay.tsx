@@ -51,47 +51,48 @@ export const GeneratedTracksDisplay = ({
     return (
         <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
-                <div className="flex justify-between items-start mb-4">
-                    <div>
-                        <h2 className="card-title mb-2">{UI_LABELS.GENERATED_TRACKS}</h2>
-                        <div className="text-sm space-y-1">
-                            <p>
-                                <span className="font-semibold">{matchedCount}</span> of{" "}
-                                <span className="font-semibold">{totalCount}</span> tracks found in
-                                your library
-                                {matchPercentage > 0 && (
-                                    <span className="ml-2 badge badge-sm badge-info">
-                                        {matchPercentage}%
-                                    </span>
-                                )}
-                            </p>
+                <div className="space-y-3 mb-4">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                        <div>
+                            <h2 className="card-title mb-2">{UI_LABELS.GENERATED_TRACKS}</h2>
+                            <div className="text-sm space-y-1">
+                                <p>
+                                    <span className="font-semibold">{matchedCount}</span> of{" "}
+                                    <span className="font-semibold">{totalCount}</span> tracks found
+                                    {matchPercentage > 0 && (
+                                        <span className="ml-2 badge badge-sm badge-info">
+                                            {matchPercentage}%
+                                        </span>
+                                    )}
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                    <div className="btn-group">
-                        <button
-                            className={`btn btn-sm ${trackFilter === TRACK_FILTERS.ALL ? "btn-active" : ""}`}
-                            onClick={() => {
-                                onTrackFilterChange(TRACK_FILTERS.ALL);
-                            }}
-                        >
-                            All ({totalCount})
-                        </button>
-                        <button
-                            className={`btn btn-sm ${trackFilter === TRACK_FILTERS.MATCHED ? "btn-active" : ""}`}
-                            onClick={() => {
-                                onTrackFilterChange(TRACK_FILTERS.MATCHED);
-                            }}
-                        >
-                            {UI_LABELS.FOUND} ({matchedCount})
-                        </button>
-                        <button
-                            className={`btn btn-sm ${trackFilter === TRACK_FILTERS.UNMATCHED ? "btn-active" : ""}`}
-                            onClick={() => {
-                                onTrackFilterChange(TRACK_FILTERS.UNMATCHED);
-                            }}
-                        >
-                            {UI_LABELS.NOT_FOUND} ({totalCount - matchedCount})
-                        </button>
+                        <div className="btn-group btn-group-horizontal flex-nowrap">
+                            <button
+                                className={`btn btn-xs sm:btn-sm flex-1 sm:flex-none ${trackFilter === TRACK_FILTERS.ALL ? "btn-active" : ""}`}
+                                onClick={() => {
+                                    onTrackFilterChange(TRACK_FILTERS.ALL);
+                                }}
+                            >
+                                All ({totalCount})
+                            </button>
+                            <button
+                                className={`btn btn-xs sm:btn-sm flex-1 sm:flex-none ${trackFilter === TRACK_FILTERS.MATCHED ? "btn-active" : ""}`}
+                                onClick={() => {
+                                    onTrackFilterChange(TRACK_FILTERS.MATCHED);
+                                }}
+                            >
+                                Found ({matchedCount})
+                            </button>
+                            <button
+                                className={`btn btn-xs sm:btn-sm flex-1 sm:flex-none ${trackFilter === TRACK_FILTERS.UNMATCHED ? "btn-active" : ""}`}
+                                onClick={() => {
+                                    onTrackFilterChange(TRACK_FILTERS.UNMATCHED);
+                                }}
+                            >
+                                Missing ({totalCount - matchedCount})
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -112,7 +113,7 @@ export const GeneratedTracksDisplay = ({
 
                 <div className="overflow-x-auto">
                     <table className="table table-auto">
-                        <thead>
+                        <thead className="hidden md:table-header-group">
                             <tr>
                                 <th className="w-12">#</th>
                                 <th className="min-w-[200px]">Title</th>

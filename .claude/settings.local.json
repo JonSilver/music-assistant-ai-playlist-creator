@@ -6,7 +6,8 @@
       "Bash(npm install:*)",
       "Bash(npx tsc)",
       "Bash(npm run knip:*)",
-      "Bash(git check-ignore:*)"
+      "Bash(git check-ignore:*)",
+      "Bash(npm run lint:fix:*)"
     ],
     "deny": [],
     "ask": []
