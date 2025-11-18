@@ -17,12 +17,27 @@ This guide covers the CI/CD pipeline and deployment options for the Music Assist
 
 The project uses GitHub Actions to automatically build and push Docker images to Docker Hub. Images are built for both `linux/amd64` and `linux/arm64` platforms.
 
+### Initial Docker Hub Setup
+
+If this is your first time setting up the repository:
+
+1. **Create Docker Hub Repository:**
+   - Log in to [Docker Hub](https://hub.docker.com/)
+   - Click "Create Repository"
+   - Name: `music-assistant-ai-playlist-creator`
+   - Visibility: Public (or Private if you prefer)
+   - Click "Create"
+
+   Your repository will be at: `jonsilver/music-assistant-ai-playlist-creator`
+
+2. **The README will be automatically synced:**
+   - When you publish your first release, the GitHub Actions workflow will automatically update the Docker Hub repository description with your README.md content
+   - This keeps the Docker Hub documentation in sync with your GitHub repository
+
 ### Triggers
 
 The pipeline runs automatically on:
-- **Push to `main` branch**: Builds and tags as `latest`
-- **Version tags** (e.g., `v1.2.3`): Builds and tags with semantic version
-- **Manual trigger**: Via GitHub Actions workflow dispatch
+- **GitHub Releases**: When you publish a new release on GitHub, the pipeline automatically builds and pushes Docker images
 
 ### Setup GitHub Secrets
 
@@ -46,12 +61,16 @@ To enable the CI/CD pipeline, configure these secrets in your GitHub repository:
 
 ### Image Tagging Strategy
 
-The pipeline automatically creates the following tags:
+When you publish a release on GitHub, the pipeline automatically creates the following Docker image tags:
 
-| Condition | Tags Created | Example |
-|-----------|--------------|---------|
-| Push to `main` | `latest`, `main-<sha>` | `latest`, `main-a1b2c3d` |
-| Version tag | `<version>`, `<major>.<minor>`, `<major>` | `1.2.3`, `1.2`, `1` |
+| Tag Type | Format | Example |
+|----------|--------|---------|
+| Full version | `<version>` | `1.2.3` |
+| Major.Minor | `<major>.<minor>` | `1.2` |
+| Major only | `<major>` | `1` |
+| Latest | `latest` | `latest` |
+
+**Example:** Publishing release `v1.2.3` creates tags: `1.2.3`, `1.2`, `1`, and `latest`
 
 ### Customizing the Docker Image Name
 
@@ -218,29 +237,37 @@ The development compose file (`docker-compose.dev.yml`) builds the Docker image 
 
 ### Creating a Release
 
+Follow these steps to create a new release and trigger the CI/CD pipeline:
+
 1. **Update version in package.json:**
    ```bash
    # This happens automatically with build:prod
    npm run build:prod
    ```
 
-2. **Commit changes:**
+2. **Commit and push changes:**
    ```bash
    git add .
    git commit -m "chore: version bump to X.Y.Z"
+   git push origin main
    ```
 
-3. **Create and push version tag:**
-   ```bash
-   git tag v1.2.3
-   git push origin main
-   git push origin v1.2.3
-   ```
+3. **Create a GitHub Release:**
+   - Go to your repository on GitHub
+   - Click on "Releases" → "Create a new release"
+   - Click "Choose a tag" and create a new tag (e.g., `v1.2.3`)
+   - Fill in the release title (e.g., `v1.2.3` or `Version 1.2.3`)
+   - Add release notes describing the changes
+   - Click "Publish release"
 
 4. **GitHub Actions automatically:**
-   - Builds the Docker image
+   - Detects the new release
+   - Builds the Docker image for `linux/amd64` and `linux/arm64`
    - Tags it with `1.2.3`, `1.2`, `1`, and `latest`
-   - Pushes to Docker Hub
+   - Pushes all tags to Docker Hub
+   - Updates the Docker Hub repository description with the README
+
+**Note:** The pipeline only triggers when you **publish** a release on GitHub, not when you push tags directly.
 
 ### Versioning Strategy
 

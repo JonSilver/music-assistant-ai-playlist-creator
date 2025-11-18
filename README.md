@@ -55,10 +55,12 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 
 ### Production Deployment (from Docker Hub)
 
-For production deployment on a server, pre-built images are available on Docker Hub:
+Pre-built Docker images are automatically published to Docker Hub when new releases are created on GitHub.
+
+**Docker Hub Repository:** [`jonsilver/music-assistant-ai-playlist-creator`](https://hub.docker.com/r/jonsilver/music-assistant-ai-playlist-creator)
 
 ```bash
-# Quick start
+# Quick start - deploy latest version
 curl -O https://raw.githubusercontent.com/JonSilver/music-assistant-ai-playlist-creator/main/docker-compose.yml
 curl -O https://raw.githubusercontent.com/JonSilver/music-assistant-ai-playlist-creator/main/.env.production.example
 mv .env.production.example .env
@@ -67,7 +69,7 @@ docker-compose pull
 docker-compose up -d
 ```
 
-**See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete deployment guide including CI/CD setup.**
+**See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete deployment guide, version management, and CI/CD setup.**
 
 ### Local Development with Docker
 
@@ -436,7 +438,7 @@ To use a different location, edit `DATA_PATH` in your `.env` file.
 │
 ├── .github/
 │   └── workflows/
-│       └── docker-publish.yml   # CI/CD pipeline for Docker Hub
+│       └── docker-publish.yml   # CI/CD pipeline (triggers on GitHub releases)
 │
 ├── Dockerfile                   # Production container build
 ├── docker-compose.yml           # Production deployment (Docker Hub)
@@ -518,9 +520,21 @@ Configure an ordered list of provider keywords (e.g., "spotify", "tidal", "local
 ## Updating
 
 ### Production Deployment
+
+To update to the latest version from Docker Hub:
 ```bash
 docker-compose pull    # Pull latest image from Docker Hub
 docker-compose up -d   # Restart with new image
+```
+
+To deploy a specific version, edit your `.env` file:
+```env
+IMAGE_TAG=1.2.3  # Specify exact version
+```
+
+Then pull and restart:
+```bash
+docker-compose pull && docker-compose up -d
 ```
 
 ### Local Development
@@ -529,7 +543,15 @@ docker-compose -f docker-compose.dev.yml down
 docker-compose -f docker-compose.dev.yml up --build
 ```
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for version management and release procedures.
+### Creating New Releases
+
+New Docker images are automatically built and published when you create a GitHub release:
+1. Update version with `npm run build:prod`
+2. Commit and push to main
+3. Create a new release on GitHub with a version tag (e.g., `v1.2.3`)
+4. GitHub Actions builds and pushes to Docker Hub automatically
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed version management and CI/CD procedures.
 
 ## Troubleshooting
 
