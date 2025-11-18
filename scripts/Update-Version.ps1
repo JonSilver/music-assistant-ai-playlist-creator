@@ -92,6 +92,33 @@ function New-VersionString {
     return "$Major.$Minor.$Patch"
 }
 
+# Function to compare two semantic versions
+# Returns: -1 if version1 < version2, 0 if equal, 1 if version1 > version2
+function Compare-SemanticVersion {
+    param(
+        [string]$Version1,
+        [string]$Version2
+    )
+    
+    $v1 = Get-VersionComponents $Version1
+    $v2 = Get-VersionComponents $Version2
+    
+    # Compare major version
+    if ($v1.Major -lt $v2.Major) { return -1 }
+    if ($v1.Major -gt $v2.Major) { return 1 }
+    
+    # Major versions are equal, compare minor
+    if ($v1.Minor -lt $v2.Minor) { return -1 }
+    if ($v1.Minor -gt $v2.Minor) { return 1 }
+    
+    # Major and minor are equal, compare patch
+    if ($v1.Patch -lt $v2.Patch) { return -1 }
+    if ($v1.Patch -gt $v2.Patch) { return 1 }
+    
+    # All components are equal
+    return 0
+}
+
 try {
     # Check if package.json exists
     $PackageJsonPath = Join-Path $ProjectRoot "package.json"
@@ -132,6 +159,16 @@ try {
             if (-not (Test-SemanticVersion $Version)) {
                 throw "Provided version '$Version' is not in valid semantic version format (x.y.z)"
             }
+            
+            # Check if the new version is lower than current version
+            $VersionComparison = Compare-SemanticVersion $Version $CurrentVersion
+            if ($VersionComparison -lt 0) {
+                throw "Cannot set version to '$Version' as it is lower than the current version '$CurrentVersion'. Use a higher version number."
+            }
+            if ($VersionComparison -eq 0) {
+                throw "Version '$Version' is the same as the current version '$CurrentVersion'. No change needed."
+            }
+            
             $NewVersion = $Version
         }
     }
