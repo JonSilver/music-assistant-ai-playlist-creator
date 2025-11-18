@@ -1,11 +1,11 @@
+import { SUCCESS_MESSAGES } from "@shared/constants";
 import React, { useState } from "react";
 import type { AIProviderConfig } from "../../../shared/types";
+import { parseProviderKeywords } from "../utils/parseProviderKeywords";
 import { DefaultSystemPromptModal } from "./DefaultSystemPromptModal";
 import { ProvidersManager } from "./ProvidersManager";
 import { ProviderWeightsList } from "./ProviderWeightsList";
 import { VersionCopyrightFooter } from "./VersionCopyrightFooter";
-import { parseProviderKeywords } from "../utils/parseProviderKeywords";
-import { SUCCESS_MESSAGES } from "@shared/constants";
 
 interface SettingsPageProps {
     musicAssistantUrl: string;
@@ -66,32 +66,34 @@ export const SettingsPage = ({
                             <label className="label">
                                 <span className="label-text">Music Assistant URL</span>
                             </label>
-                            <input
-                                type="text"
-                                placeholder="http://192.168.1.100:8095"
-                                className="input input-bordered w-full"
-                                value={musicAssistantUrl}
-                                onChange={e => {
-                                    setMusicAssistantUrl(e.target.value);
-                                }}
-                            />
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    placeholder="e.g. http://192.168.1.100:8095"
+                                    className="input input-bordered flex-1"
+                                    value={musicAssistantUrl}
+                                    onChange={e => {
+                                        setMusicAssistantUrl(e.target.value);
+                                    }}
+                                />
+                                <button
+                                    className="btn btn-primary test-btn"
+                                    onClick={() => {
+                                        void testMA();
+                                    }}
+                                    disabled={testingMA || musicAssistantUrl.trim().length === 0}
+                                >
+                                    {testingMA && (
+                                        <span className="loading loading-spinner loading-xs"></span>
+                                    )}
+                                    {testingMA ? "Testing..." : "Test Connection"}
+                                </button>
+                            </div>
                             <label className="label">
                                 <span className="label-text-alt">
                                     WebSocket URL of your Music Assistant server
                                 </span>
                             </label>
-                            <button
-                                className="btn btn-sm btn-outline mt-2 test-btn"
-                                onClick={() => {
-                                    void testMA();
-                                }}
-                                disabled={testingMA || musicAssistantUrl.trim().length === 0}
-                            >
-                                {testingMA && (
-                                    <span className="loading loading-spinner loading-xs"></span>
-                                )}
-                                {testingMA ? "Testing..." : "Test Connection"}
-                            </button>
                             {testResults.ma !== undefined && (
                                 <div
                                     className={`alert ${testResults.ma.success ? "alert-success" : "alert-error"} mt-2`}

@@ -1,9 +1,9 @@
 /* eslint-disable max-lines */
+import Anthropic from "@anthropic-ai/sdk";
+import { attemptPromise } from "@jfdi/attempt";
+import OpenAI from "openai";
 import React, { useState } from "react";
 import type { AIProviderConfig, ProviderType } from "../../../shared/types";
-import Anthropic from "@anthropic-ai/sdk";
-import OpenAI from "openai";
-import { attemptPromise } from "@jfdi/attempt";
 import { SearchableSelect } from "./SearchableSelect";
 
 interface ProvidersManagerProps {
@@ -222,7 +222,7 @@ export const ProvidersManager = ({
                                         ) : (
                                             <input
                                                 type="text"
-                                                placeholder="Model (e.g., claude-sonnet-4-5-20250929, llama3:latest)"
+                                                placeholder="Click 'Load Models' to fetch available models"
                                                 className="input input-bordered input-sm flex-1"
                                                 value={editForm.model ?? ""}
                                                 onChange={e => {
@@ -381,7 +381,7 @@ export const ProvidersManager = ({
                                     ) : (
                                         <input
                                             type="text"
-                                            placeholder="Model (e.g., llama3:latest)"
+                                            placeholder="Click 'Load Models' to fetch available models"
                                             className="input input-bordered input-sm flex-1"
                                             value={editForm.model ?? ""}
                                             onChange={e => {
