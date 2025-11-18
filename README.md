@@ -6,12 +6,12 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 
 - **AI-Powered Suggestions**: Uses Claude or OpenAI to generate playlist suggestions based on natural language descriptions
 - **Smart Library Matching**: Matches AI suggestions to your Music Assistant library using intelligent search with provider weighting
-- **Provider Weighting**: Prioritize specific music providers (e.g., Spotify, Tidal) when matching tracks
+- **Provider Weighting**: Prioritise specific music providers (e.g., Spotify, Tidal) when matching tracks
 - **Multi-Provider Support**: Configure multiple AI providers (Claude, OpenAI, compatible endpoints) with individual settings
 - **Enhanced Track Matching**: Select from multiple matching results when replacing tracks
 - **Track Management**: Replace or retry individual tracks, remove tracks from preview
 - **Iterative Refinement**: Refine generated playlists with additional instructions
-- **Enhanced Visualization**: Match statistics, progress bars, and track filters (All/Found/Not Found)
+- **Enhanced Visualisation**: Match statistics, progress bars, and track filters (All/Found/Not Found)
 - **Direct Playlist Links**: One-click access to created playlists in Music Assistant
 - **Prompt History**: Track previously used prompts
 - **Preset Prompts**: Quick access to common playlist types (workout, chill, party, focus, road trip, dinner party, study, throwback)
@@ -78,7 +78,7 @@ docker-compose up -d
    cp .env.example .env
    ```
 
-2. (Optional) Edit `.env` to customize:
+2. (Optional) Edit `.env` to customise:
    ```bash
    DATA_PATH=./data     # Where to store the database
    APP_PORT=9876        # Port to access the web UI
@@ -95,16 +95,16 @@ docker-compose up -d
    - Music Assistant URL (e.g., `http://192.168.1.100:8095`)
    - Add one or more AI providers (Claude, OpenAI, or compatible endpoints)
    - For each provider: name, API key, model selection, optional base URL and temperature
-   - Optionally configure provider weights (prioritize specific music sources like Spotify, Tidal, etc.)
+   - Optionally configure provider weights (prioritise specific music sources like Spotify, Tidal, etc.)
    - Test the connections to verify
-   - Optionally customize system prompt
+   - Optionally customise system prompt
 
 ### Development Setup (Local)
 
 ```bash
 git clone <repo-url>
 cd music-assistant-ai-playlist-creator
-cp .env.example .env  # Optional: customize dev ports in .env
+cp .env.example .env  # Optional: customise dev ports in .env
 npm install
 npm run dev
 ```
@@ -397,7 +397,7 @@ All application settings are configured through the web interface and stored in 
   - Model selection (dropdown of available models)
   - Base URL (for OpenAI-compatible endpoints)
   - Temperature (0-2, optional per-provider setting)
-- **Provider Weights**: Ordered list of keywords to prioritize music providers (e.g., "spotify", "tidal")
+- **Provider Weights**: Ordered list of keywords to prioritise music providers (e.g., "spotify", "tidal")
 - **System Prompt**: Custom instructions for the AI (preview default prompt in UI)
 
 ## Data Storage
@@ -515,7 +515,7 @@ The AI returns a structured JSON list of tracks with:
 
 ### Provider Weighting
 
-Configure an ordered list of provider keywords (e.g., "spotify", "tidal", "local") to prioritize specific music sources when matching tracks. Higher-weighted providers are preferred when multiple matches are found.
+Configure an ordered list of provider keywords (e.g., "spotify", "tidal", "local") to prioritise specific music sources when matching tracks. Higher-weighted providers are preferred when multiple matches are found.
 
 ## Updating
 
@@ -566,7 +566,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed version management and CI/CD p
 - Verify your Music Assistant library contains the suggested tracks
 - Try refining your prompt to be more specific to your library
 - Check that favorite artists are set in Music Assistant for better context
-- Adjust provider weights to prioritize specific music sources
+- Adjust provider weights to prioritise specific music sources
 - Use the "Replace" feature to get alternative suggestions from AI
 
 ## License

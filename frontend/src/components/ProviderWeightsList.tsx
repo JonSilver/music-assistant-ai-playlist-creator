@@ -75,7 +75,7 @@ export const ProviderWeightsList: React.FC<ProviderWeightsListProps> = ({ keywor
 
             {keywords.length === 0 ? (
                 <div className="text-sm opacity-60 italic">
-                    No provider keywords configured. Add keywords to prioritize providers.
+                    No provider keywords configured. Add keywords to prioritise providers.
                 </div>
             ) : (
                 <div className="space-y-2">

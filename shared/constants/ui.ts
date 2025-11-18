@@ -48,7 +48,7 @@ export const ERROR_MESSAGES = {
     INVALID_SETTINGS: 'Invalid settings',
     CONNECTION_FAILED: 'Connection failed',
     REQUEST_TIMEOUT: 'Request timeout',
-    WS_NOT_INITIALIZED: 'WebSocket not initialized',
+    WS_NOT_INITIALISED: 'WebSocket not initialised',
     WS_NOT_CONNECTED: 'Not connected to Music Assistant',
     PARSE_FAILED: 'Failed to parse MA message',
     UNKNOWN_ERROR: 'An unknown error occurred'

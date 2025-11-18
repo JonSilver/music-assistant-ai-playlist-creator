@@ -86,13 +86,13 @@ For each AI provider, users configure:
 
 **Provider Weights (Optional)**
 
-Users can prioritize which music sources to prefer when multiple versions of the same track exist in their library:
+Users can prioritise which music sources to prefer when multiple versions of the same track exist in their library:
 
 - An ordered list of provider keywords (e.g., "spotify", "tidal", "youtube", "local", "apple")
 - When a track is available from multiple sources, the app prefers matches in this order
 - If not configured, all sources are treated equally
 - Common use cases:
-  - Prefer higher quality sources (e.g., prioritize "tidal" over "youtube")
+  - Prefer higher quality sources (e.g., prioritise "tidal" over "youtube")
   - Prefer streaming services over local files
   - Prefer local files for offline availability
 
@@ -102,12 +102,12 @@ Users can prioritize which music sources to prefer when multiple versions of the
 
 Advanced users can override the default instructions given to the AI model:
 
-- **Default Behavior**: The app uses a carefully crafted system prompt that instructs the AI on how to generate playlists
-- **Custom Override**: Users can write their own system prompt to change AI behavior
-- **Preview Option**: A modal allows users to view the current default system prompt before customizing
+- **Default Behaviour**: The app uses a carefully crafted system prompt that instructs the AI on how to generate playlists
+- **Custom Override**: Users can write their own system prompt to change AI behaviour
+- **Preview Option**: A modal allows users to view the current default system prompt before customising
 - **Use Cases**:
   - Focus on specific music eras or genres
-  - Emphasize certain playlist characteristics (energy level, popularity, obscurity)
+  - Emphasise certain playlist characteristics (energy level, popularity, obscurity)
   - Add constraints (e.g., "never include explicit content")
   - Change output format or structure preferences
 
@@ -140,7 +140,7 @@ The AI understands:
 
 Seven pre-configured playlist descriptions are available for common scenarios:
 
-1. **High Energy Workout**: "Create an energizing workout playlist with high-tempo tracks, strong beats, and motivating energy. Mix of electronic, rock, and hip-hop."
+1. **High Energy Workout**: "Create an energising workout playlist with high-tempo tracks, strong beats, and motivating energy. Mix of electronic, rock, and hip-hop."
 2. **Focus & Study**: "Generate a focus playlist for studying or deep work. Instrumental or minimal vocals, steady rhythm, not too energetic. Electronic, ambient, or lo-fi preferred."
 3. **Party Mix**: "Create an upbeat party playlist with popular dance tracks and crowd-pleasers. High energy, familiar songs that get people moving."
 4. **Evening Relaxation**: "Generate a relaxing evening playlist for unwinding. Mellow, calm tracks with soothing melodies. Jazz, acoustic, ambient, or soft indie."
@@ -157,7 +157,7 @@ Selecting a preset:
 - A text field for naming the playlist that will be created
 - Defaults to descriptive names like "AI Playlist - [timestamp]"
 - Preset selections provide themed names (e.g., "High Energy Workout", "Road Trip Classics")
-- Fully customizable before generation
+- Fully customisable before generation
 
 **Number of Tracks**
 - A numeric input specifying how many tracks to generate
@@ -205,7 +205,7 @@ Once complete, users see:
 - Number of successful matches (e.g., "18 found")
 - Number of unmatched tracks (e.g., "7 not found")
 - Match percentage (e.g., "72% match rate")
-- Visual progress bar showing the match percentage in color-coded format
+- Visual progress bar showing the match percentage in colour-coded format
 
 **Tracks Table**
 
@@ -268,7 +268,7 @@ For each track, users have several options to improve matches:
    - User receives alternative suggestions from the AI
 
 3. **Remove Track**
-   - Remove even matched tracks to customize the playlist further
+   - Remove even matched tracks to customise the playlist further
 
 **Interaction Feedback**
 - All actions show loading spinners while processing
@@ -307,7 +307,7 @@ Instead of refining individual tracks, users can refine the entire playlist:
 - Playlist doesn't quite capture the intended mood
 - User wants to adjust energy level or tempo
 - User wants more/less variety
-- User wants to emphasize different aspects of the original description
+- User wants to emphasise different aspects of the original description
 
 **Iterative Refinement**
 - Users can refine multiple times
@@ -486,7 +486,7 @@ Users never lose:
    - Sees success message
    - Clicks the link to "Morning Gym Mix" in Music Assistant
    - Playlist opens in Music Assistant
-   - Starts workout with their perfectly customized playlist
+   - Starts workout with their perfectly customised playlist
 
 7. **Future Use**
    - Later that week, wants a similar playlist

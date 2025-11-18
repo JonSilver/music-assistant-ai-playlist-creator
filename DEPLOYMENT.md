@@ -72,7 +72,7 @@ When you publish a release on GitHub, the pipeline automatically creates the fol
 
 **Example:** Publishing release `v1.2.3` creates tags: `1.2.3`, `1.2`, `1`, and `latest`
 
-### Customizing the Docker Image Name
+### Customising the Docker Image Name
 
 By default, images are pushed to `$DOCKER_USERNAME/music-assistant-ai-playlist-creator`. To change this:
 

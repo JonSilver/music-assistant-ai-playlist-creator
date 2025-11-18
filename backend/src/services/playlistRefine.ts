@@ -48,7 +48,7 @@ export const refinePlaylist = async (
         throw new Error(`Failed to refine playlist: ${aiErr.message}`);
     }
 
-    // Initialize tracks - all marked as matching since we'll process them all
+    // Initialise tracks - all marked as matching since we'll process them all
     const newTracks: TrackMatch[] = aiResult.tracks.map(suggestion => ({
         suggestion,
         matched: false,
@@ -129,7 +129,7 @@ ${existingTracks}`;
         throw new Error("AI did not return a replacement track");
     }
 
-    // Initialize and match the replacement track
+    // Initialise and match the replacement track
     const replacementTracks: TrackMatch[] = [
         {
             suggestion: aiResult.tracks[0],

@@ -17,8 +17,8 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
         // Iterate through all setting fields defined in schema
         for (const key of settingsUtils.getAllKeys()) {
             const dbValue = db.getSetting(key);
-            const deserializedValue = settingsUtils.deserializeFromDB(key, dbValue);
-            settings[key] = deserializedValue ?? settingsUtils.getDefaultValue(key);
+            const deserialisedValue = settingsUtils.deserialiseFromDB(key, dbValue);
+            settings[key] = deserialisedValue ?? settingsUtils.getDefaultValue(key);
         }
 
         const response: GetSettingsResponse = settings as GetSettingsResponse;
@@ -44,8 +44,8 @@ export const setupSettingsRoutes = (router: Router, db: PlaylistDatabase): void 
         for (const key of Object.keys(updates) as SettingKey[]) {
             const value = updates[key];
             if (value !== undefined) {
-                const serializedValue = settingsUtils.serializeForDB(key, value as never);
-                db.setSetting(key, serializedValue);
+                const serialisedValue = settingsUtils.serialiseForDB(key, value as never);
+                db.setSetting(key, serialisedValue);
             }
         }
 

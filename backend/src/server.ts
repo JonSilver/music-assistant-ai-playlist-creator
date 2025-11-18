@@ -24,7 +24,7 @@ dotenv.config({ path: path.resolve(__dirname, "..", "..", ".env") });
 const app = express();
 const PORT = process.env.PORT ?? process.env.BACKEND_PORT ?? DEFAULT_BACKEND_PORT;
 
-// Initialize database
+// Initialise database
 const isProduction = process.env.NODE_ENV === "production";
 const dbPath = isProduction
     ? (process.env.DATABASE_PATH ?? "/app/data/playlists.db")

@@ -2,10 +2,10 @@
 
 ## Interactions
 
-- Use British English - it's the only actual English language. American is NOT English.
+- Use British English for all interactions, documentation, and code symbols - it's the only actual English language. American "English" is NOT English.
 - Be extremely concise. Sacrifice grammar for concision.
-- Ditch the sycophancy.
-- Ditch the self-congratulation. You always get stuff wrong, so doubt your own abilities.
+- Don't be sycophantic.
+- Avoid self-congratulation. You always get things wrong, so doubt your own abilities.
 - Your human pair programmer is a 45-year veteran software engineer and very much knows better than you in everything.
 - When unsure, ask for clarification.
 
@@ -133,7 +133,7 @@ shared/
 
 - **Providers:** Claude (Anthropic), OpenAI
 - **Track Count:** User-configurable (default 25)
-- **System Prompt:** Customizable per-installation
+- **System Prompt:** Customisable per-installation
 - **Response Format:** JSON with playlistName + array of {title, artist, album}
 
 ## Common Patterns
@@ -167,7 +167,7 @@ if (err !== undefined) {
 // Use result
 ```
 
-### Track Initialization
+### Track Initialisation
 ```typescript
 // ALL tracks MUST start with matching: true
 const tracks: TrackMatch[] = suggestions.map(s => ({
@@ -188,7 +188,7 @@ const tracks: TrackMatch[] = suggestions.map(s => ({
 1. **Duplicate type definitions** - Same interface in frontend + backend
 2. **Inline response objects** - Not using typed variables
 3. **Wrong import syntax** - `import { type Foo }` instead of `import type { Foo }`
-4. **Initializing with `matching: false`** - Causes UI to show "NOT FOUND" before matching starts
+4. **Initialising with `matching: false`** - Causes UI to show "NOT FOUND" before matching starts
 5. **Not retrying on 0 results** - Music Assistant search can return empty on first try
 6. **Using try/catch** - Banned, use @jfdi/attempt
 7. **Letting unused code accumulate** - Run knip regularly

@@ -13,10 +13,10 @@ export class PlaylistDatabase {
 
     constructor(dbPath: string) {
         this.db = new Database(dbPath);
-        this.initialize();
+        this.initialise();
     }
 
-    private initialize(): void {
+    private initialise(): void {
         // Settings table
         this.db.exec(`
       CREATE TABLE IF NOT EXISTS settings (
@@ -72,7 +72,7 @@ export class PlaylistDatabase {
                 id: "party-dance",
                 name: "Party Mix",
                 description: "Popular dance hits to get everyone moving",
-                prompt: "Create an energetic party playlist with current and classic dance hits. Mix pop, dance, EDM, and hip-hop. High energy, recognizable tracks that get people on the dance floor.",
+                prompt: "Create an energetic party playlist with current and classic dance hits. Mix pop, dance, EDM, and hip-hop. High energy, recognisable tracks that get people on the dance floor.",
                 category: "party"
             },
             {

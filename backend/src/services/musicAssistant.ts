@@ -68,7 +68,7 @@ export class MusicAssistantClient {
 
             return new Promise<void>((resolve, reject) => {
                 if (this.ws === null) {
-                    reject(new Error(ERROR_MESSAGES.WS_NOT_INITIALIZED));
+                    reject(new Error(ERROR_MESSAGES.WS_NOT_INITIALISED));
                     return;
                 }
 

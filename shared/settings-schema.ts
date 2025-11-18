@@ -39,8 +39,8 @@ interface BaseSettingField<T extends SettingFieldType, V = unknown> {
   defaultValue?: V;
   zodSchema: z.ZodTypeAny;
   dbTransform?: {
-    serialize: (value: V) => string;
-    deserialize: (value: string | null) => V | undefined;
+    serialise: (value: V) => string;
+    deserialise: (value: string | null) => V | undefined;
   };
 }
 
@@ -53,8 +53,8 @@ interface NumberSettingField extends BaseSettingField<'number', number> {
   type: 'number';
   zodSchema: z.ZodNumber | z.ZodOptional<z.ZodNumber>;
   dbTransform: {
-    serialize: (value: number) => string;
-    deserialize: (value: string | null) => number | undefined;
+    serialise: (value: number) => string;
+    deserialise: (value: string | null) => number | undefined;
   };
 }
 
@@ -62,8 +62,8 @@ interface BooleanSettingField extends BaseSettingField<'boolean', boolean> {
   type: 'boolean';
   zodSchema: z.ZodBoolean | z.ZodOptional<z.ZodBoolean>;
   dbTransform: {
-    serialize: (value: boolean) => string;
-    deserialize: (value: string | null) => boolean | undefined;
+    serialise: (value: boolean) => string;
+    deserialise: (value: string | null) => boolean | undefined;
   };
 }
 
@@ -77,8 +77,8 @@ interface ProvidersSettingField extends BaseSettingField<'providers', AIProvider
   type: 'providers';
   zodSchema: z.ZodArray<typeof AIProviderConfigSchema>;
   dbTransform: {
-    serialize: (value: AIProviderConfig[]) => string;
-    deserialize: (value: string | null) => AIProviderConfig[] | undefined;
+    serialise: (value: AIProviderConfig[]) => string;
+    deserialise: (value: string | null) => AIProviderConfig[] | undefined;
   };
 }
 
@@ -106,8 +106,8 @@ export const SETTINGS_FIELDS = {
     defaultValue: [],
     zodSchema: z.array(AIProviderConfigSchema),
     dbTransform: {
-      serialize: (value: AIProviderConfig[]) => JSON.stringify(value),
-      deserialize: (value: string | null) => {
+      serialise: (value: AIProviderConfig[]) => JSON.stringify(value),
+      deserialise: (value: string | null) => {
         if (value === null || value === '') return [];
         try {
           return JSON.parse(value) as AIProviderConfig[];
@@ -132,8 +132,8 @@ export const SETTINGS_FIELDS = {
     defaultValue: '[]',
     zodSchema: z.string(),
     dbTransform: {
-      serialize: (value: string) => value,
-      deserialize: (value: string | null) => {
+      serialise: (value: string) => value,
+      deserialise: (value: string | null) => {
         if (value === null || value === '') return '[]';
         try {
           const parsed = JSON.parse(value);
@@ -223,20 +223,20 @@ export const settingsUtils = {
   // Check if field is optional
   isOptional: (key: SettingKey): boolean => SETTINGS_FIELDS[key].optional ?? false,
 
-  // Serialize value for database storage
-  serializeForDB: <K extends SettingKey>(
+  // Serialise value for database storage
+  serialiseForDB: <K extends SettingKey>(
     key: K,
     value: InferFieldValue<SettingsFieldsConfig[K]>
   ): string => {
     const field = SETTINGS_FIELDS[key];
     if ('dbTransform' in field && field.dbTransform !== undefined) {
-      return field.dbTransform.serialize(value as never);
+      return field.dbTransform.serialise(value as never);
     }
     return String(value);
   },
 
-  // Deserialize value from database
-  deserializeFromDB: <K extends SettingKey>(
+  // Deserialise value from database
+  deserialiseFromDB: <K extends SettingKey>(
     key: K,
     value: string | null
   ): InferFieldValue<SettingsFieldsConfig[K]> | undefined => {
@@ -245,7 +245,7 @@ export const settingsUtils = {
       return ('defaultValue' in field ? field.defaultValue : undefined) as InferFieldValue<SettingsFieldsConfig[K]> | undefined;
     }
     if ('dbTransform' in field && field.dbTransform !== undefined) {
-      return field.dbTransform.deserialize(value) as InferFieldValue<SettingsFieldsConfig[K]> | undefined;
+      return field.dbTransform.deserialise(value) as InferFieldValue<SettingsFieldsConfig[K]> | undefined;
     }
     return value as InferFieldValue<SettingsFieldsConfig[K]>;
   },
@@ -320,8 +320,8 @@ export const settingsUtils = {
     // Iterate through all setting fields defined in schema
     for (const key of settingsUtils.getAllKeys()) {
       const dbValue = db.getSetting(key);
-      const deserializedValue = settingsUtils.deserializeFromDB(key, dbValue);
-      settings[key] = deserializedValue ?? settingsUtils.getDefaultValue(key);
+      const deserialisedValue = settingsUtils.deserialiseFromDB(key, dbValue);
+      settings[key] = deserialisedValue ?? settingsUtils.getDefaultValue(key);
     }
 
     const aiProviders = (settings.aiProviders as AIProviderConfig[] | undefined) ?? [];

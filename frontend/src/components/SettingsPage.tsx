@@ -132,7 +132,7 @@ export const SettingsPage = ({
                             ></textarea>
                             <label className="label">
                                 <span className="label-text-alt">
-                                    Customize how the AI curates playlists. Must return JSON format.
+                                    Customise how the AI curates playlists. Must return JSON format.
                                 </span>
                             </label>
                         </div>
@@ -149,7 +149,7 @@ export const SettingsPage = ({
                             />
                             <label className="label">
                                 <span className="label-text-alt">
-                                    Prioritize music providers when matching tracks
+                                    Prioritise music providers when matching tracks
                                 </span>
                             </label>
                         </div>
