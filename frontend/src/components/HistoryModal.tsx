@@ -1,19 +1,19 @@
 import React from "react";
 import type { PromptHistory } from "../../../shared/types";
 
-interface HistoryModalProps {
+interface IHistoryModalProps {
     show: boolean;
     onClose: () => void;
     history: PromptHistory[];
     onSelectHistory: (item: PromptHistory) => void;
 }
 
-export const HistoryModal = ({
+export const HistoryModal: React.FC<IHistoryModalProps> = ({
     show,
     onClose,
     history,
     onSelectHistory
-}: HistoryModalProps): React.JSX.Element | null => {
+}) => {
     if (!show) return null;
 
     return (

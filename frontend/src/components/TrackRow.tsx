@@ -6,7 +6,7 @@ import { ReplaceIcon } from "./icons/ReplaceIcon";
 import { TrashIcon } from "./icons/TrashIcon";
 import { TrackRowMobile } from "./TrackRowMobile";
 
-interface TrackRowProps {
+interface ITrackRowProps {
     track: TrackMatch;
     index: number;
     replacingTrackIndex: number | null;
@@ -17,7 +17,7 @@ interface TrackRowProps {
     onSelectMatch: (trackIndex: number, matchIndex: number) => void;
 }
 
-export const TrackRow = ({
+export const TrackRow: React.FC<ITrackRowProps> = ({
     track,
     index,
     replacingTrackIndex,
@@ -26,7 +26,7 @@ export const TrackRow = ({
     onRetryTrack,
     onRemoveTrack,
     onSelectMatch
-}: TrackRowProps): React.JSX.Element => {
+}) => {
     const hasMultipleMatches = track.maMatches !== undefined && track.maMatches.length > 1;
     const selectedMatch =
         hasMultipleMatches && track.maMatches !== undefined

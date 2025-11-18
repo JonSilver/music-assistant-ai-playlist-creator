@@ -2,7 +2,7 @@ import type { AIProviderConfig } from "@shared/types";
 import React from "react";
 import { VersionCopyrightFooter } from "./VersionCopyrightFooter";
 
-interface PlaylistCreatorFormProps {
+interface IPlaylistCreatorFormProps {
     playlistName: string;
     prompt: string;
     trackCount: string;
@@ -16,7 +16,7 @@ interface PlaylistCreatorFormProps {
     onGenerate: () => void;
 }
 
-export const PlaylistCreatorForm = ({
+export const PlaylistCreatorForm: React.FC<IPlaylistCreatorFormProps> = ({
     playlistName,
     prompt,
     trackCount,
@@ -28,7 +28,7 @@ export const PlaylistCreatorForm = ({
     onTrackCountChange,
     onProviderChange,
     onGenerate
-}: PlaylistCreatorFormProps): React.JSX.Element => {
+}) => {
     const selectedProvider = providers.find(p => p.id === selectedProviderId);
     const providerName = selectedProvider?.name ?? "AI";
 

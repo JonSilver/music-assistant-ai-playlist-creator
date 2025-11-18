@@ -5,12 +5,15 @@
 
 import React, { useState } from "react";
 
-interface ProviderWeightsListProps {
+interface IProviderWeightsListProps {
     keywords: string[];
     onChange: (keywords: string[]) => void;
 }
 
-export const ProviderWeightsList: React.FC<ProviderWeightsListProps> = ({ keywords, onChange }) => {
+export const ProviderWeightsList: React.FC<IProviderWeightsListProps> = ({
+    keywords,
+    onChange
+}) => {
     const [inputValue, setInputValue] = useState("");
 
     const handleAdd = (): void => {

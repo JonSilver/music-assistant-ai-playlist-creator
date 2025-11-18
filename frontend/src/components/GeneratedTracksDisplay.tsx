@@ -3,7 +3,7 @@ import type { TrackMatch } from "../../../shared/types";
 import { UI_LABELS, TRACK_FILTERS, MATCH_THRESHOLDS } from "@shared/constants";
 import { TrackRow } from "./TrackRow";
 
-interface GeneratedTracksDisplayProps {
+interface IGeneratedTracksDisplayProps {
     tracks: TrackMatch[];
     creating: boolean;
     replacingTrackIndex: number | null;
@@ -19,7 +19,7 @@ interface GeneratedTracksDisplayProps {
     onCreate: () => void;
 }
 
-export const GeneratedTracksDisplay = ({
+export const GeneratedTracksDisplay: React.FC<IGeneratedTracksDisplayProps> = ({
     tracks,
     creating,
     replacingTrackIndex,
@@ -33,7 +33,7 @@ export const GeneratedTracksDisplay = ({
     onClear,
     onRefine,
     onCreate
-}: GeneratedTracksDisplayProps): React.JSX.Element | null => {
+}) => {
     if (tracks.length === 0) return null;
 
     const matchedCount = tracks.filter(t => t.matched).length;

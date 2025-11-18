@@ -1,6 +1,6 @@
 import React from "react";
 
-export const SettingsHeader = (): React.JSX.Element => (
+export const SettingsHeader: React.FC = () => (
     <div className="mb-6 flex items-start gap-2 sm:gap-3">
         <img src="/logo.png" alt="Logo" className="h-8 sm:h-12 flex-shrink-0" />
         <div className="flex flex-col items-start flex-1 min-w-0">

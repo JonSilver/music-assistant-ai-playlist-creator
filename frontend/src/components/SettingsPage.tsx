@@ -8,7 +8,7 @@ import { ProviderWeightsList } from "./ProviderWeightsList";
 import { SettingsHeader } from "./SettingsHeader";
 import { VersionCopyrightFooter } from "./VersionCopyrightFooter";
 
-interface SettingsPageProps {
+interface ISettingsPageProps {
     musicAssistantUrl: string;
     setMusicAssistantUrl: (value: string) => void;
     aiProviders: AIProviderConfig[];
@@ -27,7 +27,7 @@ interface SettingsPageProps {
     showCancel: boolean;
 }
 
-export const SettingsPage = ({
+export const SettingsPage: React.FC<ISettingsPageProps> = ({
     musicAssistantUrl,
     setMusicAssistantUrl,
     aiProviders,
@@ -42,7 +42,7 @@ export const SettingsPage = ({
     onSave,
     onCancel,
     showCancel
-}: SettingsPageProps): React.JSX.Element => {
+}) => {
     const [showDefaultPrompt, setShowDefaultPrompt] = useState(false);
 
     // Handle provider keywords change

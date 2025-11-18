@@ -1,11 +1,11 @@
 import React from "react";
 
-interface NavbarProps {
+interface INavbarProps {
     onShowHistory: () => void;
     onShowSettings: () => void;
 }
 
-export const Navbar = ({ onShowHistory, onShowSettings }: NavbarProps): React.JSX.Element => (
+export const Navbar: React.FC<INavbarProps> = ({ onShowHistory, onShowSettings }) => (
     <div className="navbar bg-base-100 shadow-lg">
         <div className="container mx-auto px-2 sm:px-4 flex items-center max-w-6xl">
             <div className="flex-1 flex items-start gap-2 sm:gap-3 min-w-0">

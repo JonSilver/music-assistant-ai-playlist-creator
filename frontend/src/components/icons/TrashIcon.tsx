@@ -1,6 +1,6 @@
 import React from "react";
 
-export const TrashIcon = (): React.JSX.Element => (
+export const TrashIcon: React.FC = () => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

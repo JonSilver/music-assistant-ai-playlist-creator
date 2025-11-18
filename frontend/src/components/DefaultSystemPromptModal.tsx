@@ -1,6 +1,6 @@
 import React from "react";
 
-interface DefaultSystemPromptModalProps {
+interface IDefaultSystemPromptModalProps {
     show: boolean;
     onClose: () => void;
 }
@@ -29,10 +29,10 @@ Guidelines:
 - Be specific with track titles and artist names
 - Consider the user's favorite artists when relevant`;
 
-export const DefaultSystemPromptModal = ({
+export const DefaultSystemPromptModal: React.FC<IDefaultSystemPromptModalProps> = ({
     show,
     onClose
-}: DefaultSystemPromptModalProps): React.JSX.Element => (
+}) => (
     <dialog className={`modal ${show ? "modal-open" : ""}`}>
         <div className="modal-box max-w-2xl">
             <h3 className="font-bold text-lg mb-4">Default System Prompt</h3>

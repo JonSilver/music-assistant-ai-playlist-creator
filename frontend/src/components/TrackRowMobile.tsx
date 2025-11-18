@@ -1,7 +1,7 @@
 import type { MATrack, TrackMatch } from "@shared/types";
 import React from "react";
 
-interface TrackRowMobileProps {
+interface ITrackRowMobileProps {
     track: TrackMatch;
     index: number;
     selectedMatch: MATrack | undefined;
@@ -12,7 +12,7 @@ interface TrackRowMobileProps {
     onSelectMatch: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
-export const TrackRowMobile = ({
+export const TrackRowMobile: React.FC<ITrackRowMobileProps> = ({
     track,
     index,
     selectedMatch,
@@ -21,7 +21,7 @@ export const TrackRowMobile = ({
     actionButtons,
     formatMatchOption,
     onSelectMatch
-}: TrackRowMobileProps): React.JSX.Element => (
+}) => (
     <tr className="md:hidden">
         <td colSpan={6} className="p-0">
             <div className={`card bg-base-200 m-2 ${track.matched ? "" : "opacity-50"}`}>

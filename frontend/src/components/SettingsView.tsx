@@ -4,7 +4,7 @@ import { useSettings } from "../hooks/useSettings";
 import { AlertMessage } from "./AlertMessage";
 import { SettingsPage } from "./SettingsPage";
 
-interface SettingsViewProps {
+interface ISettingsViewProps {
     settings: GetSettingsResponse | null;
     updateSettings: (updates: {
         musicAssistantUrl: string;
@@ -21,7 +21,7 @@ interface SettingsViewProps {
     settingsComplete: boolean;
 }
 
-export const SettingsView = ({
+export const SettingsView: React.FC<ISettingsViewProps> = ({
     settings,
     updateSettings,
     setError,
@@ -31,7 +31,7 @@ export const SettingsView = ({
     clearError,
     clearSuccess,
     settingsComplete
-}: SettingsViewProps): React.JSX.Element => {
+}) => {
     const settingsManager = useSettings(settings, updateSettings, setError, closeSettings);
 
     return (

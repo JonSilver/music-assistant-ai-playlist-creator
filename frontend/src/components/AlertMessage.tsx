@@ -1,6 +1,6 @@
 import React from "react";
 
-interface AlertMessageProps {
+interface IAlertMessageProps {
     type: "error" | "success";
     message: string;
     onDismiss: () => void;
@@ -56,11 +56,7 @@ const renderMessageWithLinks = (message: string): React.JSX.Element => {
     return <span>{processedParts.parts}</span>;
 };
 
-export const AlertMessage = ({
-    type,
-    message,
-    onDismiss
-}: AlertMessageProps): React.JSX.Element => (
+export const AlertMessage: React.FC<IAlertMessageProps> = ({ type, message, onDismiss }) => (
     <div className={`alert ${type === "error" ? "alert-error" : "alert-success"} mb-4`}>
         <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -6,7 +6,7 @@ import React, { useState } from "react";
 import type { AIProviderConfig, ProviderType } from "../../../shared/types";
 import { SearchableSelect } from "./SearchableSelect";
 
-interface ProvidersManagerProps {
+interface IProvidersManagerProps {
     providers: AIProviderConfig[];
     onChange: (providers: AIProviderConfig[]) => void;
 }
@@ -16,10 +16,7 @@ interface ModelOption {
     label: string;
 }
 
-export const ProvidersManager = ({
-    providers,
-    onChange
-}: ProvidersManagerProps): React.JSX.Element => {
+export const ProvidersManager: React.FC<IProvidersManagerProps> = ({ providers, onChange }) => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Partial<AIProviderConfig>>({});
     const [availableModels, setAvailableModels] = useState<ModelOption[]>([]);

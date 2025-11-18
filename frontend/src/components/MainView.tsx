@@ -1,5 +1,5 @@
 import type { GetSettingsResponse, PresetPrompt, PromptHistory } from "@shared/types";
-import { type FC } from "react";
+import React from "react";
 import type { UsePlaylistReturn } from "../hooks/usePlaylist";
 import { AlertMessage } from "./AlertMessage";
 import { GeneratedTracksDisplay } from "./GeneratedTracksDisplay";
@@ -9,7 +9,7 @@ import { PlaylistCreatorForm } from "./PlaylistCreatorForm";
 import { PresetPrompts } from "./PresetPrompts";
 import { RefinePlaylistModal } from "./RefinePlaylistModal";
 
-interface MainViewProps {
+interface IMainViewProps {
     settings: GetSettingsResponse;
     selectedProviderId: string | null;
     setSelectedProviderId: (id: string) => void;
@@ -29,7 +29,7 @@ interface MainViewProps {
     closeRefine: () => void;
 }
 
-export const MainView: FC<MainViewProps> = ({
+export const MainView: React.FC<IMainViewProps> = ({
     settings,
     selectedProviderId,
     setSelectedProviderId,

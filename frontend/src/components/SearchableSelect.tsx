@@ -12,19 +12,19 @@ interface Option {
     label: string;
 }
 
-interface SearchableSelectProps {
+interface ISearchableSelectProps {
     options: Option[];
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
 }
 
-export const SearchableSelect = ({
+export const SearchableSelect: React.FC<ISearchableSelectProps> = ({
     options,
     value,
     onChange,
     placeholder = "Type to search..."
-}: SearchableSelectProps): React.JSX.Element => {
+}) => {
     const [query, setQuery] = useState("");
 
     const filteredOptions =

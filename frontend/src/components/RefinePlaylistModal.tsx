@@ -1,6 +1,6 @@
 import React from "react";
 
-interface RefinePlaylistModalProps {
+interface IRefinePlaylistModalProps {
     show: boolean;
     onClose: () => void;
     refinementPrompt: string;
@@ -9,14 +9,14 @@ interface RefinePlaylistModalProps {
     onRefine: () => void;
 }
 
-export const RefinePlaylistModal = ({
+export const RefinePlaylistModal: React.FC<IRefinePlaylistModalProps> = ({
     show,
     onClose,
     refinementPrompt,
     onRefinementPromptChange,
     refining,
     onRefine
-}: RefinePlaylistModalProps): React.JSX.Element | null => {
+}) => {
     if (!show) return null;
 
     const handleClose = (): void => {
