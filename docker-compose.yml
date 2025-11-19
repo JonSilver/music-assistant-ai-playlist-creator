@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
   app:
     image: ${DOCKER_IMAGE:-jonsilver/music-assistant-ai-playlist-creator}:${IMAGE_TAG:-latest}
     container_name: playlist-creator
+    pull_policy: always
     ports:
       - "${APP_PORT:-9876}:${APP_PORT:-9876}"
     environment:
