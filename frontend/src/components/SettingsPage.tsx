@@ -147,17 +147,12 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
 
                         <div className="form-control mb-4">
                             <label className="label">
-                                <span className="label-text">Provider Preferences (Optional)</span>
+                                <span className="label-text">Provider Priority (Optional)</span>
                             </label>
                             <ProviderWeightsList
                                 keywords={parseProviderKeywords(providerWeights)}
                                 onChange={handleProviderKeywordsChange}
                             />
-                            <label className="label">
-                                <span className="label-text-alt">
-                                    Prioritise music providers when matching tracks
-                                </span>
-                            </label>
                         </div>
 
                         <div className="relative card-actions justify-end gap-2">

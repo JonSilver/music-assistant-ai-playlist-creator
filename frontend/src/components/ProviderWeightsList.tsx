@@ -120,6 +120,12 @@ export const ProviderWeightsList: React.FC<IProviderWeightsListProps> = ({
                             </div>
                         </div>
                     ))}
+                    <label className="label">
+                        <span className="label-text-alt">
+                            Track-matching weights multiple matches for a track with these keyword
+                            priorities.
+                        </span>
+                    </label>
                 </div>
             )}
         </div>
