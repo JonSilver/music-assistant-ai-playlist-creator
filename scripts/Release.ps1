@@ -88,6 +88,22 @@ try {
         exit 1
     }
 
+    # Get repository URL from git remote
+    Write-Host "Getting repository URL..." -ForegroundColor Cyan
+    $RemoteUrl = git remote get-url origin 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to get git remote URL"
+    }
+
+    # Convert git URL to HTTPS GitHub URL
+    # Handles both HTTPS (https://github.com/user/repo.git) and SSH (git@github.com:user/repo.git)
+    if ($RemoteUrl -match 'github\.com[:/](.+?)(?:\.git)?$') {
+        $RepoPath = $matches[1]
+        $RepoUrl = "https://github.com/$RepoPath"
+    } else {
+        throw "Could not parse GitHub repository URL from: $RemoteUrl"
+    }
+
     # Build Update-Version.ps1 parameters
     $UpdateVersionParams = @{
         Action = $Action
@@ -125,12 +141,21 @@ try {
             "set" { $Version }
         }
 
+        # Get repo URL for dry run display
+        $RemoteUrl = git remote get-url origin 2>&1
+        if ($RemoteUrl -match 'github\.com[:/](.+?)(?:\.git)?$') {
+            $RepoPath = $matches[1]
+            $DryRunRepoUrl = "https://github.com/$RepoPath"
+        } else {
+            $DryRunRepoUrl = "[repository URL]"
+        }
+
         Write-Host "`nWould push all commits to origin" -ForegroundColor Magenta
         Write-Host "Would create and push tag: $NewVersion" -ForegroundColor Magenta
         if ($Auto) {
             Write-Host "Would run: gh release create $NewVersion --title `"v$NewVersion`" --generate-notes" -ForegroundColor Magenta
         } else {
-            Write-Host "Would open: https://github.com/JonSilver/music-assistant-ai-playlist-creator/releases/new?tag=$NewVersion" -ForegroundColor Magenta
+            Write-Host "Would open: $DryRunRepoUrl/releases/new?tag=$NewVersion" -ForegroundColor Magenta
         }
         return
     }
@@ -180,10 +205,9 @@ try {
         Write-Host "Version: $NewVersion" -ForegroundColor Green
         Write-Host "Tag: $TagName" -ForegroundColor Green
         Write-Host "Pushed to: origin/$CurrentBranch" -ForegroundColor Green
-        Write-Host "Release: https://github.com/JonSilver/music-assistant-ai-playlist-creator/releases/tag/$TagName" -ForegroundColor Green
+        Write-Host "Release: $RepoUrl/releases/tag/$TagName" -ForegroundColor Green
     } else {
         # Open GitHub create release page in browser
-        $RepoUrl = "https://github.com/JonSilver/music-assistant-ai-playlist-creator"
         $ReleaseUrl = "$RepoUrl/releases/new?tag=$TagName"
 
         Write-Host "`nOpening GitHub release page..." -ForegroundColor Cyan
