@@ -10,10 +10,8 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@anthropic-ai/sdk": "^0.68.0",
         "@headlessui/react": "^2.2.9",
         "@jfdi/attempt": "^1.3.9",
-        "openai": "^6.8.1",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
         "zod": "^4.1.12"
