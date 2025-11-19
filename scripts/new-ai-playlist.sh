@@ -130,23 +130,25 @@ if [[ -z "$PLAYLIST_NAME" ]]; then
     fi
 fi
 
-# Build generation request JSON
-REQUEST_JSON=$(cat <<EOF
+# Build generation request JSON in temp file
+TEMP_REQUEST=$(mktemp)
+trap "rm -f $TEMP_REQUEST" EXIT
+
+cat > "$TEMP_REQUEST" <<EOF
 {
     "prompt": "$PROMPT",
     "trackCount": $TRACK_COUNT
 EOF
-)
 
 if [[ -n "$PROVIDER_PREFERENCE" ]]; then
-    REQUEST_JSON+=",\"providerPreference\": \"$PROVIDER_PREFERENCE\""
+    echo ",\"providerPreference\": \"$PROVIDER_PREFERENCE\"" >> "$TEMP_REQUEST"
 fi
 
 if [[ -n "$WEBHOOK_URL" ]]; then
-    REQUEST_JSON+=",\"webhookUrl\": \"$WEBHOOK_URL\""
+    echo ",\"webhookUrl\": \"$WEBHOOK_URL\"" >> "$TEMP_REQUEST"
 fi
 
-REQUEST_JSON+="}"
+echo "}" >> "$TEMP_REQUEST"
 
 write_status "Starting playlist generation..." "$GREEN"
 write_status "Prompt: $PROMPT"
@@ -156,7 +158,7 @@ write_status "Tracks: $TRACK_COUNT"
 GENERATE_RESPONSE=$(curl -s -w "\n%{http_code}" \
     -X POST \
     -H "Content-Type: application/json" \
-    -d "$REQUEST_JSON" \
+    -d @"$TEMP_REQUEST" \
     "$SERVER_URL/api/playlists/generate")
 
 HTTP_CODE=$(echo "$GENERATE_RESPONSE" | tail -n1)
@@ -265,22 +267,21 @@ write_status "Creating playlist: $PLAYLIST_NAME" "$GREEN"
 ESCAPED_NAME=$(echo "$PLAYLIST_NAME" | sed 's/"/\\"/g')
 ESCAPED_PROMPT=$(echo "$PROMPT" | sed 's/"/\\"/g')
 
-# Extract tracks array from job status
-TRACKS_ARRAY=$(echo "$JOB_STATUS" | grep -o '"tracks":\[.*\]' | cut -d':' -f2- || echo "[]")
+# Extract tracks array and build request in temp file
+TEMP_CREATE=$(mktemp)
+trap "rm -f $TEMP_CREATE" EXIT
 
-CREATE_REQUEST=$(cat <<EOF
-{
-    "playlistName": "$ESCAPED_NAME",
-    "prompt": "$ESCAPED_PROMPT",
-    "tracks": $TRACKS_ARRAY
-}
-EOF
-)
+echo "{" > "$TEMP_CREATE"
+echo "  \"playlistName\": \"$ESCAPED_NAME\"," >> "$TEMP_CREATE"
+echo "  \"prompt\": \"$ESCAPED_PROMPT\"," >> "$TEMP_CREATE"
+echo "  \"tracks\": " >> "$TEMP_CREATE"
+echo "$JOB_STATUS" | grep -o '"tracks":\[.*\]' | cut -d':' -f2- >> "$TEMP_CREATE"
+echo "}" >> "$TEMP_CREATE"
 
 CREATE_RESPONSE=$(curl -s -w "\n%{http_code}" \
     -X POST \
     -H "Content-Type: application/json" \
-    -d "$CREATE_REQUEST" \
+    -d @"$TEMP_CREATE" \
     "$SERVER_URL/api/playlists/create")
 
 HTTP_CODE=$(echo "$CREATE_RESPONSE" | tail -n1)
