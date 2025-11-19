@@ -242,7 +242,7 @@ Use the `Release.ps1` script to automate the entire release process:
 **Basic usage:**
 ```powershell
 # Increment patch version (0.7.11 → 0.7.12)
-.\scripts\Release.ps1 -Action patch
+.\devscripts\Release.ps1 -Action patch
 
 # Increment minor version (0.7.11 → 0.8.0)
 .\scripts\Release.ps1 -Action minor
@@ -257,7 +257,7 @@ Use the `Release.ps1` script to automate the entire release process:
 **Automatic release creation:**
 ```powershell
 # Create release automatically with gh CLI (no browser needed)
-.\scripts\Release.ps1 -Action patch -Auto
+.\devscripts\Release.ps1 -Action patch -Auto
 ```
 
 **The script automatically:**
@@ -280,7 +280,7 @@ Use the `Release.ps1` script to automate the entire release process:
 **Dry run:**
 ```powershell
 # See what would happen without making changes
-.\scripts\Release.ps1 -Action patch -DryRun
+.\devscripts\Release.ps1 -Action patch -DryRun
 ```
 
 ### Manual Release Process
@@ -289,7 +289,7 @@ If you prefer manual control:
 
 1. **Update version:**
    ```powershell
-   .\scripts\Update-Version.ps1 -Action patch
+   .\devscripts\Update-Version.ps1 -Action patch
    ```
 
 2. **Push changes:**

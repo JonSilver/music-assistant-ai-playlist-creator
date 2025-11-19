@@ -349,9 +349,11 @@ automation:
 
 **Custom Scripts**: Any HTTP client can integrate via the REST API.
 
-### PowerShell CLI
+### Command-Line Scripts
 
-A PowerShell script is provided for command-line playlist generation:
+Command-line scripts are provided for both PowerShell (Windows) and Bash (Linux/macOS/NAS):
+
+#### PowerShell (Windows)
 
 ```powershell
 # Basic usage
@@ -364,9 +366,7 @@ A PowerShell script is provided for command-line playlist generation:
     -TrackCount 15
 
 # Generate without creating (preview only)
-.\scripts\New-AIPlaylist.ps1 `
-    -Prompt "Workout mix" `
-    -NoCreate
+.\scripts\New-AIPlaylist.ps1 -Prompt "Workout mix" -NoCreate
 
 # Custom server and AI provider
 .\scripts\New-AIPlaylist.ps1 `
@@ -378,18 +378,55 @@ A PowerShell script is provided for command-line playlist generation:
 .\scripts\Test-AIPlaylist.ps1
 ```
 
-**Parameters**:
-- `-ServerUrl`: API server URL (default: `http://localhost:9876`)
-- `-Prompt`: Natural language playlist description (required)
-- `-TrackCount`: Number of tracks (default: 20)
-- `-PlaylistName`: Playlist name (defaults to prompt text)
-- `-ProviderPreference`: AI provider ID (optional)
-- `-WebhookUrl`: Webhook for async completion (optional)
-- `-NoCreate`: Generate tracks without creating playlist
-- `-PollInterval`: Seconds between status polls (default: 2)
-- `-Timeout`: Max wait time in seconds (default: 300)
+#### Bash (Linux/macOS/NAS)
 
-**Output**: Returns a PowerShell object with job details, playlist URL, and track information.
+```bash
+# Basic usage
+./scripts/new-ai-playlist.sh -p "Upbeat 80s rock for a road trip" -c 25
+
+# Specify playlist name
+./scripts/new-ai-playlist.sh \
+    -p "Relaxing jazz for dinner" \
+    -n "Evening Jazz" \
+    -c 15
+
+# Generate without creating (preview only)
+./scripts/new-ai-playlist.sh -p "Workout mix" -N
+
+# Custom server and AI provider
+./scripts/new-ai-playlist.sh \
+    -s "http://192.168.1.100:9876" \
+    -p "Study music" \
+    -P "claude-sonnet"
+
+# Run test script
+./scripts/test-ai-playlist.sh
+
+# Show help
+./scripts/new-ai-playlist.sh -h
+```
+
+**Note**: When copying bash scripts from Windows to Linux/NAS, fix line endings:
+
+```bash
+sed -i 's/\r$//' new-ai-playlist.sh test-ai-playlist.sh
+```
+
+#### Common Parameters
+
+| PowerShell | Bash | Description | Default |
+|------------|------|-------------|---------|
+| `-ServerUrl` | `-s, --server` | API server URL | `http://localhost:9876` (PS), `http://localhost:3333` (test) |
+| `-Prompt` | `-p, --prompt` | Playlist description (required) | - |
+| `-TrackCount` | `-c, --count` | Number of tracks | `20` |
+| `-PlaylistName` | `-n, --name` | Playlist name | Prompt text |
+| `-ProviderPreference` | `-P, --provider` | AI provider ID | - |
+| `-WebhookUrl` | `-w, --webhook` | Webhook URL for async completion | - |
+| `-NoCreate` | `-N, --no-create` | Generate without creating | `false` |
+| `-PollInterval` | `-i, --interval` | Seconds between status polls | `2` |
+| `-Timeout` | `-t, --timeout` | Max wait time in seconds | `300` |
+
+**Output**: Both scripts return structured output with job details, playlist URL, and track information.
 
 ### Webhook Integration
 
@@ -461,9 +498,13 @@ To use a different location, edit `DATA_PATH` in your `.env` file.
 ├── shared/                       # Shared TypeScript types
 │   └── types.ts
 │
-├── scripts/                      # Integration and release scripts
+├── scripts/                      # Integration scripts
 │   ├── New-AIPlaylist.ps1        # PowerShell CLI for playlist generation
-│   ├── Test-AIPlaylist.ps1       # Test script for API
+│   ├── Test-AIPlaylist.ps1       # PowerShell test script
+│   ├── new-ai-playlist.sh        # Bash CLI for playlist generation
+│   └── test-ai-playlist.sh       # Bash test script
+│
+├── devscripts/                   # Development scripts
 │   ├── Update-Version.ps1        # Version bumping script
 │   └── Release.ps1               # Release automation script
 │
