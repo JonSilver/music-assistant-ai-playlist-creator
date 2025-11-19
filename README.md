@@ -16,6 +16,33 @@ An AI-powered web application for creating intelligent playlists in Music Assist
 - **Prompt History**: Track previously used prompts
 - **Preset Prompts**: Quick access to common playlist types (workout, chill, party, focus, road trip, dinner party, study, throwback)
 
+## Screenshots
+
+### Settings
+Configure Music Assistant connection, AI providers, and provider weighting preferences.
+
+![Settings](screenshots/settings.png)
+
+### Playlist Generation Workflow
+
+**Initial Prompt**
+![Before Generation](screenshots/playlist%20-%20before.png)
+
+**AI Generating Suggestions**
+![Generating](screenshots/playlist%20-%20generating.png)
+
+**Matching Tracks in Library**
+![Matching](screenshots/playlist%20-%20matching.png)
+
+**Ready to Create**
+![Create](screenshots/playlist%20-%20create.png)
+
+**Direct Link to Music Assistant**
+![Open in MA](screenshots/playlist%20-%20open%20in%20MA.png)
+
+**Playlist in Music Assistant**
+![Playlist in MA](screenshots/playlist%20-%20in%20MA.png)
+
 ## Architecture
 
 ### Tech Stack
