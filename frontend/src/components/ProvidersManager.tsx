@@ -1,3 +1,4 @@
+import { randId } from "@/utils/general";
 import React, { useState } from "react";
 import type { AIProviderConfig } from "../../../shared/types";
 import { ProviderForm } from "./ProviderForm";
@@ -21,7 +22,7 @@ export const ProvidersManager: React.FC<IProvidersManagerProps> = ({
     const startAdd = (): void => {
         setEditingId("new");
         setEditForm({
-            id: crypto.randomUUID(),
+            id: randId(),
             name: "",
             type: "anthropic",
             apiKey: "",
