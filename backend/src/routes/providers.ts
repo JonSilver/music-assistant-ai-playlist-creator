@@ -41,7 +41,8 @@ export const setupProvidersRoutes = (router: Router): void => {
                 const [err, models] = await attemptPromise(async () => {
                     const client = new OpenAI({
                         apiKey: apiKey ?? "not-required",
-                        baseURL: baseUrl !== undefined && baseUrl.trim() !== "" ? baseUrl : undefined
+                        baseURL:
+                            baseUrl !== undefined && baseUrl.trim() !== "" ? baseUrl : undefined
                     });
                     const response = await client.models.list();
                     return response.data.map(

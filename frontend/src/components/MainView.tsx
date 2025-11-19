@@ -89,6 +89,7 @@ export const MainView: React.FC<IMainViewProps> = ({
                         replacingTrackIndex={playlist.replacingTrackIndex}
                         retryingTrackIndex={playlist.retryingTrackIndex}
                         trackFilter={playlist.trackFilter}
+                        musicAssistantUrl={settings.musicAssistantUrl}
                         onTrackFilterChange={playlist.setTrackFilter}
                         onReplaceTrack={(index: number) => {
                             void playlist.replaceTrack(index);

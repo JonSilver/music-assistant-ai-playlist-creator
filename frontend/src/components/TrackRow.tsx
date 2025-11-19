@@ -4,6 +4,9 @@ import { UI_LABELS } from "@shared/constants";
 import { RetryIcon } from "./icons/RetryIcon";
 import { ReplaceIcon } from "./icons/ReplaceIcon";
 import { TrashIcon } from "./icons/TrashIcon";
+import { ExternalLinkIcon } from "./icons/ExternalLinkIcon";
+import { CheckIcon } from "./icons/CheckIcon";
+import { CrossIcon } from "./icons/CrossIcon";
 import { TrackRowMobile } from "./TrackRowMobile";
 
 interface ITrackRowProps {
@@ -11,6 +14,7 @@ interface ITrackRowProps {
     index: number;
     replacingTrackIndex: number | null;
     retryingTrackIndex: number | null;
+    musicAssistantUrl: string;
     onReplaceTrack: (index: number) => void;
     onRetryTrack: (index: number) => void;
     onRemoveTrack: (index: number) => void;
@@ -22,6 +26,7 @@ export const TrackRow: React.FC<ITrackRowProps> = ({
     index,
     replacingTrackIndex,
     retryingTrackIndex,
+    musicAssistantUrl,
     onReplaceTrack,
     onRetryTrack,
     onRemoveTrack,
@@ -45,6 +50,11 @@ export const TrackRow: React.FC<ITrackRowProps> = ({
         return `${idx + 1}. ${match.name} - ${artist}${album !== undefined ? ` (${album})` : ""} [${provider}]`;
     };
 
+    const getTrackUrl = (match: MATrack | undefined): string =>
+        match !== undefined
+            ? `${musicAssistantUrl}/#/tracks/${match.provider}/${match.item_id}`
+            : "#";
+
     const statusBadge =
         track.matching === true ? (
             <span className="badge badge-warning gap-1">
@@ -53,19 +63,7 @@ export const TrackRow: React.FC<ITrackRowProps> = ({
             </span>
         ) : track.matched ? (
             <span className="badge badge-success gap-1">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    className="inline-block w-4 h-4 stroke-current"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                    ></path>
-                </svg>
+                <CheckIcon />
                 {UI_LABELS.FOUND}
                 {hasMultipleMatches && track.maMatches !== undefined && (
                     <span className="ml-1">({track.maMatches.length})</span>
@@ -73,25 +71,24 @@ export const TrackRow: React.FC<ITrackRowProps> = ({
             </span>
         ) : (
             <span className="badge badge-error gap-1">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    className="inline-block w-4 h-4 stroke-current"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                    ></path>
-                </svg>
+                <CrossIcon />
                 {UI_LABELS.NOT_FOUND}
             </span>
         );
 
     const actionButtons = (
         <div className="flex gap-1">
+            {track.matched && selectedMatch !== undefined && (
+                <a
+                    href={getTrackUrl(selectedMatch)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-ghost btn-xs btn-square"
+                    title="View in Music Assistant"
+                >
+                    <ExternalLinkIcon />
+                </a>
+            )}
             {!track.matched && track.matching !== true && (
                 <button
                     className="btn btn-ghost btn-xs btn-square"

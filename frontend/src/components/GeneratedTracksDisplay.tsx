@@ -10,6 +10,7 @@ interface IGeneratedTracksDisplayProps {
     replacingTrackIndex: number | null;
     retryingTrackIndex: number | null;
     trackFilter: "all" | "matched" | "unmatched";
+    musicAssistantUrl: string;
     onTrackFilterChange: (filter: "all" | "matched" | "unmatched") => void;
     onReplaceTrack: (index: number) => void;
     onRetryTrack: (index: number) => void;
@@ -26,6 +27,7 @@ export const GeneratedTracksDisplay: React.FC<IGeneratedTracksDisplayProps> = ({
     replacingTrackIndex,
     retryingTrackIndex,
     trackFilter,
+    musicAssistantUrl,
     onTrackFilterChange,
     onReplaceTrack,
     onRetryTrack,
@@ -141,6 +143,7 @@ export const GeneratedTracksDisplay: React.FC<IGeneratedTracksDisplayProps> = ({
                                             index={actualIndex}
                                             replacingTrackIndex={replacingTrackIndex}
                                             retryingTrackIndex={retryingTrackIndex}
+                                            musicAssistantUrl={musicAssistantUrl}
                                             onReplaceTrack={onReplaceTrack}
                                             onRetryTrack={onRetryTrack}
                                             onRemoveTrack={onRemoveTrack}

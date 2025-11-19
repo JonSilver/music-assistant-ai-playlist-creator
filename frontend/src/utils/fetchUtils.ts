@@ -29,5 +29,5 @@ export const backendFetch = async <T>(endpoint: string, options?: RequestInit): 
         throw new Error(err.message);
     }
 
-    return result as T;
+    return result;
 };
