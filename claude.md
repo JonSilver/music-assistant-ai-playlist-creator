@@ -116,12 +116,14 @@ shared/
 - **ai.ts** - AI provider clients (Claude, OpenAI, custom endpoints)
 - **playlistCreator.ts** - Create playlists in Music Assistant
 - **jobStore.ts** - In-memory job state with SSE listeners
+- **webhook.ts** - Webhook notifications for async job completion
 
 ## Key Frontend Services
 
-- **playlistApi.ts** - Backend API client (all endpoints)
+- **api.ts** - Backend API client (all endpoints)
 - **usePlaylist.ts** - Main playlist generation hook
-- **useApp.ts** - Global app state (settings, providers)
+- **useSettings.ts** - Settings management hook
+- **useApp.ts** - Global app state (AppContext)
 
 ## Music Assistant Integration
 

@@ -47,7 +47,7 @@ Configure Music Assistant connection, AI providers, and provider weighting prefe
 
 ### Tech Stack
 
-- **Frontend**: React 19.2 + TypeScript + Vite
+- **Frontend**: React 19 + TypeScript + Vite
 - **UI Framework**: Tailwind CSS + daisyUI
 - **Backend**: Node.js + Express + TypeScript
 - **Database**: SQLite with better-sqlite3
@@ -442,7 +442,9 @@ To use a different location, edit `DATA_PATH` in your `.env` file.
 /
 ├── frontend/                      # React application
 │   ├── src/
-│   │   ├── contexts/             # React Context providers
+│   │   ├── components/           # React components
+│   │   ├── contexts/             # React Context (AppContext)
+│   │   ├── hooks/                # Custom React hooks
 │   │   ├── services/             # API clients
 │   │   ├── App.tsx               # Main application
 │   │   └── main.tsx              # Entry point
@@ -450,29 +452,31 @@ To use a different location, edit `DATA_PATH` in your `.env` file.
 │
 ├── backend/                      # Express API server
 │   ├── src/
-│   │   ├── routes/              # Express routes
-│   │   ├── services/            # AI and Music Assistant services
-│   │   ├── db/                  # SQLite database
-│   │   └── server.ts            # Express app
+│   │   ├── routes/               # Express routes (playlists, settings, prompts, providers)
+│   │   ├── services/             # Business logic (AI, Music Assistant, webhooks, etc.)
+│   │   ├── db/                   # SQLite database
+│   │   └── server.ts             # Express app
 │   └── package.json
 │
 ├── shared/                       # Shared TypeScript types
 │   └── types.ts
 │
-├── scripts/                      # Integration scripts
-│   ├── New-AIPlaylist.ps1       # PowerShell CLI for playlist generation
-│   └── Test-AIPlaylist.ps1      # Test script for API
+├── scripts/                      # Integration and release scripts
+│   ├── New-AIPlaylist.ps1        # PowerShell CLI for playlist generation
+│   ├── Test-AIPlaylist.ps1       # Test script for API
+│   ├── Update-Version.ps1        # Version bumping script
+│   └── Release.ps1               # Release automation script
 │
 ├── .github/
 │   └── workflows/
-│       └── docker-publish.yml   # CI/CD pipeline (triggers on GitHub releases)
+│       └── docker-publish.yml    # CI/CD pipeline (triggers on GitHub releases)
 │
-├── Dockerfile                   # Production container build
-├── docker-compose.yml           # Production deployment (Docker Hub)
-├── docker-compose.dev.yml       # Development deployment (local build)
-├── entrypoint.sh                # Docker startup validation
-├── DEPLOYMENT.md                # Deployment and CI/CD guide
-└── .env.production.example      # Production environment template
+├── Dockerfile                    # Production container build
+├── docker-compose.yml            # Production deployment (Docker Hub)
+├── docker-compose.dev.yml        # Development deployment (local build)
+├── entrypoint.sh                 # Docker startup validation
+├── DEPLOYMENT.md                 # Deployment and CI/CD guide
+└── .env.production.example       # Production environment template
 ```
 
 ## Build Commands
@@ -484,7 +488,7 @@ npm run dev
 # Development build
 npm run build
 
-# Production build (bumps version)
+# Production build (same as dev build - version bumping done separately)
 npm run build:prod
 
 # Lint and auto-fix
