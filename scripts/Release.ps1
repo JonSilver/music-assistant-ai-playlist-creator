@@ -82,6 +82,12 @@ try {
     $CurrentBranch = git branch --show-current
     Write-Host "Current branch: $CurrentBranch" -ForegroundColor Cyan
 
+    # Ensure we're on main branch
+    if ($CurrentBranch -ne "main") {
+        Write-Error "❌ Releases must be created from the 'main' branch. Current branch: $CurrentBranch"
+        exit 1
+    }
+
     # Build Update-Version.ps1 parameters
     $UpdateVersionParams = @{
         Action = $Action
@@ -119,8 +125,8 @@ try {
             "set" { $Version }
         }
 
-        Write-Host "`nWould create and push tag: $NewVersion" -ForegroundColor Magenta
-        Write-Host "Would push to remote: origin" -ForegroundColor Magenta
+        Write-Host "`nWould push all commits to origin" -ForegroundColor Magenta
+        Write-Host "Would create and push tag: $NewVersion" -ForegroundColor Magenta
         if ($Auto) {
             Write-Host "Would run: gh release create $NewVersion --title `"v$NewVersion`" --generate-notes" -ForegroundColor Magenta
         } else {
@@ -144,9 +150,9 @@ try {
         throw "git tag failed with exit code $LASTEXITCODE"
     }
 
-    # Push commit and tag
-    Write-Host "Pushing commit and tag to origin..." -ForegroundColor Cyan
-    $PushResult = git push origin $CurrentBranch 2>&1
+    # Push all commits and tag
+    Write-Host "Pushing all commits and tag to origin..." -ForegroundColor Cyan
+    $PushResult = git push 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Git push failed:"
         Write-Host $PushResult -ForegroundColor Red
