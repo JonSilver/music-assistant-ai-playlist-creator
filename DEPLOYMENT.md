@@ -235,39 +235,82 @@ The development compose file (`docker-compose.dev.yml`) builds the Docker image 
 
 ## Version Management
 
-### Creating a Release
+### Creating a Release (Automated)
 
-Follow these steps to create a new release and trigger the CI/CD pipeline:
+Use the `Release.ps1` script to automate the entire release process:
 
-1. **Update version in package.json:**
-   ```bash
-   # This happens automatically with build:prod
-   npm run build:prod
+**Basic usage:**
+```powershell
+# Increment patch version (0.7.11 → 0.7.12)
+.\scripts\Release.ps1 -Action patch
+
+# Increment minor version (0.7.11 → 0.8.0)
+.\scripts\Release.ps1 -Action minor
+
+# Increment major version (0.7.11 → 1.0.0)
+.\scripts\Release.ps1 -Action major
+
+# Set specific version
+.\scripts\Release.ps1 -Action set -Version "2.1.0"
+```
+
+**Automatic release creation:**
+```powershell
+# Create release automatically with gh CLI (no browser needed)
+.\scripts\Release.ps1 -Action patch -Auto
+```
+
+**The script automatically:**
+1. Checks git status is clean and you're on main branch
+2. Updates version in all package.json files
+3. Commits the version bump
+4. Creates and pushes a git tag
+5. Pushes all commits to origin
+6. Either:
+   - Opens GitHub release page in browser (default), or
+   - Creates release automatically with generated notes (`-Auto` flag)
+
+**Then GitHub Actions automatically:**
+- Detects the new release
+- Builds the Docker image for `linux/amd64` and `linux/arm64`
+- Tags it with `1.2.3`, `1.2`, `1`, and `latest`
+- Pushes all tags to Docker Hub
+- Updates the Docker Hub repository description with the README
+
+**Dry run:**
+```powershell
+# See what would happen without making changes
+.\scripts\Release.ps1 -Action patch -DryRun
+```
+
+### Manual Release Process
+
+If you prefer manual control:
+
+1. **Update version:**
+   ```powershell
+   .\scripts\Update-Version.ps1 -Action patch
    ```
 
-2. **Commit and push changes:**
+2. **Push changes:**
    ```bash
-   git add .
-   git commit -m "chore: version bump to X.Y.Z"
    git push origin main
    ```
 
-3. **Create a GitHub Release:**
-   - Go to your repository on GitHub
-   - Click on "Releases" → "Create a new release"
-   - Click "Choose a tag" and create a new tag (e.g., `v1.2.3`)
-   - Fill in the release title (e.g., `v1.2.3` or `Version 1.2.3`)
-   - Add release notes describing the changes
+3. **Create and push tag:**
+   ```bash
+   git tag 0.7.12
+   git push origin 0.7.12
+   ```
+
+4. **Create GitHub Release:**
+   - Go to repository on GitHub
+   - Click "Releases" → "Create a new release"
+   - Select the tag you just pushed
+   - Fill in release title and notes
    - Click "Publish release"
 
-4. **GitHub Actions automatically:**
-   - Detects the new release
-   - Builds the Docker image for `linux/amd64` and `linux/arm64`
-   - Tags it with `1.2.3`, `1.2`, `1`, and `latest`
-   - Pushes all tags to Docker Hub
-   - Updates the Docker Hub repository description with the README
-
-**Note:** The pipeline only triggers when you **publish** a release on GitHub, not when you push tags directly.
+**Note:** The CI/CD pipeline only triggers when you **publish** a release on GitHub, not when you push tags directly.
 
 ### Versioning Strategy
 
