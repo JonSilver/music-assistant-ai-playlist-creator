@@ -22,12 +22,12 @@ export const backendFetch = async <T>(endpoint: string, options?: RequestInit): 
             throw new Error(errorData.error ?? response.statusText);
         }
 
-        return response.json() as Promise<T>;
+        return (await response.json()) as T;
     });
 
     if (err !== undefined) {
         throw new Error(err.message);
     }
 
-    return result;
+    return result as T;
 };

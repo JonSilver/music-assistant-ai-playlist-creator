@@ -15,7 +15,8 @@ export const API_ENDPOINTS = {
     PLAYLISTS_TRACKS_REPLACE: '/playlists/tracks/replace',
     PLAYLISTS_TEST_MA: '/playlists/test-ma',
     PLAYLISTS_JOB: '/playlists/jobs/:jobId',
-    PLAYLISTS_JOB_STREAM: '/playlists/jobs/:jobId/stream'
+    PLAYLISTS_JOB_STREAM: '/playlists/jobs/:jobId/stream',
+    PROVIDERS_MODELS: '/providers/models'
 } as const;
 
 // Base paths

@@ -1,8 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { attempt, attemptPromise } from "@jfdi/attempt";
 import OpenAI from "openai";
 import { z } from "zod";
-import { attemptPromise, attempt } from "@jfdi/attempt";
-import type { AIProviderConfig, AIPlaylistResponse } from "../../../shared/types.js";
+import type { AIPlaylistResponse, AIProviderConfig } from "../../../shared/types.js";
 
 const TrackSuggestionSchema = z.object({
     title: z.string(),
@@ -93,7 +93,10 @@ const parseAIResponse = (content: string): AIPlaylistResponse => {
 };
 
 const generateWithAnthropic = async (request: AIPlaylistRequest): Promise<AIPlaylistResponse> => {
-    if (request.providerConfig.apiKey === undefined || request.providerConfig.apiKey.trim() === "") {
+    if (
+        request.providerConfig.apiKey === undefined ||
+        request.providerConfig.apiKey.trim() === ""
+    ) {
         throw new Error("API key required for Anthropic provider");
     }
 

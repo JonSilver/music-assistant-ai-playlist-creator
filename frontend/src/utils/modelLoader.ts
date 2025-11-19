@@ -1,7 +1,6 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { attemptPromise } from "@jfdi/attempt";
-import OpenAI from "openai";
-import type { ProviderType } from "../../../shared/types";
+import { API_ENDPOINTS } from "@shared/constants";
+import type { ProviderType, LoadModelsRequest, LoadModelsResponse } from "@shared/types";
+import { backendFetch } from "./fetchUtils";
 
 export interface IModelOption {
     value: string;
@@ -13,39 +12,17 @@ export const loadModelsForProvider = async (
     apiKey: string | undefined,
     baseUrl?: string
 ): Promise<IModelOption[]> => {
-    if (providerType === "anthropic") {
-        const [err, models] = await attemptPromise(async () => {
-            const client = new Anthropic({ apiKey: apiKey ?? "", dangerouslyAllowBrowser: true });
-            const response = await client.models.list();
-            return response.data.map(model => ({
-                value: model.id,
-                label: model.display_name
-            }));
-        });
+    const request: LoadModelsRequest = {
+        providerType,
+        apiKey,
+        baseUrl
+    };
 
-        if (err !== undefined) {
-            throw new Error(`Failed to load models: ${err.message}`);
-        }
+    const response = await backendFetch<LoadModelsResponse>(API_ENDPOINTS.PROVIDERS_MODELS, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(request)
+    });
 
-        return models;
-    } else {
-        const [err, models] = await attemptPromise(async () => {
-            const client = new OpenAI({
-                apiKey: apiKey ?? "not-required",
-                baseURL: baseUrl !== undefined && baseUrl.trim() !== "" ? baseUrl : undefined,
-                dangerouslyAllowBrowser: true
-            });
-            const response = await client.models.list();
-            return response.data.map(model => ({
-                value: model.id,
-                label: model.id
-            }));
-        });
-
-        if (err !== undefined) {
-            throw new Error(`Failed to load models: ${err.message}`);
-        }
-
-        return models;
-    }
+    return response.models;
 };

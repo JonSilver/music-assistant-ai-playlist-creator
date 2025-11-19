@@ -14,6 +14,7 @@ import { PlaylistDatabase } from "./db/schema.js";
 import { setupPromptsRoutes } from "./routes/prompts.js";
 import { setupSettingsRoutes } from "./routes/settings.js";
 import { setupPlaylistsRoutes } from "./routes/playlists.js";
+import { setupProvidersRoutes } from "./routes/providers.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -63,6 +64,7 @@ const apiRouter = express.Router();
 setupSettingsRoutes(apiRouter, db);
 setupPromptsRoutes(apiRouter, db);
 setupPlaylistsRoutes(apiRouter, db);
+setupProvidersRoutes(apiRouter);
 
 // Health check
 apiRouter.get(API_ENDPOINTS.HEALTH, (_req, res) => {

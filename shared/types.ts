@@ -175,6 +175,27 @@ export const BackendTestMAResponseSchema = z.object({
 /** @public */
 export type BackendTestMAResponse = z.infer<typeof BackendTestMAResponseSchema>
 
+export const LoadModelsRequestSchema = z.object({
+  providerType: z.enum(['anthropic', 'openai-compatible']),
+  apiKey: z.string().optional(),
+  baseUrl: z.string().optional()
+})
+/** @public */
+export type LoadModelsRequest = z.infer<typeof LoadModelsRequestSchema>
+
+export const ModelOptionSchema = z.object({
+  value: z.string(),
+  label: z.string()
+})
+/** @public */
+export type ModelOption = z.infer<typeof ModelOptionSchema>
+
+export const LoadModelsResponseSchema = z.object({
+  models: z.array(ModelOptionSchema)
+})
+/** @public */
+export type LoadModelsResponse = z.infer<typeof LoadModelsResponseSchema>
+
 // Playlist creation response
 /** @public */
 export const CreatePlaylistResponseSchema = z.object({
