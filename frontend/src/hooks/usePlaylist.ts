@@ -8,9 +8,10 @@ import {
     generatePlaylistViaBackend,
     createPlaylistViaBackend,
     refinePlaylistViaBackend,
-    retryTrackViaBackend
+    retryTrackViaBackend,
+    importMAPlaylist
 } from "../services/playlistApi";
-import type { TrackMatch } from "@shared/types";
+import type { TrackMatch, MAPlaylist } from "@shared/types";
 import { parseProviderKeywords } from "../utils/parseProviderKeywords";
 
 export interface UsePlaylistReturn {
@@ -23,6 +24,7 @@ export interface UsePlaylistReturn {
     generating: boolean;
     creating: boolean;
     refining: boolean;
+    importing: boolean;
     replacingTrackIndex: number | null;
     retryingTrackIndex: number | null;
     generatedTracks: TrackMatch[];
@@ -39,6 +41,7 @@ export interface UsePlaylistReturn {
     removeTrack: (index: number) => void;
     selectMatch: (trackIndex: number, matchIndex: number) => void;
     clearTracks: () => void;
+    importPlaylist: (playlist: MAPlaylist) => Promise<void>;
 }
 
 export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
@@ -50,6 +53,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
     const [generating, setGenerating] = useState(false);
     const [creating, setCreating] = useState(false);
     const [refining, setRefining] = useState(false);
+    const [importing, setImporting] = useState(false);
     const [retryingTrackIndex, setRetryingTrackIndex] = useState<number | null>(null);
     const [generatedTracks, setGeneratedTracks] = useState<TrackMatch[]>([]);
     const [trackFilter, setTrackFilter] = useState<"all" | "matched" | "unmatched">("all");
@@ -246,6 +250,40 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         });
     }, []);
 
+    const importPlaylist = useCallback(
+        async (playlist: MAPlaylist): Promise<void> => {
+            if (settings === null || settings.musicAssistantUrl.trim().length === 0) {
+                setError("Music Assistant URL not configured");
+                return;
+            }
+
+            setImporting(true);
+
+            const [err, result] = await attemptPromise(async () =>
+                importMAPlaylist(playlist.item_id, playlist.provider)
+            );
+
+            setImporting(false);
+
+            if (err !== undefined) {
+                setError(`Failed to import playlist: ${err.message}`);
+                return;
+            }
+
+            // Set the imported tracks and playlist name
+            setGeneratedTracks(result.tracks);
+            setPlaylistName(result.playlistName);
+            // Set a descriptive prompt for the imported playlist
+            setPrompt(`Imported from Music Assistant: ${result.playlistName}`);
+            setTrackCount(result.tracks.length.toString());
+
+            setSuccess(
+                `Imported "${result.playlistName}" with ${result.tracks.length} tracks. You can now refine, replace, or remove tracks before saving.`
+            );
+        },
+        [settings, setError, setSuccess]
+    );
+
     return {
         prompt,
         setPrompt,
@@ -256,6 +294,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         generating,
         creating,
         refining,
+        importing,
         replacingTrackIndex,
         retryingTrackIndex,
         generatedTracks,
@@ -271,6 +310,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         retryTrack,
         removeTrack,
         selectMatch,
-        clearTracks
+        clearTracks,
+        importPlaylist
     };
 };

@@ -9,7 +9,7 @@ import {
     WS_MESSAGE_PREFIX,
     WS_PATH
 } from "../../../shared/constants/index.js";
-import type { MATrack } from "../../../shared/types.js";
+import type { MATrack, MAPlaylist } from "../../../shared/types.js";
 
 interface MAResponse {
     message_id?: string;
@@ -36,11 +36,14 @@ interface MAFavoritesResponse {
     items: { name: string }[];
 }
 
-interface MAPlaylist {
-    item_id: string;
-    provider: string;
-    name: string;
-    uri: string;
+interface MALibraryResponse {
+    count: number;
+    total: number;
+    items: MAPlaylist[];
+}
+
+interface MAPlaylistTracksResponse {
+    items: MATrack[];
 }
 
 export class MusicAssistantClient {
@@ -239,6 +242,26 @@ export class MusicAssistantClient {
             db_playlist_id: playlistId,
             uris: trackUris
         });
+    }
+
+    async getPlaylists(): Promise<MAPlaylist[]> {
+        const result = await this.sendCommand<MALibraryResponse>(MA_COMMANDS.LIBRARY_ITEMS, {
+            media_type: MEDIA_TYPES.PLAYLIST
+        });
+
+        return result.items;
+    }
+
+    async getPlaylistTracks(itemId: string, provider: string): Promise<MATrack[]> {
+        const result = await this.sendCommand<MAPlaylistTracksResponse>(
+            MA_COMMANDS.GET_PLAYLIST_TRACKS,
+            {
+                item_id_or_uri: itemId,
+                provider_instance_id_or_domain: provider
+            }
+        );
+
+        return result.items;
     }
 
     disconnect(): void {

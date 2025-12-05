@@ -29,7 +29,10 @@ import type {
     BackendCreatePlaylistRequest,
     BackendRefinePlaylistRequest,
     BackendRetryTrackRequest,
-    BackendReplaceTrackRequest
+    BackendReplaceTrackRequest,
+    BackendGetMAPlaylistsResponse,
+    BackendImportPlaylistResponse,
+    TrackMatch
 } from "../../../shared/types.js";
 
 export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void => {
@@ -312,6 +315,95 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
         }
 
         const response: BackendTestMAResponse = { success: true };
+        res.json(response);
+    });
+
+    // GET /api/playlists/ma-playlists - List all Music Assistant playlists
+    router.get("/playlists/ma-playlists", async (_req: Request, res: Response) => {
+        // Get settings from database
+        const settings = settingsUtils.getSettings(db);
+
+        if (settings.musicAssistantUrl.trim().length === 0) {
+            res.status(400).json({ error: "Music Assistant URL not configured" });
+            return;
+        }
+
+        const [err, playlists] = await attemptPromise(async () => {
+            const maClient = new MusicAssistantClient(settings.musicAssistantUrl);
+            await maClient.connect();
+            const result = await maClient.getPlaylists();
+            maClient.disconnect();
+            return result;
+        });
+
+        if (err !== undefined) {
+            res.status(500).json({
+                error: "Failed to get playlists from Music Assistant",
+                details: err.message
+            });
+            return;
+        }
+
+        const response: BackendGetMAPlaylistsResponse = { playlists };
+        res.json(response);
+    });
+
+    // GET /api/playlists/ma-playlists/:itemId/import - Import tracks from a Music Assistant playlist
+    router.get("/playlists/ma-playlists/:itemId/import", async (req: Request, res: Response) => {
+        const { itemId } = req.params;
+        const { provider } = req.query as { provider?: string };
+
+        if (provider === undefined || provider.trim().length === 0) {
+            res.status(400).json({ error: "provider query parameter is required" });
+            return;
+        }
+
+        // Get settings from database
+        const settings = settingsUtils.getSettings(db);
+
+        if (settings.musicAssistantUrl.trim().length === 0) {
+            res.status(400).json({ error: "Music Assistant URL not configured" });
+            return;
+        }
+
+        const [err, result] = await attemptPromise(async () => {
+            const maClient = new MusicAssistantClient(settings.musicAssistantUrl);
+            await maClient.connect();
+
+            // Get all playlists to find the name
+            const playlists = await maClient.getPlaylists();
+            const playlist = playlists.find(p => p.item_id === itemId && p.provider === provider);
+            const playlistName = playlist?.name ?? "Imported Playlist";
+
+            // Get tracks from the playlist
+            const maTracks = await maClient.getPlaylistTracks(itemId, provider);
+            maClient.disconnect();
+
+            // Convert MA tracks to TrackMatch format (already matched)
+            const tracks: TrackMatch[] = maTracks.map(maTrack => ({
+                suggestion: {
+                    title: maTrack.name,
+                    artist: maTrack.artists[0]?.name ?? "Unknown Artist",
+                    album: maTrack.album?.name
+                },
+                matched: true,
+                maTrack,
+                maMatches: [maTrack],
+                selectedMatchIndex: 0
+            }));
+
+            return { tracks, playlistName };
+        });
+
+        if (err !== undefined) {
+            res.status(500).json({
+                error: "Failed to import playlist from Music Assistant",
+                details: err.message
+            });
+            return;
+        }
+
+        const response: BackendImportPlaylistResponse = result;
         res.json(response);
     });
 };

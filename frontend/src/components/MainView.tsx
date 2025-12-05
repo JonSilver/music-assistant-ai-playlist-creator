@@ -1,9 +1,10 @@
-import type { GetSettingsResponse, PresetPrompt, PromptHistory } from "@shared/types";
+import type { GetSettingsResponse, PresetPrompt, PromptHistory, MAPlaylist } from "@shared/types";
 import React from "react";
 import type { UsePlaylistReturn } from "../hooks/usePlaylist";
 import { AlertMessage } from "./AlertMessage";
 import { GeneratedTracksDisplay } from "./GeneratedTracksDisplay";
 import { HistoryModal } from "./HistoryModal";
+import { ImportPlaylistModal } from "./ImportPlaylistModal";
 import { Navbar } from "./Navbar";
 import { PlaylistCreatorForm } from "./PlaylistCreatorForm";
 import { PresetPrompts } from "./PresetPrompts";
@@ -22,11 +23,14 @@ interface IMainViewProps {
     history: PromptHistory[];
     showHistory: boolean;
     showRefine: boolean;
+    showImport: boolean;
     openSettings: () => void;
     openHistory: () => void;
     closeHistory: () => void;
     openRefine: () => void;
     closeRefine: () => void;
+    openImport: () => void;
+    closeImport: () => void;
 }
 
 export const MainView: React.FC<IMainViewProps> = ({
@@ -42,14 +46,21 @@ export const MainView: React.FC<IMainViewProps> = ({
     history,
     showHistory,
     showRefine,
+    showImport,
     openSettings,
     openHistory,
     closeHistory,
     openRefine,
-    closeRefine
+    closeRefine,
+    openImport,
+    closeImport
 }) => (
     <div className="min-h-screen bg-base-200">
-        <Navbar onShowSettings={openSettings} onShowHistory={openHistory} />
+        <Navbar
+            onShowSettings={openSettings}
+            onShowHistory={openHistory}
+            onShowImport={openImport}
+        />
 
         {error !== null && <AlertMessage type="error" message={error} onDismiss={clearError} />}
         {successMessage !== null && (
@@ -132,6 +143,17 @@ export const MainView: React.FC<IMainViewProps> = ({
             refining={playlist.refining}
             onRefine={() => {
                 void playlist.refinePlaylist();
+            }}
+        />
+
+        <ImportPlaylistModal
+            show={showImport}
+            onClose={closeImport}
+            importing={playlist.importing}
+            onSelectPlaylist={(selectedPlaylist: MAPlaylist) => {
+                void playlist.importPlaylist(selectedPlaylist).then(() => {
+                    closeImport();
+                });
             }}
         />
     </div>

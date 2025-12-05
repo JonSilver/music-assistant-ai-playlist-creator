@@ -3,9 +3,10 @@ import React from "react";
 interface INavbarProps {
     onShowHistory: () => void;
     onShowSettings: () => void;
+    onShowImport: () => void;
 }
 
-export const Navbar: React.FC<INavbarProps> = ({ onShowHistory, onShowSettings }) => (
+export const Navbar: React.FC<INavbarProps> = ({ onShowHistory, onShowSettings, onShowImport }) => (
     <div className="navbar bg-base-100 shadow-lg">
         <div className="container mx-auto px-2 sm:px-4 flex items-center max-w-6xl">
             <div className="flex-1 flex items-start gap-2 sm:gap-3 min-w-0">
@@ -38,6 +39,26 @@ export const Navbar: React.FC<INavbarProps> = ({ onShowHistory, onShowSettings }
                 >
                     <img src="/docker-icon.svg" alt="Docker" className="w-4 h-4 sm:w-5 sm:h-5" />
                 </a>
+                <button
+                    className="btn btn-ghost btn-sm max-sm:btn-square sm:btn-md"
+                    onClick={onShowImport}
+                    title="Import Playlist"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        className="w-4 h-4 sm:w-5 sm:h-5 stroke-current"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                        ></path>
+                    </svg>
+                    <span className="hidden sm:inline sm:ml-2">Import</span>
+                </button>
                 <button
                     className="btn btn-ghost btn-sm max-sm:btn-square sm:btn-md"
                     onClick={onShowHistory}

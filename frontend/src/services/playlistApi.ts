@@ -9,7 +9,10 @@ import type {
     BackendRetryTrackResponse,
     BackendReplaceTrackResponse,
     BackendTestMAResponse,
-    TrackMatch
+    BackendGetMAPlaylistsResponse,
+    BackendImportPlaylistResponse,
+    TrackMatch,
+    MAPlaylist
 } from "@shared/types";
 import { backendFetch, getBackendUrl } from "../utils/fetchUtils";
 
@@ -146,4 +149,20 @@ export const testMusicAssistantConnection = async (
     }
 
     return result;
+};
+
+export const getMAPlaylists = async (): Promise<MAPlaylist[]> => {
+    const result = await backendFetch<BackendGetMAPlaylistsResponse>(
+        API_ENDPOINTS.PLAYLISTS_MA_LIST,
+        { method: "GET" }
+    );
+    return result.playlists;
+};
+
+export const importMAPlaylist = async (
+    itemId: string,
+    provider: string
+): Promise<BackendImportPlaylistResponse> => {
+    const url = `${API_ENDPOINTS.PLAYLISTS_MA_IMPORT.replace(":itemId", itemId)}?provider=${encodeURIComponent(provider)}`;
+    return backendFetch<BackendImportPlaylistResponse>(url, { method: "GET" });
 };

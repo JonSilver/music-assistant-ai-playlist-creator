@@ -21,12 +21,15 @@ const App = (): React.JSX.Element => {
         showSettings,
         showHistory,
         showRefine,
+        showImport,
         openSettings,
         closeSettings,
         openHistory,
         closeHistory,
         openRefine,
-        closeRefine
+        closeRefine,
+        openImport,
+        closeImport
     } = useModals();
 
     const { history, presets, loadHistory, loadPresets } = historyAndPresetsResult;
@@ -83,11 +86,14 @@ const App = (): React.JSX.Element => {
                     history={history}
                     showHistory={showHistory}
                     showRefine={showRefine}
+                    showImport={showImport}
                     openSettings={openSettings}
                     openHistory={openHistory}
                     closeHistory={closeHistory}
                     openRefine={openRefine}
                     closeRefine={closeRefine}
+                    openImport={openImport}
+                    closeImport={closeImport}
                 />
             )}
         </>

@@ -16,6 +16,8 @@ export const API_ENDPOINTS = {
     PLAYLISTS_TEST_MA: '/playlists/test-ma',
     PLAYLISTS_JOB: '/playlists/jobs/:jobId',
     PLAYLISTS_JOB_STREAM: '/playlists/jobs/:jobId/stream',
+    PLAYLISTS_MA_LIST: '/playlists/ma-playlists',
+    PLAYLISTS_MA_IMPORT: '/playlists/ma-playlists/:itemId/import',
     PROVIDERS_MODELS: '/providers/models'
 } as const;
 

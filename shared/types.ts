@@ -53,6 +53,16 @@ export const MATrackSchema = z.object({
 })
 export type MATrack = z.infer<typeof MATrackSchema>
 
+// Music Assistant Playlist
+export const MAPlaylistSchema = z.object({
+  item_id: z.string(),
+  provider: z.string(),
+  name: z.string(),
+  uri: z.string(),
+  owner: z.string().optional()
+})
+export type MAPlaylist = z.infer<typeof MAPlaylistSchema>
+
 // Track match result
 export const TrackMatchSchema = z.object({
   suggestion: TrackSuggestionSchema,
@@ -174,6 +184,21 @@ export const BackendTestMAResponseSchema = z.object({
 })
 /** @public */
 export type BackendTestMAResponse = z.infer<typeof BackendTestMAResponseSchema>
+
+// MA Playlists list response
+export const BackendGetMAPlaylistsResponseSchema = z.object({
+  playlists: z.array(MAPlaylistSchema)
+})
+/** @public */
+export type BackendGetMAPlaylistsResponse = z.infer<typeof BackendGetMAPlaylistsResponseSchema>
+
+// Import MA playlist response
+export const BackendImportPlaylistResponseSchema = z.object({
+  tracks: z.array(TrackMatchSchema),
+  playlistName: z.string()
+})
+/** @public */
+export type BackendImportPlaylistResponse = z.infer<typeof BackendImportPlaylistResponseSchema>
 
 export const LoadModelsRequestSchema = z.object({
   providerType: z.enum(['anthropic', 'openai-compatible']),

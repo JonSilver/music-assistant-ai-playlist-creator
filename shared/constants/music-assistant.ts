@@ -8,7 +8,8 @@ export const MA_COMMANDS = {
     FAVORITES: 'music/favorites',
     LIBRARY_ITEMS: 'music/library_items',
     CREATE_PLAYLIST: 'music/playlists/create_playlist',
-    ADD_PLAYLIST_TRACKS: 'music/playlists/add_playlist_tracks'
+    ADD_PLAYLIST_TRACKS: 'music/playlists/add_playlist_tracks',
+    GET_PLAYLIST_TRACKS: 'music/playlists/playlist_tracks'
 } as const;
 
 // Media types
