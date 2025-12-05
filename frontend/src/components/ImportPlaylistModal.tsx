@@ -8,18 +8,20 @@ interface IImportPlaylistModalProps {
     onClose: () => void;
     onSelectPlaylist: (playlist: MAPlaylist) => void;
     importing: boolean;
+    initialSearchQuery?: string;
 }
 
 export const ImportPlaylistModal: React.FC<IImportPlaylistModalProps> = ({
     show,
     onClose,
     onSelectPlaylist,
-    importing
+    importing,
+    initialSearchQuery = ""
 }) => {
     const [playlists, setPlaylists] = useState<MAPlaylist[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [searchQuery, setSearchQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
 
     const loadPlaylists = useCallback(async (): Promise<void> => {
         setLoading(true);
@@ -39,9 +41,10 @@ export const ImportPlaylistModal: React.FC<IImportPlaylistModalProps> = ({
 
     useEffect(() => {
         if (show) {
+            setSearchQuery(initialSearchQuery);
             void loadPlaylists();
         }
-    }, [show, loadPlaylists]);
+    }, [show, loadPlaylists, initialSearchQuery]);
 
     if (!show) return null;
 

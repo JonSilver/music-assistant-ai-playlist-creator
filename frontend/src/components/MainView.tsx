@@ -150,6 +150,7 @@ export const MainView: React.FC<IMainViewProps> = ({
             show={showImport}
             onClose={closeImport}
             importing={playlist.importing}
+            initialSearchQuery={playlist.playlistName}
             onSelectPlaylist={(selectedPlaylist: MAPlaylist) => {
                 void playlist.importPlaylist(selectedPlaylist).then(() => {
                     closeImport();
