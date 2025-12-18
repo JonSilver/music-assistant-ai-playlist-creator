@@ -8,6 +8,7 @@ import { ExternalLinkIcon } from "./icons/ExternalLinkIcon";
 import { CheckIcon } from "./icons/CheckIcon";
 import { CrossIcon } from "./icons/CrossIcon";
 import { TrackRowMobile } from "./TrackRowMobile";
+import { Spinner } from "./Spinner";
 
 interface ITrackRowProps {
     track: TrackMatch;
@@ -58,7 +59,7 @@ export const TrackRow: React.FC<ITrackRowProps> = ({
     const statusBadge =
         track.matching === true ? (
             <span className="badge badge-warning gap-1">
-                <span className="loading loading-spinner loading-xs"></span>
+                <Spinner size="xs" />
                 {UI_LABELS.MATCHING}
             </span>
         ) : track.matched ? (
@@ -98,11 +99,7 @@ export const TrackRow: React.FC<ITrackRowProps> = ({
                     disabled={retryingTrackIndex === index}
                     title={UI_LABELS.RETRY}
                 >
-                    {retryingTrackIndex === index ? (
-                        <span className="loading loading-spinner loading-xs"></span>
-                    ) : (
-                        <RetryIcon />
-                    )}
+                    {retryingTrackIndex === index ? <Spinner size="xs" /> : <RetryIcon />}
                 </button>
             )}
             <button
@@ -113,11 +110,7 @@ export const TrackRow: React.FC<ITrackRowProps> = ({
                 disabled={replacingTrackIndex === index}
                 title={UI_LABELS.REPLACE}
             >
-                {replacingTrackIndex === index ? (
-                    <span className="loading loading-spinner loading-xs"></span>
-                ) : (
-                    <ReplaceIcon />
-                )}
+                {replacingTrackIndex === index ? <Spinner size="xs" /> : <ReplaceIcon />}
             </button>
             <button
                 className="btn btn-ghost btn-xs btn-square"

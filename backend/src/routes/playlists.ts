@@ -7,8 +7,8 @@ import { generatePlaylistJob } from "../services/playlistGenerator.js";
 import { createPlaylist } from "../services/playlistCreator.js";
 import { refinePlaylist, replaceTrack } from "../services/playlistRefine.js";
 import { matchTrack } from "../services/trackMatching.js";
-import { MusicAssistantClient } from "../services/musicAssistant.js";
 import { settingsUtils } from "../../../shared/settings-schema.js";
+import { withMusicAssistant } from "../utils/maClientUtils.js";
 import { validateRequest } from "../middleware/validation.js";
 import { selectProvider } from "../utils/providerUtils.js";
 import {
@@ -226,14 +226,11 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
             // Get settings from database
             const settings = settingsUtils.getSettings(db);
 
-            const maClient = new MusicAssistantClient(settings.musicAssistantUrl);
-            await maClient.connect();
-
             const [err, matchedTrack] = await attemptPromise(async () =>
-                matchTrack(track.suggestion, maClient, providerKeywords)
+                withMusicAssistant(settings.musicAssistantUrl, async maClient =>
+                    matchTrack(track.suggestion, maClient, providerKeywords)
+                )
             );
-
-            maClient.disconnect();
 
             if (err !== undefined) {
                 res.status(500).json({
@@ -299,11 +296,9 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
             return;
         }
 
-        const [err] = await attemptPromise(async () => {
-            const maClient = new MusicAssistantClient(musicAssistantUrl);
-            await maClient.connect();
-            maClient.disconnect();
-        });
+        const [err] = await attemptPromise(async () =>
+            withMusicAssistant(musicAssistantUrl, async () => Promise.resolve())
+        );
 
         if (err !== undefined) {
             const response: BackendTestMAResponse = { success: false, error: err.message };
