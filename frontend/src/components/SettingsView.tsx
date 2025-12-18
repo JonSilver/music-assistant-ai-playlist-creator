@@ -1,14 +1,14 @@
-import React from "react";
-import type { GetSettingsResponse } from "@shared/types";
-import { useSettings } from "../hooks/useSettings";
-import { AlertMessage } from "./AlertMessage";
-import { SettingsPage } from "./SettingsPage";
+import type { AIProviderConfig, GetSettingsResponse } from '@shared/types';
+import React from 'react';
+import { useSettings } from '../hooks/useSettings';
+import { AlertMessage } from './AlertMessage';
+import { SettingsPage } from './SettingsPage';
 
 interface ISettingsViewProps {
     settings: GetSettingsResponse | null;
     updateSettings: (updates: {
         musicAssistantUrl: string;
-        aiProviders: import("@shared/types").AIProviderConfig[];
+        aiProviders: AIProviderConfig[];
         customSystemPrompt?: string;
         providerWeights?: string;
         defaultProviderId?: string;
