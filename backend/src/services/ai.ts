@@ -1,19 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { attempt, attemptPromise } from "@jfdi/attempt";
 import OpenAI from "openai";
-import { z } from "zod";
+import { AIPlaylistResponseSchema } from "../../../shared/types.js";
 import type { AIPlaylistResponse, AIProviderConfig } from "../../../shared/types.js";
-
-const TrackSuggestionSchema = z.object({
-    title: z.string(),
-    artist: z.string(),
-    album: z.string().optional()
-});
-
-const AIPlaylistResponseSchema = z.object({
-    tracks: z.array(TrackSuggestionSchema),
-    reasoning: z.string().optional()
-});
 
 interface AIPlaylistRequest {
     prompt: string;

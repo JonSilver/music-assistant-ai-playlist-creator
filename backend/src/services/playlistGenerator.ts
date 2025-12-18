@@ -7,6 +7,7 @@ import { createPlaylist } from "./playlistCreator.js";
 import { jobStore } from "./jobStore.js";
 import { callWebhook } from "./webhook.js";
 import type { PlaylistDatabase } from "../db/schema.js";
+import { createUnmatchedTracks } from "../utils/trackUtils.js";
 
 interface GeneratePlaylistParams {
     jobId: string;
@@ -60,11 +61,7 @@ export const generatePlaylistJob = async (
         }
 
         // Initialise tracks - all marked as matching since we'll process them all
-        const initialTracks: TrackMatch[] = aiResult.tracks.map(suggestion => ({
-            suggestion,
-            matched: false,
-            matching: true
-        }));
+        const initialTracks: TrackMatch[] = createUnmatchedTracks(aiResult.tracks);
 
         jobStore.updateJob(jobId, {
             status: "matching_tracks",

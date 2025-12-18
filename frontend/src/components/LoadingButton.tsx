@@ -1,4 +1,5 @@
 import React from "react";
+import { Spinner } from "./Spinner";
 
 interface ILoadingButtonProps {
     loading: boolean;
@@ -21,7 +22,7 @@ export const LoadingButton: React.FC<ILoadingButtonProps> = ({
 }) => {
     return (
         <button type={type} className={className} onClick={onClick} disabled={disabled || loading}>
-            {loading && <span className="loading loading-spinner"></span>}
+            {loading && <Spinner />}
             {loading && loadingText !== undefined ? loadingText : children}
         </button>
     );

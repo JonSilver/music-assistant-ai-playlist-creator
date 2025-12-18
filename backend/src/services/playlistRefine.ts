@@ -3,6 +3,7 @@ import type { AIProviderConfig, TrackMatch } from "../../../shared/types.js";
 import { generatePlaylist as generatePlaylistAI } from "./ai.js";
 import { MusicAssistantClient } from "./musicAssistant.js";
 import { matchTracksProgressively } from "./trackMatching.js";
+import { createUnmatchedTracks } from "../utils/trackUtils.js";
 
 export const refinePlaylist = async (
     refinementPrompt: string,
@@ -49,11 +50,7 @@ export const refinePlaylist = async (
     }
 
     // Initialise tracks - all marked as matching since we'll process them all
-    const newTracks: TrackMatch[] = aiResult.tracks.map(suggestion => ({
-        suggestion,
-        matched: false,
-        matching: true
-    }));
+    const newTracks: TrackMatch[] = createUnmatchedTracks(aiResult.tracks);
 
     // Use the same matching logic as main generation
     await matchTracksProgressively(
@@ -130,13 +127,7 @@ ${existingTracks}`;
     }
 
     // Initialise and match the replacement track
-    const replacementTracks: TrackMatch[] = [
-        {
-            suggestion: aiResult.tracks[0],
-            matched: false,
-            matching: true
-        }
-    ];
+    const replacementTracks: TrackMatch[] = createUnmatchedTracks([aiResult.tracks[0]]);
 
     // Use the same matching logic as main generation
     await matchTracksProgressively(

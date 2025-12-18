@@ -44,6 +44,7 @@ export const GeneratedTracksDisplay: React.FC<IGeneratedTracksDisplayProps> = ({
     const matchPercentage = totalCount > 0 ? Math.round((matchedCount / totalCount) * 100) : 0;
     const hasMatchedTracks = matchedCount > 0;
     const isMatching = tracks.some(t => t.matching === true);
+    const actionsDisabled = !hasMatchedTracks || isMatching;
 
     const filteredTracks = tracks.filter(track => {
         if (trackFilter === TRACK_FILTERS.MATCHED) return track.matched;
@@ -160,21 +161,21 @@ export const GeneratedTracksDisplay: React.FC<IGeneratedTracksDisplayProps> = ({
                     <button
                         className="btn btn-outline"
                         onClick={onClear}
-                        disabled={!hasMatchedTracks || isMatching}
+                        disabled={actionsDisabled}
                     >
                         {UI_LABELS.CLEAR}
                     </button>
                     <button
                         className="btn btn-secondary"
                         onClick={onRefine}
-                        disabled={!hasMatchedTracks || isMatching}
+                        disabled={actionsDisabled}
                     >
                         {UI_LABELS.REFINE}
                     </button>
                     <LoadingButton
                         loading={creating}
                         onClick={onCreate}
-                        disabled={!hasMatchedTracks || isMatching}
+                        disabled={actionsDisabled}
                         loadingText={UI_LABELS.CREATING}
                     >
                         {UI_LABELS.CREATE}
