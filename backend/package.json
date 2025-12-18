@@ -7,8 +7,8 @@
         "build": "tsc",
         "start": "node dist/backend/src/server.js",
         "type-check": "tsc --noEmit",
-        "lint": "eslint .",
-        "lint:fix": "eslint . --fix"
+        "lint": "oxlint -c oxlint.json --deny-warnings",
+        "lint:fix": "oxlint -c oxlint.json --fix"
     },
     "keywords": [],
     "license": "ISC",
@@ -24,19 +24,14 @@
         "zod": "^4.1.12"
     },
     "devDependencies": {
-        "@eslint/js": "^9.39.1",
         "@types/better-sqlite3": "^7.6.13",
         "@types/cors": "^2.8.19",
         "@types/express": "^5.0.5",
         "@types/node": "^24.10.0",
         "@types/ws": "^8.5.13",
-        "eslint": "^9.39.1",
-        "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-prettier": "^5.5.4",
-        "globals": "^16.5.0",
+        "oxlint": "^1.2.0",
         "prettier": "^3.6.2",
         "tsc-watch": "^6.3.0",
-        "typescript": "^5.9.3",
-        "typescript-eslint": "^8.46.3"
+        "typescript": "^5.9.3"
     }
 }
