@@ -13,6 +13,7 @@ interface GeneratePlaylistParams {
     jobId: string;
     prompt: string;
     musicAssistantUrl: string;
+    musicAssistantToken?: string;
     providerConfig: AIProviderConfig;
     customSystemPrompt?: string;
     providerKeywords?: string[];
@@ -28,6 +29,7 @@ export const generatePlaylistJob = async (
         jobId,
         prompt,
         musicAssistantUrl,
+        musicAssistantToken,
         providerConfig,
         customSystemPrompt,
         providerKeywords = [],
@@ -42,7 +44,7 @@ export const generatePlaylistJob = async (
 
         // Get favorite artists
         const maClient = new MusicAssistantClient(musicAssistantUrl);
-        await maClient.connect();
+        await maClient.connect(musicAssistantToken);
         const favoriteArtists = await maClient.getFavoriteArtists();
         maClient.disconnect();
 
@@ -72,7 +74,7 @@ export const generatePlaylistJob = async (
 
         // Step 2: Match tracks progressively
         const maClientForMatching = new MusicAssistantClient(musicAssistantUrl);
-        await maClientForMatching.connect();
+        await maClientForMatching.connect(musicAssistantToken);
 
         const tracks = [...initialTracks];
 
@@ -101,7 +103,7 @@ export const generatePlaylistJob = async (
             const playlistName = prompt.length > 50 ? prompt.substring(0, 47) + "..." : prompt;
 
             const [createErr, result] = await attemptPromise(async () =>
-                createPlaylist(playlistName, tracks, musicAssistantUrl)
+                createPlaylist(playlistName, tracks, musicAssistantUrl, musicAssistantToken)
             );
 
             if (createErr !== undefined) 

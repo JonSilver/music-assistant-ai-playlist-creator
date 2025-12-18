@@ -9,11 +9,12 @@ export const refinePlaylist = async (
     refinementPrompt: string,
     currentTracks: TrackMatch[],
     musicAssistantUrl: string,
+    musicAssistantToken: string | undefined,
     providerConfig: AIProviderConfig,
     customSystemPrompt?: string
 ): Promise<TrackMatch[]> => {
     const maClient = new MusicAssistantClient(musicAssistantUrl);
-    await maClient.connect();
+    await maClient.connect(musicAssistantToken);
 
     const [favoriteErr, favoriteArtists] = await attemptPromise(async () =>
         maClient.getFavoriteArtists()
@@ -74,11 +75,12 @@ export const replaceTrack = async (
     originalPrompt: string,
     playlistName: string,
     musicAssistantUrl: string,
+    musicAssistantToken: string | undefined,
     providerConfig: AIProviderConfig,
     customSystemPrompt?: string
 ): Promise<TrackMatch> => {
     const maClient = new MusicAssistantClient(musicAssistantUrl);
-    await maClient.connect();
+    await maClient.connect(musicAssistantToken);
 
     const [favoriteErr, favoriteArtists] = await attemptPromise(async () =>
         maClient.getFavoriteArtists()

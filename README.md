@@ -120,6 +120,7 @@ docker-compose up -d
 
 5. Go to Settings and configure:
    - Music Assistant URL (e.g., `http://192.168.1.100:8095`)
+   - Music Assistant Token (required for MA 2.7+ - see "Authentication" section below)
    - Add one or more AI providers (Claude, OpenAI, or compatible endpoints)
    - For each provider: name, API key, model selection, optional base URL and temperature
    - Optionally configure provider weights (prioritise specific music sources like Spotify, Tidal, etc.)
@@ -293,7 +294,8 @@ POST /api/playlists/test-ma
 Content-Type: application/json
 
 {
-  "musicAssistantUrl": "http://192.168.1.100:8095"
+  "musicAssistantUrl": "http://192.168.1.100:8095",
+  "musicAssistantToken": "your-ma-token"  // Required for MA 2.7+
 }
 
 Response: {
@@ -454,6 +456,7 @@ When providing a `webhookUrl` in the generation request:
 All application settings are configured through the web interface and stored in SQLite:
 
 - **Music Assistant URL**: WebSocket endpoint for your Music Assistant instance
+- **Music Assistant Token**: Authentication token for MA 2.7+ (see "Authentication" section)
 - **AI Providers**: Add multiple providers with individual configuration:
   - Name (e.g., "Claude Sonnet", "OpenAI GPT-4")
   - Type (Anthropic or OpenAI-compatible)
@@ -552,7 +555,15 @@ The backend connects to Music Assistant via WebSocket to:
 
 All Music Assistant operations are performed server-side with results streamed to connected clients in real-time.
 
-**Note**: No authentication is required as Music Assistant is designed for local network use.
+### Authentication (MA 2.7+)
+
+Music Assistant 2.7 introduced mandatory authentication. To configure:
+
+1. Log into your Music Assistant web interface
+2. Open browser DevTools (F12) → Application tab → Local Storage
+3. Copy the value of `ma_access_token`
+4. Paste into the "Music Assistant Token" field in Settings
+5. Click "Test Connection" to verify authentication works
 
 ## AI Integration
 

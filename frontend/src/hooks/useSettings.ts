@@ -9,6 +9,8 @@ interface TestResults {
 interface UseSettingsReturn {
     musicAssistantUrl: string;
     setMusicAssistantUrl: (url: string) => void;
+    musicAssistantToken: string;
+    setMusicAssistantToken: (token: string) => void;
     aiProviders: AIProviderConfig[];
     setAiProviders: (providers: AIProviderConfig[]) => void;
     customSystemPrompt: string;
@@ -28,6 +30,7 @@ export const useSettings = (
     settings: GetSettingsResponse | null,
     updateSettings: (updates: {
         musicAssistantUrl: string;
+        musicAssistantToken?: string;
         aiProviders: AIProviderConfig[];
         customSystemPrompt?: string;
         providerWeights?: string;
@@ -37,6 +40,7 @@ export const useSettings = (
     closeSettings: () => void
 ): UseSettingsReturn => {
     const [musicAssistantUrl, setMusicAssistantUrl] = useState("");
+    const [musicAssistantToken, setMusicAssistantToken] = useState("");
     const [aiProviders, setAiProviders] = useState<AIProviderConfig[]>([]);
     const [customSystemPrompt, setCustomSystemPrompt] = useState("");
     const [providerWeights, setProviderWeights] = useState("[]");
@@ -47,6 +51,7 @@ export const useSettings = (
     useEffect(() => {
         if (settings !== null) {
             setMusicAssistantUrl(settings.musicAssistantUrl);
+            setMusicAssistantToken(settings.musicAssistantToken ?? "");
             setAiProviders(settings.aiProviders);
             setCustomSystemPrompt(settings.customSystemPrompt ?? "");
             setProviderWeights(settings.providerWeights);
@@ -58,7 +63,8 @@ export const useSettings = (
         setTestingMA(true);
         setTestResults({ ...testResults, ma: undefined });
 
-        const result = await testMusicAssistantConnection(musicAssistantUrl);
+        const token = musicAssistantToken.trim().length > 0 ? musicAssistantToken : undefined;
+        const result = await testMusicAssistantConnection(musicAssistantUrl, token);
         setTestResults({ ...testResults, ma: result });
 
         setTestingMA(false);
@@ -77,6 +83,8 @@ export const useSettings = (
 
         const err = await updateSettings({
             musicAssistantUrl,
+            musicAssistantToken:
+                musicAssistantToken.trim().length > 0 ? musicAssistantToken : undefined,
             aiProviders,
             customSystemPrompt:
                 customSystemPrompt.trim().length > 0 ? customSystemPrompt : undefined,
@@ -92,6 +100,7 @@ export const useSettings = (
         closeSettings();
     }, [
         musicAssistantUrl,
+        musicAssistantToken,
         aiProviders,
         customSystemPrompt,
         providerWeights,
@@ -104,6 +113,7 @@ export const useSettings = (
     const handleCancelSettings = useCallback((): void => {
         if (settings !== null) {
             setMusicAssistantUrl(settings.musicAssistantUrl);
+            setMusicAssistantToken(settings.musicAssistantToken ?? "");
             setAiProviders(settings.aiProviders);
             setCustomSystemPrompt(settings.customSystemPrompt ?? "");
             setProviderWeights(settings.providerWeights);
@@ -115,6 +125,8 @@ export const useSettings = (
     return {
         musicAssistantUrl,
         setMusicAssistantUrl,
+        musicAssistantToken,
+        setMusicAssistantToken,
         aiProviders,
         setAiProviders,
         customSystemPrompt,

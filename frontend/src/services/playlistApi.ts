@@ -131,19 +131,19 @@ export const replaceTrackViaBackend = async (
 };
 
 export const testMusicAssistantConnection = async (
-    musicAssistantUrl: string
+    musicAssistantUrl: string,
+    musicAssistantToken?: string
 ): Promise<BackendTestMAResponse> => {
     const [err, result] = await attemptPromise(async () =>
         backendFetch<BackendTestMAResponse>(API_ENDPOINTS.PLAYLISTS_TEST_MA, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ musicAssistantUrl })
+            body: JSON.stringify({ musicAssistantUrl, musicAssistantToken })
         })
     );
 
-    if (err !== undefined) 
+    if (err !== undefined)
         return { success: false, error: err.message };
-    
 
     return result;
 };

@@ -8,6 +8,7 @@ interface ISettingsViewProps {
     settings: GetSettingsResponse | null;
     updateSettings: (updates: {
         musicAssistantUrl: string;
+        musicAssistantToken?: string;
         aiProviders: AIProviderConfig[];
         customSystemPrompt?: string;
         providerWeights?: string;
@@ -44,6 +45,8 @@ export const SettingsView: React.FC<ISettingsViewProps> = ({
             <SettingsPage
                 musicAssistantUrl={settingsManager.musicAssistantUrl}
                 setMusicAssistantUrl={settingsManager.setMusicAssistantUrl}
+                musicAssistantToken={settingsManager.musicAssistantToken}
+                setMusicAssistantToken={settingsManager.setMusicAssistantToken}
                 aiProviders={settingsManager.aiProviders}
                 setAiProviders={settingsManager.setAiProviders}
                 customSystemPrompt={settingsManager.customSystemPrompt}

@@ -4,9 +4,10 @@ import { withMusicAssistant } from "../utils/maClientUtils.js";
 export const createPlaylist = async (
     playlistName: string,
     tracks: TrackMatch[],
-    musicAssistantUrl: string
+    musicAssistantUrl: string,
+    musicAssistantToken?: string
 ): Promise<{ playlistId: string; tracksAdded: number; playlistUrl: string }> =>
-    withMusicAssistant(musicAssistantUrl, async maClient => {
+    withMusicAssistant(musicAssistantUrl, musicAssistantToken, async maClient => {
         const playlistId = await maClient.createPlaylist(playlistName.trim());
 
         const trackUris = tracks
