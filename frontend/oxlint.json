@@ -1,0 +1,52 @@
+{
+    "$schema": "https://raw.githubusercontent.com/oxc-project/oxlint/main/npm/oxlint/configuration_schema.json",
+    "plugins": ["typescript", "react", "react-hooks", "promise"],
+    "categories": {
+        "correctness": "error",
+        "suspicious": "warn",
+        "pedantic": "off",
+        "style": "off",
+        "restriction": "off",
+        "nursery": "off"
+    },
+    "rules": {
+        "no-debugger": "error",
+        "no-alert": "error",
+        "eqeqeq": ["error", "always"],
+        "no-var": "error",
+        "prefer-const": "error",
+        "max-lines": ["error", { "max": 200, "skipBlankLines": true, "skipComments": true }],
+
+        "typescript/no-unused-vars": [
+            "error",
+            {
+                "argsIgnorePattern": "^_",
+                "varsIgnorePattern": "^_",
+                "caughtErrorsIgnorePattern": "^_"
+            }
+        ],
+        "typescript/no-explicit-any": "error",
+        "typescript/no-non-null-assertion": "error",
+        "typescript/prefer-optional-chain": "error",
+        "typescript/no-floating-promises": "error",
+        "typescript/no-misused-promises": "error",
+        "typescript/await-thenable": "error",
+
+        "react/react-in-jsx-scope": "off",
+        "react/jsx-no-duplicate-props": "error",
+        "react/jsx-no-undef": "error",
+        "react/no-children-prop": "error",
+        "react/no-danger-with-children": "error",
+        "react/no-direct-mutation-state": "error",
+        "react/no-find-dom-node": "error",
+        "react/no-render-return-value": "error",
+        "react/no-string-refs": "error",
+        "react/no-unescaped-entities": "error",
+        "react/require-render-return": "error",
+        "react/void-dom-elements-no-children": "error",
+
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "warn"
+    },
+    "ignorePatterns": ["dist", "node_modules", "*.config.js", "*.config.ts"]
+}

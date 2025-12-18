@@ -7,8 +7,8 @@ interface IVersionCopyrightFooterProps {
 }
 
 export const VersionCopyrightFooter: FC<IVersionCopyrightFooterProps> = ({
-    showCopyright: showCopyright = false,
-    showVersion: showVersion = true
+    showCopyright = false,
+    showVersion = true
 }) => (
     <footer className="absolute bottom-0 left-0 mt-6 text-center text-xs italic opacity-50">
         {showVersion && <>Version {version}</>}

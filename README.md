@@ -55,7 +55,7 @@ Configure Music Assistant connection, AI providers, and provider weighting prefe
 - **Music Assistant**: WebSocket API integration
 - **Error Handling**: @jfdi/attempt (tuple destructuring pattern)
 - **Validation**: Zod for runtime type safety
-- **Code Quality**: ESLint + Prettier with strict rules
+- **Code Quality**: Oxlint + Prettier with strict rules
 - **Deployment**: Single Docker container with strict volume validation
 
 ### How It Works
