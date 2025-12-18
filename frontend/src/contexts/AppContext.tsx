@@ -67,11 +67,11 @@ export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.El
                 if (
                     result.defaultProviderId !== undefined &&
                     typeof result.defaultProviderId === "string"
-                ) {
+                ) 
                     setSelectedProviderId(result.defaultProviderId);
-                } else if (providers.length > 0) {
+                 else if (providers.length > 0) 
                     setSelectedProviderId(providers[0].id);
-                }
+                
             
         }
 
