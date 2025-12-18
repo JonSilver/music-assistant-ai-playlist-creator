@@ -117,9 +117,9 @@ export const MainView: React.FC<IMainViewProps> = ({
             onClose={closeHistory}
             onSelectHistory={(item: { prompt: string; playlistName?: string }) => {
                 playlist.setPrompt(item.prompt);
-                if (item.playlistName !== undefined) {
+                if (item.playlistName !== undefined) 
                     playlist.setPlaylistName(item.playlistName);
-                }
+                
                 closeHistory();
             }}
         />

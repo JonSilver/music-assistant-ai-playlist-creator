@@ -21,9 +21,9 @@ export const callWebhook = async (url: string, payload: WebhookPayload): Promise
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) {
+            if (!response.ok) 
                 throw new Error(`Webhook returned ${response.status}: ${response.statusText}`);
-            }
+            
 
             return response;
         });

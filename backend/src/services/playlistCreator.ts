@@ -12,15 +12,15 @@ export const createPlaylist = async (
         const trackUris = tracks
             .filter(m => m.matched && m.maTrack !== undefined)
             .map(m => {
-                if (m.maTrack === undefined) {
+                if (m.maTrack === undefined) 
                     throw new Error("Unexpected undefined maTrack");
-                }
+                
                 return m.maTrack.uri;
             });
 
-        if (trackUris.length > 0) {
+        if (trackUris.length > 0) 
             await maClient.addTracksToPlaylist(playlistId, trackUris);
-        }
+        
 
         const playlistUrl = `${musicAssistantUrl}/#/playlists/library/${playlistId}`;
 

@@ -90,11 +90,11 @@ export const matchTracksProgressively = async (
                     matchTrack(track.suggestion, maClient, providerKeywords)
                 );
 
-                if (err === undefined) {
+                if (err === undefined) 
                     onUpdate(index, { ...matchedTrack, matching: false });
-                } else {
+                 else 
                     onUpdate(index, { ...track, matching: false });
-                }
+                
             })
         );
     };
@@ -111,8 +111,8 @@ export const matchTracksProgressively = async (
     await batches.reduce(async (prevPromise, batch, batchNum) => {
         await prevPromise;
         await processBatch(batch, batchNum * BATCH_SIZE);
-        if (batchNum < batches.length - 1) {
+        if (batchNum < batches.length - 1) 
             await new Promise(resolve => setTimeout(resolve, 100));
-        }
+        
     }, Promise.resolve());
 };

@@ -8,9 +8,9 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 
 const rootElement = document.getElementById("root");
 
-if (rootElement === null) {
+if (rootElement === null) 
     throw new Error("Root element not found");
-}
+
 
 createRoot(rootElement).render(
     <StrictMode>

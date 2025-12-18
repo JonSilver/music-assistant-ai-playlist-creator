@@ -31,9 +31,9 @@ export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.El
     // Load last selected provider from localStorage on mount
     useEffect(() => {
         const stored = localStorage.getItem("selectedProviderId");
-        if (stored !== null) {
+        if (stored !== null) 
             setSelectedProviderIdState(stored);
-        }
+        
     }, []);
 
     // Persist to localStorage when changed
@@ -48,9 +48,9 @@ export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.El
 
         const [err, result] = await api.getSettings();
 
-        if (err !== undefined) {
+        if (err !== undefined) 
             setError(err.message);
-        } else {
+         else {
             setSettings(result);
 
             const providers = result.aiProviders;
@@ -63,7 +63,7 @@ export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.El
                 selectedProviderId !== null && providers.some(p => p.id === selectedProviderId);
 
             // Initial load or selected provider deleted: use default or first
-            if (selectedProviderId === null || !selectedProviderExists) {
+            if (selectedProviderId === null || !selectedProviderExists) 
                 if (
                     result.defaultProviderId !== undefined &&
                     typeof result.defaultProviderId === "string"
@@ -72,7 +72,7 @@ export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.El
                 } else if (providers.length > 0) {
                     setSelectedProviderId(providers[0].id);
                 }
-            }
+            
         }
 
         setLoading(false);
@@ -113,8 +113,8 @@ export const AppProvider = ({ children }: { children: ReactNode }): React.JSX.El
 
 export const useApp = (): AppContextType => {
     const context = useContext(AppContext);
-    if (context === undefined) {
+    if (context === undefined) 
         throw new Error("useApp must be used within AppProvider");
-    }
+    
     return context;
 };

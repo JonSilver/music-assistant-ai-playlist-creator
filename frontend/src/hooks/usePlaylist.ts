@@ -95,9 +95,9 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
                 },
                 update => {
                     // Update tracks progressively as they're matched
-                    if (update.tracks !== undefined) {
+                    if (update.tracks !== undefined) 
                         setGeneratedTracks(update.tracks);
-                    }
+                    
                 }
             )
         );
@@ -205,13 +205,13 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
                     updated[index] = { ...track, matching: false };
                     return updated;
                 });
-            } else {
+            } else 
                 setGeneratedTracks(prev => {
                     const updated = [...prev];
                     updated[index] = { ...matchedTrack, matching: false };
                     return updated;
                 });
-            }
+            
 
             setRetryingTrackIndex(null);
         },

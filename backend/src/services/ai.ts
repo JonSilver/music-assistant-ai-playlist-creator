@@ -74,9 +74,9 @@ const parseAIResponse = (content: string): AIPlaylistResponse => {
     }
 
     const parseResult = AIPlaylistResponseSchema.safeParse(data);
-    if (!parseResult.success) {
+    if (!parseResult.success) 
         throw new Error(`Invalid AI response structure: ${parseResult.error.message}`);
-    }
+    
 
     return parseResult.data;
 };
@@ -85,9 +85,9 @@ const generateWithAnthropic = async (request: AIPlaylistRequest): Promise<AIPlay
     if (
         request.providerConfig.apiKey === undefined ||
         request.providerConfig.apiKey.trim() === ""
-    ) {
+    ) 
         throw new Error("API key required for Anthropic provider");
-    }
+    
 
     const anthropic = new Anthropic({
         apiKey: request.providerConfig.apiKey
@@ -115,16 +115,16 @@ const generateWithAnthropic = async (request: AIPlaylistRequest): Promise<AIPlay
         });
 
         const content = response.content[0];
-        if (content.type !== "text") {
+        if (content.type !== "text") 
             throw new Error("Unexpected response type from Claude");
-        }
+        
 
         return parseAIResponse(content.text);
     });
 
-    if (err !== undefined) {
+    if (err !== undefined) 
         throw new Error(`Claude API error: ${err.message}`);
-    }
+    
 
     return result;
 };
@@ -157,23 +157,23 @@ const generateWithOpenAICompatible = async (
 
         const firstChoice = response.choices[0];
         const content = firstChoice.message.content;
-        if (content === null) {
+        if (content === null) 
             throw new Error("No response from OpenAI");
-        }
+        
 
         return parseAIResponse(content);
     });
 
-    if (err !== undefined) {
+    if (err !== undefined) 
         throw new Error(`OpenAI API error: ${err.message}`);
-    }
+    
 
     return result;
 };
 
 export const generatePlaylist = async (request: AIPlaylistRequest): Promise<AIPlaylistResponse> => {
-    if (request.providerConfig.type === "anthropic") {
+    if (request.providerConfig.type === "anthropic") 
         return generateWithAnthropic(request);
-    }
+    
     return generateWithOpenAICompatible(request);
 };

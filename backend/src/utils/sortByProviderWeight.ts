@@ -12,9 +12,9 @@ import type { MATrack } from "../../../shared/types.js";
  * @returns Total weight (sum of all matching keyword weights), or Infinity if no matches
  */
 const calculateProviderWeight = (provider: string, keywords: string[]): number => {
-    if (keywords.length === 0) {
+    if (keywords.length === 0) 
         return 0; // No weighting configured
-    }
+    
 
     const providerLower = provider.toLowerCase();
 
@@ -35,9 +35,9 @@ const calculateProviderWeight = (provider: string, keywords: string[]): number =
  */
 export const sortByProviderWeight = (tracks: MATrack[], keywords: string[]): MATrack[] => {
     // If no keywords configured, return original order
-    if (keywords.length === 0) {
+    if (keywords.length === 0) 
         return tracks;
-    }
+    
 
     // Create array with weights for stable sorting
     const tracksWithWeights = tracks.map((track, index) => ({
@@ -48,9 +48,9 @@ export const sortByProviderWeight = (tracks: MATrack[], keywords: string[]): MAT
 
     // Stable sort by weight (ascending), then by original index
     tracksWithWeights.sort((a, b) => {
-        if (a.weight !== b.weight) {
+        if (a.weight !== b.weight) 
             return a.weight - b.weight;
-        }
+        
         return a.originalIndex - b.originalIndex;
     });
 

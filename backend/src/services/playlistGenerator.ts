@@ -56,9 +56,9 @@ export const generatePlaylistJob = async (
             })
         );
 
-        if (aiErr !== undefined) {
+        if (aiErr !== undefined) 
             throw new Error(`AI generation failed: ${aiErr.message}`);
-        }
+        
 
         // Initialise tracks - all marked as matching since we'll process them all
         const initialTracks: TrackMatch[] = createUnmatchedTracks(aiResult.tracks);
@@ -104,9 +104,9 @@ export const generatePlaylistJob = async (
                 createPlaylist(playlistName, tracks, musicAssistantUrl)
             );
 
-            if (createErr !== undefined) {
+            if (createErr !== undefined) 
                 throw new Error(`Playlist creation failed: ${createErr.message}`);
-            }
+            
 
             // Save to history
             db.addPromptHistory(prompt, playlistName, result.tracksAdded);
@@ -125,13 +125,13 @@ export const generatePlaylistJob = async (
                 success: true,
                 playlistUrl: result.playlistUrl
             });
-        } else {
+        } else 
             // For UI requests, just mark as completed with matched tracks
             // The UI will call a separate endpoint to create the playlist
             jobStore.updateJob(jobId, {
                 status: "completed"
             });
-        }
+        
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error(`[Job ${jobId}] Failed:`, errorMessage);
@@ -142,12 +142,12 @@ export const generatePlaylistJob = async (
         });
 
         // Call webhook with error if provided
-        if (webhookUrl !== undefined && webhookUrl !== "") {
+        if (webhookUrl !== undefined && webhookUrl !== "") 
             await callWebhook(webhookUrl, {
                 jobId,
                 success: false,
                 error: errorMessage
             });
-        }
+        
     }
 };

@@ -33,9 +33,9 @@ export const backendFetch = async <T>(endpoint: string, options?: RequestInit): 
         return (await response.json()) as T;
     });
 
-    if (err !== undefined) {
+    if (err !== undefined) 
         throw new Error(err.message);
-    }
+    
 
     return result;
 };

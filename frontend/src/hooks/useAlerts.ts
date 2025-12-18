@@ -12,8 +12,8 @@ export interface AlertsContextValue {
 
 export const useAlerts = (): AlertsContextValue => {
     const context = useContext(AlertsContext);
-    if (context === null) {
+    if (context === null) 
         throw new Error("useAlerts must be used within AlertsProvider");
-    }
+    
     return context;
 };

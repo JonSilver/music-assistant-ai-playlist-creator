@@ -141,9 +141,9 @@ export const testMusicAssistantConnection = async (
         })
     );
 
-    if (err !== undefined) {
+    if (err !== undefined) 
         return { success: false, error: err.message };
-    }
+    
 
     return result;
 };

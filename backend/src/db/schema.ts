@@ -110,9 +110,9 @@ export class PlaylistDatabase {
       VALUES (?, ?, ?, ?, ?)
     `);
 
-        for (const preset of defaultPresets) {
+        for (const preset of defaultPresets) 
             stmt.run(preset.id, preset.name, preset.description, preset.prompt, preset.category);
-        }
+        
     }
 
     getSetting(key: string): string | null {
@@ -139,9 +139,9 @@ export class PlaylistDatabase {
                 .run(key, value, Date.now(), value, Date.now());
         });
 
-        if (err !== undefined) {
+        if (err !== undefined) 
             throw new Error(`Failed to set setting: ${err.message}`);
-        }
+        
     }
 
     addPromptHistory(prompt: string, playlistName: string | null, trackCount: number): number {
@@ -158,9 +158,9 @@ export class PlaylistDatabase {
             return info.lastInsertRowid as number;
         });
 
-        if (err !== undefined) {
+        if (err !== undefined) 
             throw new Error(`Failed to add prompt history: ${err.message}`);
-        }
+        
 
         return result;
     }
@@ -182,11 +182,11 @@ export class PlaylistDatabase {
             const validatedRows: PromptHistory[] = [];
             for (const row of rows) {
                 const parseResult = PromptHistoryRowSchema.safeParse(row);
-                if (parseResult.success) {
+                if (parseResult.success) 
                     validatedRows.push(convertPromptHistoryRow(parseResult.data));
-                } else {
+                 else 
                     console.error("Invalid prompt history row:", parseResult.error);
-                }
+                
             }
 
             return validatedRows;
@@ -211,11 +211,11 @@ export class PlaylistDatabase {
             const validatedRows: PresetPrompt[] = [];
             for (const row of rows) {
                 const parseResult = PresetPromptSchema.safeParse(row);
-                if (parseResult.success) {
+                if (parseResult.success) 
                     validatedRows.push(parseResult.data);
-                } else {
+                 else 
                     console.error("Invalid preset prompt row:", parseResult.error);
-                }
+                
             }
 
             return validatedRows;

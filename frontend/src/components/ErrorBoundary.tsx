@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     render(): ReactNode {
-        if (this.state.hasError && this.state.error !== null) {
+        if (this.state.hasError && this.state.error !== null) 
             return (
                 <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
                     <div className="card bg-base-100 shadow-xl max-w-2xl w-full">
@@ -79,7 +79,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                     </div>
                 </div>
             );
-        }
+        
 
         return this.props.children;
     }

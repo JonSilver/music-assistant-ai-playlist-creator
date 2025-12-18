@@ -42,11 +42,11 @@ export const ProvidersManager: React.FC<IProvidersManagerProps> = ({
     };
 
     const handleSave = (newProvider: AIProviderConfig): void => {
-        if (editingId === "new") {
+        if (editingId === "new") 
             onChange([...providers, newProvider]);
-        } else {
+         else 
             onChange(providers.map(p => (p.id === editingId ? newProvider : p)));
-        }
+        
 
         setEditingId(null);
         setEditForm({});
@@ -56,9 +56,9 @@ export const ProvidersManager: React.FC<IProvidersManagerProps> = ({
         // eslint-disable-next-line no-alert
         if (confirm("Are you sure you want to delete this provider?")) {
             onChange(providers.filter(p => p.id !== id));
-            if (defaultProviderId === id) {
+            if (defaultProviderId === id) 
                 onDefaultProviderChange(undefined);
-            }
+            
         }
     };
 

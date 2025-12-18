@@ -11,9 +11,9 @@ export const selectProvider = (
         const preferredProvider = settings.providers.find(
             (p: AIProviderConfig) => p.id === providerPreference
         );
-        if (preferredProvider !== undefined) {
+        if (preferredProvider !== undefined) 
             return preferredProvider;
-        }
+        
     }
     return settings.defaultProvider;
 };

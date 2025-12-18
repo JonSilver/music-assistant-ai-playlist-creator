@@ -84,9 +84,9 @@ export class MusicAssistantClient {
             });
         });
 
-        if (err !== undefined) {
+        if (err !== undefined) 
             throw new Error(`Failed to connect to Music Assistant: ${err.message}`);
-        }
+        
     }
 
     private handleMessage(data: string): void {
@@ -97,30 +97,30 @@ export class MusicAssistantClient {
         }
 
         // MA can send messages without message_id (events, notifications, etc.)
-        if (message.message_id === undefined || message.message_id.length === 0) {
+        if (message.message_id === undefined || message.message_id.length === 0) 
             return;
-        }
+        
 
         const pending = this.pendingRequests.get(message.message_id);
-        if (pending === undefined) {
+        if (pending === undefined) 
             return;
-        }
+        
 
         clearTimeout(pending.timeout);
 
-        if (message.error !== undefined) {
+        if (message.error !== undefined) 
             pending.reject(new Error(message.error.message));
-        } else {
+         else 
             pending.resolve(message.result);
-        }
+        
 
         this.pendingRequests.delete(message.message_id);
     }
 
     private sendCommand<T>(command: string, params?: Record<string, unknown>): Promise<T> {
-        if (this.ws === null || this.ws.readyState !== WebSocket.OPEN) {
+        if (this.ws === null || this.ws.readyState !== WebSocket.OPEN) 
             throw new Error(ERROR_MESSAGES.WS_NOT_CONNECTED);
-        }
+        
 
         const currentMessageId = this.messageId;
         this.messageId = this.messageId + 1;
@@ -165,9 +165,9 @@ export class MusicAssistantClient {
 
             const [sendErr] = attempt(() => {
                 const ws = this.ws;
-                if (ws === null) {
+                if (ws === null) 
                     throw new Error("WebSocket is null");
-                }
+                
                 ws.send(JSON.stringify(message));
             });
 

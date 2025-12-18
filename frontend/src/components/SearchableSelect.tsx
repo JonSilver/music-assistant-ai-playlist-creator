@@ -40,9 +40,9 @@ export const SearchableSelect: React.FC<ISearchableSelectProps> = ({
         <Combobox
             value={value}
             onChange={(val: string | null) => {
-                if (val !== null) {
+                if (val !== null) 
                     onChange(val);
-                }
+                
             }}
             onClose={() => {
                 setQuery("");

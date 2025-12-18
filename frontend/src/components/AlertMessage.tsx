@@ -11,9 +11,9 @@ const renderMessageWithLinks = (message: string): React.JSX.Element => {
     const messageText = message;
     const matches = Array.from(messageText.matchAll(linkRegex));
 
-    if (matches.length === 0) {
+    if (matches.length === 0) 
         return <span>{message}</span>;
-    }
+    
 
     const processedParts = matches.reduce<{
         parts: (string | React.JSX.Element)[];
@@ -25,9 +25,9 @@ const renderMessageWithLinks = (message: string): React.JSX.Element => {
             const url = match[2];
             const matchIndex = match.index;
 
-            if (matchIndex > acc.lastIndex) {
+            if (matchIndex > acc.lastIndex) 
                 acc.parts.push(messageText.substring(acc.lastIndex, matchIndex));
-            }
+            
 
             acc.parts.push(
                 <a
@@ -49,9 +49,9 @@ const renderMessageWithLinks = (message: string): React.JSX.Element => {
         { parts: [], lastIndex: 0 }
     );
 
-    if (processedParts.lastIndex < messageText.length) {
+    if (processedParts.lastIndex < messageText.length) 
         processedParts.parts.push(messageText.substring(processedParts.lastIndex));
-    }
+    
 
     return <span>{processedParts.parts}</span>;
 };

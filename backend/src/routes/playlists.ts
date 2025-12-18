@@ -133,9 +133,9 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
             res.write(`data: ${JSON.stringify(update)}\n\n`);
 
             // Close connection when job is completed or failed
-            if (update.status === "completed" || update.status === "failed") {
+            if (update.status === "completed" || update.status === "failed") 
                 res.end();
-            }
+            
         };
 
         jobStore.addListener(jobId, listener);

@@ -34,9 +34,9 @@ export class JobStore {
 
     updateJob(jobId: string, update: Partial<PlaylistGenerationJob>): void {
         const job = this.jobs.get(jobId);
-        if (job === undefined) {
+        if (job === undefined) 
             return;
-        }
+        
 
         Object.assign(job, { ...update, updatedAt: new Date() });
         this.jobs.set(jobId, job);
@@ -54,36 +54,36 @@ export class JobStore {
     }
 
     addListener(jobId: string, callback: (update: JobProgressUpdate) => void): void {
-        if (!this.listeners.has(jobId)) {
+        if (!this.listeners.has(jobId)) 
             this.listeners.set(jobId, new Set());
-        }
+        
         const listeners = this.listeners.get(jobId);
-        if (listeners !== undefined) {
+        if (listeners !== undefined) 
             listeners.add(callback);
-        }
+        
     }
 
     removeListener(jobId: string, callback: (update: JobProgressUpdate) => void): void {
         const listeners = this.listeners.get(jobId);
         if (listeners !== undefined) {
             listeners.delete(callback);
-            if (listeners.size === 0) {
+            if (listeners.size === 0) 
                 this.listeners.delete(jobId);
-            }
+            
         }
     }
 
     private notifyListeners(jobId: string, update: JobProgressUpdate): void {
         const listeners = this.listeners.get(jobId);
-        if (listeners !== undefined) {
+        if (listeners !== undefined) 
             listeners.forEach(callback => callback(update));
-        }
+        
     }
 
     // Cleanup old completed/failed jobs (older than 1 hour)
     cleanup(): void {
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-        for (const [jobId, job] of this.jobs.entries()) {
+        for (const [jobId, job] of this.jobs.entries()) 
             if (
                 (job.status === "completed" || job.status === "failed") &&
                 job.updatedAt < oneHourAgo
@@ -91,7 +91,7 @@ export class JobStore {
                 this.jobs.delete(jobId);
                 this.listeners.delete(jobId);
             }
-        }
+        
     }
 }
 
