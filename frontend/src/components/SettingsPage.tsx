@@ -12,6 +12,8 @@ import { VersionCopyrightFooter } from "./VersionCopyrightFooter";
 interface ISettingsPageProps {
     musicAssistantUrl: string;
     setMusicAssistantUrl: (value: string) => void;
+    musicAssistantToken: string;
+    setMusicAssistantToken: (value: string) => void;
     aiProviders: AIProviderConfig[];
     setAiProviders: (value: AIProviderConfig[]) => void;
     customSystemPrompt: string;
@@ -33,6 +35,8 @@ interface ISettingsPageProps {
 export const SettingsPage: React.FC<ISettingsPageProps> = ({
     musicAssistantUrl,
     setMusicAssistantUrl,
+    musicAssistantToken,
+    setMusicAssistantToken,
     aiProviders,
     setAiProviders,
     customSystemPrompt,
@@ -102,6 +106,27 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
                                         : `Connection failed: ${testResults.ma.error ?? "Unknown error"}`}
                                 </div>
                             )}
+                        </div>
+
+                        <div className="form-control mb-4">
+                            <label className="label">
+                                <span className="label-text">Music Assistant Token</span>
+                            </label>
+                            <input
+                                type="password"
+                                placeholder="Paste token from MA web UI"
+                                className="input input-bordered"
+                                value={musicAssistantToken}
+                                onChange={e => {
+                                    setMusicAssistantToken(e.target.value);
+                                }}
+                            />
+                            <label className="label">
+                                <span className="label-text-alt">
+                                    Required for MA 2.7+. Get from browser DevTools → Application →
+                                    Local Storage → ma_access_token
+                                </span>
+                            </label>
                         </div>
 
                         <div className="divider"></div>

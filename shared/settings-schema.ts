@@ -150,6 +150,13 @@ export const SETTINGS_FIELDS = {
     type: 'string',
     optional: true,
     zodSchema: z.string().optional()
+  } satisfies StringSettingField,
+
+  musicAssistantToken: {
+    key: 'musicAssistantToken',
+    type: 'string',
+    optional: true,
+    zodSchema: z.string().optional()
   } satisfies StringSettingField
 } as const;
 
@@ -195,6 +202,7 @@ export type UpdateSettingsRequest = {
 /** @public */
 export const AppSettingsSchema = z.object({
   musicAssistantUrl: z.string(),
+  musicAssistantToken: z.string().optional(),
   aiProviders: z.array(AIProviderConfigSchema),
   customSystemPrompt: z.string().optional(),
   providerWeights: z.string(),
@@ -203,6 +211,7 @@ export const AppSettingsSchema = z.object({
 
 export const UpdateSettingsRequestSchema = z.object({
   musicAssistantUrl: z.string().optional(),
+  musicAssistantToken: z.string().optional(),
   aiProviders: z.array(AIProviderConfigSchema).optional(),
   customSystemPrompt: z.string().optional(),
   providerWeights: z.string().optional(),
@@ -218,161 +227,5 @@ export const SuccessResponseSchema = z.object({
 });
 export type SuccessResponse = z.infer<typeof SuccessResponseSchema>;
 
-// Utility functions for working with settings
-export const settingsUtils = {
-  // Get all field keys
-  getAllKeys: (): SettingKey[] => Object.keys(SETTINGS_FIELDS) as SettingKey[],
-
-  // Get field definition
-  getField: <K extends SettingKey>(key: K): SettingsFieldsConfig[K] => SETTINGS_FIELDS[key],
-
-  // Get field type
-  getFieldType: (key: SettingKey): SettingFieldType => SETTINGS_FIELDS[key].type,
-
-  // Check if field is optional
-  isOptional: (key: SettingKey): boolean => SETTINGS_FIELDS[key].optional ?? false,
-
-  // Serialise value for database storage
-  serialiseForDB: <K extends SettingKey>(
-    key: K,
-    value: InferFieldValue<SettingsFieldsConfig[K]>
-  ): string => {
-    const field = SETTINGS_FIELDS[key];
-    if ('dbTransform' in field && field.dbTransform !== undefined) {
-      return field.dbTransform.serialise(value as never);
-    }
-    return String(value);
-  },
-
-  // Deserialise value from database
-  deserialiseFromDB: <K extends SettingKey>(
-    key: K,
-    value: string | null
-  ): InferFieldValue<SettingsFieldsConfig[K]> | undefined => {
-    const field = SETTINGS_FIELDS[key];
-    if (value === null) {
-      return ('defaultValue' in field ? field.defaultValue : undefined) as InferFieldValue<SettingsFieldsConfig[K]> | undefined;
-    }
-    if ('dbTransform' in field && field.dbTransform !== undefined) {
-      return field.dbTransform.deserialise(value) as InferFieldValue<SettingsFieldsConfig[K]> | undefined;
-    }
-    return value as InferFieldValue<SettingsFieldsConfig[K]>;
-  },
-
-  // Get default value for a field
-  getDefaultValue: <K extends SettingKey>(
-    key: K
-  ): InferFieldValue<SettingsFieldsConfig[K]> | undefined => {
-    const field = SETTINGS_FIELDS[key];
-    return ('defaultValue' in field ? field.defaultValue : undefined) as InferFieldValue<SettingsFieldsConfig[K]> | undefined;
-  },
-
-  // Convert form value (string) to API value using field type
-  formValueToApiValue: <K extends SettingKey>(
-    key: K,
-    formValue: string
-  ): InferFieldValue<SettingsFieldsConfig[K]> | undefined => {
-    const field = SETTINGS_FIELDS[key];
-
-    if (formValue.length === 0 && field.optional) {
-      return undefined;
-    }
-
-    if (field.type === 'providers') {
-      try {
-        return JSON.parse(formValue) as InferFieldValue<SettingsFieldsConfig[K]>;
-      } catch {
-        return [] as InferFieldValue<SettingsFieldsConfig[K]>;
-      }
-    }
-
-    // string - return as is
-    return formValue as InferFieldValue<SettingsFieldsConfig[K]>;
-  },
-
-  // Convert API value to form value (string)
-  apiValueToFormValue: <K extends SettingKey>(
-    key: K,
-    apiValue: InferFieldValue<SettingsFieldsConfig[K]> | undefined
-  ): string => {
-    const field = SETTINGS_FIELDS[key];
-
-    if (apiValue === undefined) {
-      if ('defaultValue' in field && field.defaultValue !== undefined) {
-        if (field.type === 'providers') {
-          return JSON.stringify(field.defaultValue);
-        }
-        return String(field.defaultValue);
-      }
-      return '';
-    }
-
-    if (field.type === 'providers') {
-      return JSON.stringify(apiValue);
-    }
-
-    return String(apiValue);
-  },
-
-  // Get all settings from database
-  getSettings: (db: { getSetting: (key: string) => string | null }): {
-    musicAssistantUrl: string;
-    aiProviders: AIProviderConfig[];
-    customSystemPrompt?: string;
-    providerWeights: string;
-    defaultProviderId?: string;
-    defaultProvider: AIProviderConfig;
-    providers: AIProviderConfig[];
-    providerPreference: string[];
-  } => {
-    const settings: Record<string, unknown> = {};
-
-    // Iterate through all setting fields defined in schema
-    for (const key of settingsUtils.getAllKeys()) {
-      const dbValue = db.getSetting(key);
-      const deserialisedValue = settingsUtils.deserialiseFromDB(key, dbValue);
-      settings[key] = deserialisedValue ?? settingsUtils.getDefaultValue(key);
-    }
-
-    const aiProviders = (settings.aiProviders as AIProviderConfig[] | undefined) ?? [];
-    const defaultProviderId = settings.defaultProviderId as string | undefined;
-
-    // Find default provider by ID, or fall back to first provider
-    let defaultProvider: AIProviderConfig;
-    if (defaultProviderId !== undefined) {
-      const foundProvider = aiProviders.find(p => p.id === defaultProviderId);
-      defaultProvider = foundProvider ?? aiProviders[0] ?? {
-        id: 'default',
-        name: 'Default',
-        type: 'anthropic' as const,
-        apiKey: '',
-        model: 'claude-3-5-sonnet-20241022'
-      };
-    } else {
-      defaultProvider = aiProviders[0] ?? {
-        id: 'default',
-        name: 'Default',
-        type: 'anthropic' as const,
-        apiKey: '',
-        model: 'claude-3-5-sonnet-20241022'
-      };
-    }
-
-    const providerWeights = (settings.providerWeights as string | undefined) ?? '';
-    const providerPreference = providerWeights
-      .split(',')
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
-
-    return {
-      musicAssistantUrl: (settings.musicAssistantUrl as string | undefined) ?? '',
-      aiProviders,
-      customSystemPrompt: settings.customSystemPrompt as string | undefined,
-      providerWeights,
-      defaultProviderId,
-      defaultProvider,
-      providers: aiProviders,
-      providerPreference
-    };
-  }
-};
+// Re-export settingsUtils from separate file
+export { settingsUtils } from './settings-utils.js';

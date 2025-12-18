@@ -55,6 +55,7 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
                     jobId,
                     prompt,
                     musicAssistantUrl: settings.musicAssistantUrl,
+                    musicAssistantToken: settings.musicAssistantToken,
                     providerConfig,
                     customSystemPrompt: settings.customSystemPrompt,
                     providerKeywords: settings.providerPreference,
@@ -157,7 +158,7 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
             const settings = settingsUtils.getSettings(db);
 
             const [err, result] = await attemptPromise(async () =>
-                createPlaylist(playlistName, tracks, settings.musicAssistantUrl)
+                createPlaylist(playlistName, tracks, settings.musicAssistantUrl, settings.musicAssistantToken)
             );
 
             if (err !== undefined) {
@@ -198,6 +199,7 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
                     refinementPrompt,
                     currentTracks,
                     settings.musicAssistantUrl,
+                    settings.musicAssistantToken,
                     providerConfig,
                     settings.customSystemPrompt
                 )
@@ -227,7 +229,7 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
             const settings = settingsUtils.getSettings(db);
 
             const [err, matchedTrack] = await attemptPromise(async () =>
-                withMusicAssistant(settings.musicAssistantUrl, async maClient =>
+                withMusicAssistant(settings.musicAssistantUrl, settings.musicAssistantToken, async maClient =>
                     matchTrack(track.suggestion, maClient, providerKeywords)
                 )
             );
@@ -269,6 +271,7 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
                     originalPrompt,
                     playlistName,
                     settings.musicAssistantUrl,
+                    settings.musicAssistantToken,
                     providerConfig,
                     settings.customSystemPrompt
                 )
@@ -287,17 +290,23 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
         }
     );
 
-    // POST /api/playlists/test-ma - Test Music Assistant connection
+    // POST /api/playlists/test-ma - Test Music Assistant connection and auth
     router.post("/playlists/test-ma", async (req: Request, res: Response) => {
-        const { musicAssistantUrl } = req.body as { musicAssistantUrl?: string };
+        const { musicAssistantUrl, musicAssistantToken } = req.body as {
+            musicAssistantUrl?: string;
+            musicAssistantToken?: string;
+        };
 
         if (musicAssistantUrl === undefined || musicAssistantUrl === "") {
             res.status(400).json({ error: "musicAssistantUrl is required" });
             return;
         }
 
+        // Actually test auth by calling getFavoriteArtists (requires auth)
         const [err] = await attemptPromise(async () =>
-            withMusicAssistant(musicAssistantUrl, async () => Promise.resolve())
+            withMusicAssistant(musicAssistantUrl, musicAssistantToken, async maClient =>
+                maClient.getFavoriteArtists()
+            )
         );
 
         if (err !== undefined) {

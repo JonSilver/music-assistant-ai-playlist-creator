@@ -4,63 +4,32 @@ import {
     ERROR_MESSAGES,
     LIMITS,
     MA_COMMANDS,
+    MA_DEVICE_NAME,
     MEDIA_TYPES,
     TIMEOUTS,
     WS_MESSAGE_PREFIX,
     WS_PATH
 } from "../../../shared/constants/index.js";
 import type { MATrack } from "../../../shared/types.js";
-
-interface MAResponse {
-    message_id?: string;
-    result?: unknown;
-    error?: {
-        error_code: string;
-        message: string;
-    };
-}
-
-interface MASearchResults {
-    artists: unknown[];
-    albums: unknown[];
-    tracks: MATrack[];
-    playlists: unknown[];
-    radio: unknown[];
-    podcasts?: unknown[];
-    audiobooks?: unknown[];
-}
-
-interface MAFavoritesResponse {
-    count: number;
-    total: number;
-    items: { name: string }[];
-}
-
-interface MAPlaylist {
-    item_id: string;
-    provider: string;
-    name: string;
-    uri: string;
-}
+import type {
+    MAFavoritesResponse,
+    MAPlaylist,
+    MAResponse,
+    MASearchResults,
+    PendingRequest
+} from "./musicAssistantTypes.js";
 
 export class MusicAssistantClient {
     private ws: WebSocket | null = null;
     private messageId = 0;
     private url: string;
-    private pendingRequests = new Map<
-        string,
-        {
-            resolve: (value: unknown) => void;
-            reject: (error: Error) => void;
-            timeout: NodeJS.Timeout;
-        }
-    >();
+    private pendingRequests = new Map<string, PendingRequest>();
 
     constructor(url: string) {
         this.url = url;
     }
 
-    async connect(): Promise<void> {
+    async connect(token?: string): Promise<void> {
         const wsUrl = this.url.replace(/^http/, "ws") + WS_PATH;
 
         const [err] = await attemptPromise(async () => {
@@ -84,9 +53,20 @@ export class MusicAssistantClient {
             });
         });
 
-        if (err !== undefined) 
+        if (err !== undefined)
             throw new Error(`Failed to connect to Music Assistant: ${err.message}`);
-        
+
+        // Authenticate if token provided (required for MA 2.7+)
+        if (token !== undefined && token.length > 0) {
+            const [authErr] = await attemptPromise(async () => {
+                await this.sendCommand(MA_COMMANDS.AUTH, {
+                    token,
+                    device_name: MA_DEVICE_NAME
+                });
+            });
+            if (authErr !== undefined)
+                throw new Error(`Authentication failed: ${authErr.message}`);
+        }
     }
 
     private handleMessage(data: string): void {
