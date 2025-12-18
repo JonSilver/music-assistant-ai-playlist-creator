@@ -1,0 +1,23 @@
+{
+  "name": "Playlist Creator for Music Assistant",
+  "short_name": "Playlist Creator",
+  "description": "Create AI-powered playlists for Music Assistant",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#6366f1",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32 48x48 64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
