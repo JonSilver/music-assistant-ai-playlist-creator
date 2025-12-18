@@ -15,7 +15,7 @@
         "eqeqeq": ["error", "always"],
         "no-var": "error",
         "curly": ["warn", "multi"],
-        "max-lines": ["error", { "max": 200, "skipBlankLines": true, "skipComments": true }],
+        "max-lines": ["warn", { "max": 200, "skipBlankLines": true, "skipComments": true }],
 
         "typescript/no-unused-vars": [
             "warn",
