@@ -60,8 +60,8 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-base-200 py-8">
-            <div className="container mx-auto px-4 max-w-2xl">
+        <div className="min-h-screen bg-base-200 py-8 pt-[max(2rem,var(--safe-area-inset-top))] pb-[max(2rem,var(--safe-area-inset-bottom))]">
+            <div className="container mx-auto px-4 max-w-2xl pl-[max(1rem,var(--safe-area-inset-left))] pr-[max(1rem,var(--safe-area-inset-right))]">
                 <div className="card bg-base-100 shadow-xl">
                     <div className="card-body">
                         <SettingsHeader />
