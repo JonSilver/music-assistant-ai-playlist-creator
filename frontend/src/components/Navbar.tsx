@@ -6,7 +6,7 @@ interface INavbarProps {
 }
 
 export const Navbar: React.FC<INavbarProps> = ({ onShowHistory, onShowSettings }) => (
-    <div className="navbar bg-base-100 shadow-lg">
+    <div className="navbar bg-base-100 shadow-lg pt-[var(--safe-area-inset-top)] pl-[var(--safe-area-inset-left)] pr-[var(--safe-area-inset-right)]">
         <div className="container mx-auto px-2 sm:px-4 flex items-center max-w-6xl">
             <div className="flex-1 flex items-start gap-2 sm:gap-3 min-w-0">
                 <img src="/logo.png" alt="Logo" className="h-8 sm:h-12 flex-shrink-0" />

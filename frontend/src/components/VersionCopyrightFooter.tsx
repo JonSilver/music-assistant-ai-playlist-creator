@@ -10,7 +10,7 @@ export const VersionCopyrightFooter: FC<IVersionCopyrightFooterProps> = ({
     showCopyright = false,
     showVersion = true
 }) => (
-    <footer className="absolute bottom-0 left-0 mt-6 text-center text-xs italic opacity-50">
+    <footer className="absolute bottom-0 left-0 mt-6 text-center text-xs italic opacity-50 pb-[var(--safe-area-inset-bottom)] pl-[var(--safe-area-inset-left)]">
         {showVersion && <>Version {version}</>}
         {showVersion && showCopyright && " | "}
         {showCopyright && (

@@ -48,7 +48,7 @@ export const MainView: React.FC<IMainViewProps> = ({
     openRefine,
     closeRefine
 }) => (
-    <div className="min-h-screen bg-base-200">
+    <div className="min-h-screen bg-base-200 pb-[var(--safe-area-inset-bottom)]">
         <Navbar onShowSettings={openSettings} onShowHistory={openHistory} />
 
         {error !== null && <AlertMessage type="error" message={error} onDismiss={clearError} />}
@@ -56,7 +56,7 @@ export const MainView: React.FC<IMainViewProps> = ({
             <AlertMessage type="success" message={successMessage} onDismiss={clearSuccess} />
         )}
 
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 pl-[max(1rem,var(--safe-area-inset-left))] pr-[max(1rem,var(--safe-area-inset-right))]">
             <div className="max-w-6xl mx-auto">
                 <PresetPrompts
                     presets={presets}
