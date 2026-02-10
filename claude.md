@@ -132,6 +132,16 @@ shared/
 - **Retry Logic:** 3 attempts with exponential backoff (1s, 2s delay)
 - **Batch Processing:** Matches tracks in batches of 10, 100ms delay between batches
 - **Provider Keywords:** Optional filtering for preferred music providers
+- **Library scope:** MA users typically have entire catalogues from Spotify, Apple Music, and/or other streaming providers. Virtually any real, published track WILL match. Do NOT assume tracks "might not be in the library" — that is almost never the case. Match rate is not a concern; recommendation quality is.
+
+## External Music APIs
+
+- **Last.fm** is the only useful discovery API — it has genuine "similar tracks" and "similar artists" based on real listener data
+- **MusicBrainz** is a metadata database, NOT a recommendation engine. It has no concept of "similar tracks". Searching by title+artist returns the same track in different releases. Never use it for discovery.
+- **Discogs** and **Deezer** are not implemented. Discogs is release-centric (not track-centric). Deezer has regional restrictions.
+- Do NOT add redundant enable flags. If a provider is enabled, the feature is enabled. No master switches gating per-provider switches.
+- All external API features must be clearly visible in the UI. No `opacity-40` hidden text. Use proper badges, links, and feedback.
+- All API errors and empty results must be logged visibly, not silently swallowed with `return []`.
 
 ## AI Integration
 
@@ -197,6 +207,11 @@ const tracks: TrackMatch[] = suggestions.map(s => ({
 6. **Using try/catch** - Banned, use @jfdi/attempt
 7. **Letting unused code accumulate** - Run knip regularly
 8. **Forgetting `/** @public */`** - Required for cross-workspace exports
+9. **Redundant enable flags** - Never have a master switch AND per-item switches. If any item is enabled, the feature is enabled.
+10. **Silent error swallowing** - Never `return []` on error without logging. All failures must be visible in logs AND to the user.
+11. **Using APIs for things they can't do** - MusicBrainz is metadata, not recommendations. Know what an API actually provides before integrating it.
+12. **Invisible UI changes** - opacity-40 text is invisible. Use proper badges, alerts, and links. Help text URLs must be actual clickable links (`<a href target="_blank">`), not plain text.
+13. **Assuming tracks won't match** - MA users have full streaming catalogues. Any real track will match. Focus on recommendation quality, not match rate.
 
 ## Development Workflow
 

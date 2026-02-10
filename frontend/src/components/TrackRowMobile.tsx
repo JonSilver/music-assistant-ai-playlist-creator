@@ -1,5 +1,11 @@
-import type { MATrack, TrackMatch } from "@shared/types";
+import type { MATrack, TrackMatch, TrackSource } from "@shared/types";
 import React from "react";
+
+const SOURCE_DISPLAY_NAMES: Record<TrackSource, string> = {
+    ai: "AI",
+    lastfm: "Last.fm",
+    musicbrainz: "MusicBrainz"
+};
 
 interface ITrackRowMobileProps {
     track: TrackMatch;
@@ -59,6 +65,12 @@ export const TrackRowMobile: React.FC<ITrackRowMobileProps> = ({
                                     ({selectedMatch.provider})
                                 </span>
                             )}
+                            {track.suggestion.source !== undefined &&
+                                track.suggestion.source !== "ai" && (
+                                    <span className="badge badge-xs badge-info ml-2">
+                                        {SOURCE_DISPLAY_NAMES[track.suggestion.source]}
+                                    </span>
+                                )}
                         </div>
                     </div>
                     {hasMultipleMatches && track.maMatches !== undefined && (

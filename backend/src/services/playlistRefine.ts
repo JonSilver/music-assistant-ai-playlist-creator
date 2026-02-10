@@ -1,6 +1,9 @@
-import { attemptPromise } from "@jfdi/attempt";
-import type { AIProviderConfig, TrackMatch } from "../../../shared/types.js";
+import { attempt, attemptPromise } from "@jfdi/attempt";
+import { MusicApiBlendConfigSchema } from "../../../shared/types.js";
+import type { AIProviderConfig, MusicApiBlendConfig, TrackMatch } from "../../../shared/types.js";
 import { generatePlaylist as generatePlaylistAI } from "./ai.js";
+import { enrichPlaylist } from "./musicApi/musicApiOrchestrator.js";
+import { blendTracks } from "./musicApi/trackBlender.js";
 import { MusicAssistantClient } from "./musicAssistant.js";
 import { matchTracksProgressively } from "./trackMatching.js";
 import { createUnmatchedTracks } from "../utils/trackUtils.js";
@@ -11,7 +14,8 @@ export const refinePlaylist = async (
     musicAssistantUrl: string,
     musicAssistantToken: string | undefined,
     providerConfig: AIProviderConfig,
-    customSystemPrompt?: string
+    customSystemPrompt?: string,
+    musicApiConfig?: string
 ): Promise<TrackMatch[]> => {
     const maClient = new MusicAssistantClient(musicAssistantUrl);
     await maClient.connect(musicAssistantToken);
@@ -50,8 +54,22 @@ export const refinePlaylist = async (
         throw new Error(`Failed to refine playlist: ${aiErr.message}`);
     }
 
+    // Enrich with external music APIs
+    let finalSuggestions = aiResult.tracks;
+    const [parseErr, blendConfig] = attempt<MusicApiBlendConfig>(() =>
+        MusicApiBlendConfigSchema.parse(JSON.parse(musicApiConfig ?? "{}"))
+    );
+
+    if (parseErr === undefined && blendConfig.enabled) {
+        const [enrichErr, externalTracks] = await attemptPromise(async () =>
+            enrichPlaylist(aiResult.tracks, refinementPrompt, blendConfig)
+        );
+        if (enrichErr === undefined && externalTracks.length > 0)
+            finalSuggestions = blendTracks(aiResult.tracks, externalTracks, blendConfig);
+    }
+
     // Initialise tracks - all marked as matching since we'll process them all
-    const newTracks: TrackMatch[] = createUnmatchedTracks(aiResult.tracks);
+    const newTracks: TrackMatch[] = createUnmatchedTracks(finalSuggestions);
 
     // Use the same matching logic as main generation
     await matchTracksProgressively(

@@ -1,4 +1,4 @@
-import type { AIProviderConfig, GetSettingsResponse } from '@shared/types';
+import type { GetSettingsResponse, UpdateSettingsRequest } from '@shared/types';
 import React from 'react';
 import { useSettings } from '../hooks/useSettings';
 import { AlertMessage } from './AlertMessage';
@@ -6,14 +6,7 @@ import { SettingsPage } from './SettingsPage';
 
 interface ISettingsViewProps {
     settings: GetSettingsResponse | null;
-    updateSettings: (updates: {
-        musicAssistantUrl: string;
-        musicAssistantToken?: string;
-        aiProviders: AIProviderConfig[];
-        customSystemPrompt?: string;
-        providerWeights?: string;
-        defaultProviderId?: string;
-    }) => Promise<Error | undefined>;
+    updateSettings: (updates: UpdateSettingsRequest) => Promise<Error | undefined>;
     setError: (message: string) => void;
     closeSettings: () => void;
     error: string | null;
@@ -55,6 +48,8 @@ export const SettingsView: React.FC<ISettingsViewProps> = ({
                 setProviderWeights={settingsManager.setProviderWeights}
                 defaultProviderId={settingsManager.defaultProviderId}
                 setDefaultProviderId={settingsManager.setDefaultProviderId}
+                musicApiConfig={settingsManager.musicApiConfig}
+                setMusicApiConfig={settingsManager.setMusicApiConfig}
                 testingMA={settingsManager.testingMA}
                 testResults={settingsManager.testResults}
                 testMA={settingsManager.testMA}

@@ -1,5 +1,5 @@
 import React from "react";
-import type { TrackMatch, MATrack } from "@shared/types";
+import type { TrackMatch, MATrack, TrackSource } from "@shared/types";
 import { UI_LABELS } from "@shared/constants";
 import { RetryIcon } from "./icons/RetryIcon";
 import { ReplaceIcon } from "./icons/ReplaceIcon";
@@ -9,6 +9,12 @@ import { CheckIcon } from "./icons/CheckIcon";
 import { CrossIcon } from "./icons/CrossIcon";
 import { TrackRowMobile } from "./TrackRowMobile";
 import { Spinner } from "./Spinner";
+
+const SOURCE_DISPLAY_NAMES: Record<TrackSource, string> = {
+    ai: "AI",
+    lastfm: "Last.fm",
+    musicbrainz: "MusicBrainz"
+};
 
 interface ITrackRowProps {
     track: TrackMatch;
@@ -150,6 +156,11 @@ export const TrackRow: React.FC<ITrackRowProps> = ({
                     )}
                     {selectedMatch !== undefined && (
                         <div className="text-xs opacity-60 mt-1">{selectedMatch.provider}</div>
+                    )}
+                    {track.suggestion.source !== undefined && track.suggestion.source !== "ai" && (
+                        <span className="badge badge-sm badge-info gap-1 mt-1">
+                            {SOURCE_DISPLAY_NAMES[track.suggestion.source]}
+                        </span>
                     )}
                 </td>
                 <td>

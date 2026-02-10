@@ -9,6 +9,7 @@ export interface PlaylistGenerationJob {
     status:
         | "pending"
         | "generating_ai"
+        | "enriching_external"
         | "matching_tracks"
         | "creating_playlist"
         | "completed"

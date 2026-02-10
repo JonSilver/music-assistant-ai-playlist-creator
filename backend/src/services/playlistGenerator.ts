@@ -1,6 +1,9 @@
-import { attemptPromise } from "@jfdi/attempt";
-import type { AIProviderConfig, TrackMatch } from "../../../shared/types.js";
+import { attempt, attemptPromise } from "@jfdi/attempt";
+import { MusicApiBlendConfigSchema } from "../../../shared/types.js";
+import type { AIProviderConfig, MusicApiBlendConfig, TrackMatch } from "../../../shared/types.js";
 import { generatePlaylist as generatePlaylistAI } from "./ai.js";
+import { enrichPlaylist } from "./musicApi/musicApiOrchestrator.js";
+import { blendTracks } from "./musicApi/trackBlender.js";
 import { MusicAssistantClient } from "./musicAssistant.js";
 import { matchTracksProgressively } from "./trackMatching.js";
 import { createPlaylist } from "./playlistCreator.js";
@@ -19,6 +22,7 @@ interface GeneratePlaylistParams {
     providerKeywords?: string[];
     webhookUrl?: string;
     trackCount?: number;
+    musicApiConfig?: string;
 }
 
 export const generatePlaylistJob = async (
@@ -34,7 +38,8 @@ export const generatePlaylistJob = async (
         customSystemPrompt,
         providerKeywords = [],
         webhookUrl,
-        trackCount
+        trackCount,
+        musicApiConfig
     } = params;
 
     // eslint-disable-next-line no-restricted-syntax
@@ -58,12 +63,43 @@ export const generatePlaylistJob = async (
             })
         );
 
-        if (aiErr !== undefined) 
+        if (aiErr !== undefined)
             throw new Error(`AI generation failed: ${aiErr.message}`);
-        
+
+
+        // Step 1b: Enrich with external music APIs
+        let finalSuggestions = aiResult.tracks;
+        console.log(`[MAPI] musicApiConfig raw: ${musicApiConfig}`);
+        const [parseErr, blendConfig] = attempt<MusicApiBlendConfig>(() =>
+            MusicApiBlendConfigSchema.parse(JSON.parse(musicApiConfig ?? "{}"))
+        );
+
+        if (parseErr !== undefined) {
+            console.log(`[MAPI] musicApiConfig parse failed: ${parseErr.message}`);
+        } else {
+            console.log(`[MAPI] musicApiConfig parsed: providers=${JSON.stringify(blendConfig.providers)}, blendMode=${blendConfig.blendMode}`);
+        }
+
+        const hasEnabledProviders = parseErr === undefined && blendConfig.providers.some(p => p.enabled);
+        if (hasEnabledProviders) {
+            jobStore.updateJob(jobId, { status: "enriching_external" });
+            console.log(`[MAPI] Starting external enrichment with ${blendConfig.providers.filter(p => p.enabled).length} enabled providers`);
+            const [enrichErr, externalTracks] = await attemptPromise(async () =>
+                enrichPlaylist(aiResult.tracks, prompt, blendConfig)
+            );
+            if (enrichErr !== undefined) {
+                console.error(`[MAPI] External enrichment failed: ${enrichErr.message}`);
+            } else {
+                console.log(`[MAPI] External enrichment returned ${externalTracks.length} tracks`);
+                if (externalTracks.length > 0) {
+                    finalSuggestions = blendTracks(aiResult.tracks, externalTracks, blendConfig);
+                    console.log(`[MAPI] After blending: ${finalSuggestions.length} total tracks (${finalSuggestions.filter(t => t.source !== undefined && t.source !== 'ai').length} from external APIs)`);
+                }
+            }
+        }
 
         // Initialise tracks - all marked as matching since we'll process them all
-        const initialTracks: TrackMatch[] = createUnmatchedTracks(aiResult.tracks);
+        const initialTracks: TrackMatch[] = createUnmatchedTracks(finalSuggestions);
 
         jobStore.updateJob(jobId, {
             status: "matching_tracks",

@@ -25,11 +25,33 @@ export {
 /** @public */
 export const AIProviderSchema = z.enum(['claude', 'openai'])
 
+// Re-export external music API types from music-api-types
+export {
+  type TrackSource,
+  type MusicApiProviderType,
+  type ExternalTrack,
+  type MusicApiProviderConfig,
+  type BlendMode,
+  type MusicApiBlendConfig,
+  TRACK_SOURCES,
+  TrackSourceSchema,
+  MUSIC_API_PROVIDERS,
+  MusicApiProviderTypeSchema,
+  ExternalTrackSchema,
+  MusicApiProviderConfigSchema,
+  BLEND_MODES,
+  BlendModeSchema,
+  MusicApiBlendConfigSchema
+} from './music-api-types.js'
+
+import { TrackSourceSchema } from './music-api-types.js'
+
 // Track suggestion from AI
 export const TrackSuggestionSchema = z.object({
   title: z.string(),
   artist: z.string(),
-  album: z.string().optional()
+  album: z.string().optional(),
+  source: TrackSourceSchema.optional()
 })
 /** @public */
 export type TrackSuggestion = z.infer<typeof TrackSuggestionSchema>
@@ -92,7 +114,7 @@ export type BackendGeneratePlaylistResponse = z.infer<typeof BackendGeneratePlay
 
 export const BackendJobProgressUpdateSchema = z.object({
   jobId: z.string(),
-  status: z.enum(["pending", "generating_ai", "matching_tracks", "creating_playlist", "completed", "failed"]),
+  status: z.enum(["pending", "generating_ai", "enriching_external", "matching_tracks", "creating_playlist", "completed", "failed"]),
   tracks: z.array(TrackMatchSchema).optional(),
   totalTracks: z.number().optional(),
   matchedTracks: z.number().optional(),

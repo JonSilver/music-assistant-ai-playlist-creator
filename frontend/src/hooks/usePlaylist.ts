@@ -10,8 +10,10 @@ import {
     refinePlaylistViaBackend,
     retryTrackViaBackend
 } from "../services/playlistApi";
-import type { TrackMatch } from "@shared/types";
+import type { BackendJobProgressUpdate, TrackMatch } from "@shared/types";
 import { parseProviderKeywords } from "../utils/parseProviderKeywords";
+
+export type GenerationPhase = BackendJobProgressUpdate["status"] | null;
 
 export interface UsePlaylistReturn {
     prompt: string;
@@ -29,6 +31,7 @@ export interface UsePlaylistReturn {
     setGeneratedTracks: (tracks: TrackMatch[]) => void;
     trackFilter: "all" | "matched" | "unmatched";
     setTrackFilter: (filter: "all" | "matched" | "unmatched") => void;
+    generationPhase: GenerationPhase;
     refinementPrompt: string;
     setRefinementPrompt: (value: string) => void;
     generatePlaylist: () => Promise<void>;
@@ -54,6 +57,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
     const [generatedTracks, setGeneratedTracks] = useState<TrackMatch[]>([]);
     const [trackFilter, setTrackFilter] = useState<"all" | "matched" | "unmatched">("all");
     const [refinementPrompt, setRefinementPrompt] = useState("");
+    const [generationPhase, setGenerationPhase] = useState<GenerationPhase>(null);
 
     const { replacingTrackIndex, replaceTrack } = useTrackReplace(
         generatedTracks,
@@ -85,6 +89,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
 
         setGeneratedTracks([]);
         setGenerating(true);
+        setGenerationPhase("pending");
 
         const [err] = await attemptPromise(async () =>
             generatePlaylistViaBackend(
@@ -94,15 +99,17 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
                     trackCount: parseInt(trackCount, 10)
                 },
                 update => {
+                    setGenerationPhase(update.status);
                     // Update tracks progressively as they're matched
-                    if (update.tracks !== undefined) 
+                    if (update.tracks !== undefined)
                         setGeneratedTracks(update.tracks);
-                    
+
                 }
             )
         );
 
         setGenerating(false);
+        setGenerationPhase(null);
 
         if (err !== undefined) {
             setError(`Failed to generate playlist: ${err.message}`);
@@ -262,6 +269,7 @@ export const usePlaylist = (onHistoryUpdate: () => void): UsePlaylistReturn => {
         setGeneratedTracks,
         trackFilter,
         setTrackFilter,
+        generationPhase,
         refinementPrompt,
         setRefinementPrompt,
         generatePlaylist,

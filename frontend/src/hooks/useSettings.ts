@@ -1,6 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
-import type { AIProviderConfig, GetSettingsResponse } from "@shared/types";
+import type { AIProviderConfig, GetSettingsResponse, MusicApiBlendConfig } from "@shared/types";
+import { MusicApiBlendConfigSchema } from "@shared/types";
 import { testMusicAssistantConnection } from "../services/playlistApi";
+
+const DEFAULT_MUSIC_API_CONFIG: MusicApiBlendConfig = {
+    enabled: false,
+    providers: [],
+    blendMode: "supplement",
+    maxExternalTracks: 10
+};
+
+const parseMusicApiConfig = (raw: string): MusicApiBlendConfig => {
+    try {
+        const parsed = MusicApiBlendConfigSchema.parse(JSON.parse(raw));
+        return parsed;
+    } catch {
+        return DEFAULT_MUSIC_API_CONFIG;
+    }
+};
 
 interface TestResults {
     ma?: { success: boolean; error?: string };
@@ -19,6 +36,8 @@ interface UseSettingsReturn {
     setProviderWeights: (weights: string) => void;
     defaultProviderId: string | undefined;
     setDefaultProviderId: (id: string | undefined) => void;
+    musicApiConfig: MusicApiBlendConfig;
+    setMusicApiConfig: (config: MusicApiBlendConfig) => void;
     testingMA: boolean;
     testResults: TestResults;
     testMA: () => Promise<void>;
@@ -35,6 +54,7 @@ export const useSettings = (
         customSystemPrompt?: string;
         providerWeights?: string;
         defaultProviderId?: string;
+        musicApiConfig?: string;
     }) => Promise<Error | undefined>,
     setError: (message: string) => void,
     closeSettings: () => void
@@ -45,6 +65,7 @@ export const useSettings = (
     const [customSystemPrompt, setCustomSystemPrompt] = useState("");
     const [providerWeights, setProviderWeights] = useState("[]");
     const [defaultProviderId, setDefaultProviderId] = useState<string | undefined>(undefined);
+    const [musicApiConfig, setMusicApiConfig] = useState<MusicApiBlendConfig>(DEFAULT_MUSIC_API_CONFIG);
     const [testingMA, setTestingMA] = useState(false);
     const [testResults, setTestResults] = useState<TestResults>({});
 
@@ -56,6 +77,7 @@ export const useSettings = (
             setCustomSystemPrompt(settings.customSystemPrompt ?? "");
             setProviderWeights(settings.providerWeights);
             setDefaultProviderId(settings.defaultProviderId);
+            setMusicApiConfig(parseMusicApiConfig(settings.musicApiConfig));
         }
     }, [settings]);
 
@@ -89,7 +111,8 @@ export const useSettings = (
             customSystemPrompt:
                 customSystemPrompt.trim().length > 0 ? customSystemPrompt : undefined,
             providerWeights,
-            defaultProviderId
+            defaultProviderId,
+            musicApiConfig: JSON.stringify(musicApiConfig)
         });
 
         if (err !== undefined) {
@@ -105,6 +128,7 @@ export const useSettings = (
         customSystemPrompt,
         providerWeights,
         defaultProviderId,
+        musicApiConfig,
         updateSettings,
         setError,
         closeSettings
@@ -118,6 +142,7 @@ export const useSettings = (
             setCustomSystemPrompt(settings.customSystemPrompt ?? "");
             setProviderWeights(settings.providerWeights);
             setDefaultProviderId(settings.defaultProviderId);
+            setMusicApiConfig(parseMusicApiConfig(settings.musicApiConfig));
         }
         closeSettings();
     }, [settings, closeSettings]);
@@ -135,6 +160,8 @@ export const useSettings = (
         setProviderWeights,
         defaultProviderId,
         setDefaultProviderId,
+        musicApiConfig,
+        setMusicApiConfig,
         testingMA,
         testResults,
         testMA,

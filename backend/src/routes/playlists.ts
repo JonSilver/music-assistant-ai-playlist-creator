@@ -60,7 +60,8 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
                     customSystemPrompt: settings.customSystemPrompt,
                     providerKeywords: settings.providerPreference,
                     webhookUrl,
-                    trackCount
+                    trackCount,
+                    musicApiConfig: settings.musicApiConfig
                 },
                 db
             ).catch((err: unknown) => {
@@ -201,7 +202,8 @@ export const setupPlaylistsRoutes = (router: Router, db: PlaylistDatabase): void
                     settings.musicAssistantUrl,
                     settings.musicAssistantToken,
                     providerConfig,
-                    settings.customSystemPrompt
+                    settings.customSystemPrompt,
+                    settings.musicApiConfig
                 )
             );
 

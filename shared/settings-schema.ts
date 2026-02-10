@@ -157,6 +157,26 @@ export const SETTINGS_FIELDS = {
     type: 'string',
     optional: true,
     zodSchema: z.string().optional()
+  } satisfies StringSettingField,
+
+  musicApiConfig: {
+    key: 'musicApiConfig',
+    type: 'string',
+    optional: false,
+    defaultValue: '{"enabled":false,"providers":[],"blendMode":"supplement","maxExternalTracks":10}',
+    zodSchema: z.string(),
+    dbTransform: {
+      serialise: (value: string) => value,
+      deserialise: (value: string | null) => {
+        if (value === null || value === '') return '{"enabled":false,"providers":[],"blendMode":"supplement","maxExternalTracks":10}';
+        try {
+          JSON.parse(value);
+          return value;
+        } catch {
+          return '{"enabled":false,"providers":[],"blendMode":"supplement","maxExternalTracks":10}';
+        }
+      }
+    }
   } satisfies StringSettingField
 } as const;
 
@@ -206,7 +226,8 @@ export const AppSettingsSchema = z.object({
   aiProviders: z.array(AIProviderConfigSchema),
   customSystemPrompt: z.string().optional(),
   providerWeights: z.string(),
-  defaultProviderId: z.string().optional()
+  defaultProviderId: z.string().optional(),
+  musicApiConfig: z.string()
 });
 
 export const UpdateSettingsRequestSchema = z.object({
@@ -215,7 +236,8 @@ export const UpdateSettingsRequestSchema = z.object({
   aiProviders: z.array(AIProviderConfigSchema).optional(),
   customSystemPrompt: z.string().optional(),
   providerWeights: z.string().optional(),
-  defaultProviderId: z.string().optional()
+  defaultProviderId: z.string().optional(),
+  musicApiConfig: z.string().optional()
 });
 
 // Extended response type (no extra computed fields needed)

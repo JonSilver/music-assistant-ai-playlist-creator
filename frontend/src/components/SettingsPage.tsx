@@ -1,9 +1,10 @@
 import { SUCCESS_MESSAGES } from "@shared/constants";
 import React, { useState } from "react";
-import type { AIProviderConfig } from "../../../shared/types";
+import type { AIProviderConfig, MusicApiBlendConfig } from "../../../shared/types";
 import { parseProviderKeywords } from "../utils/parseProviderKeywords";
 import { DefaultSystemPromptModal } from "./DefaultSystemPromptModal";
 import { LoadingButton } from "./LoadingButton";
+import { MusicApisSettings } from "./MusicApisSettings";
 import { ProvidersManager } from "./ProvidersManager";
 import { ProviderWeightsList } from "./ProviderWeightsList";
 import { SettingsHeader } from "./SettingsHeader";
@@ -22,6 +23,8 @@ interface ISettingsPageProps {
     setProviderWeights: (value: string) => void;
     defaultProviderId: string | undefined;
     setDefaultProviderId: (value: string | undefined) => void;
+    musicApiConfig: MusicApiBlendConfig;
+    setMusicApiConfig: (config: MusicApiBlendConfig) => void;
     testingMA: boolean;
     testResults: {
         ma?: { success: boolean; error?: string };
@@ -45,6 +48,8 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
     setProviderWeights,
     defaultProviderId,
     setDefaultProviderId,
+    musicApiConfig,
+    setMusicApiConfig,
     testingMA,
     testResults,
     testMA,
@@ -53,8 +58,6 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
     showCancel
 }) => {
     const [showDefaultPrompt, setShowDefaultPrompt] = useState(false);
-
-    // Handle provider keywords change
     const handleProviderKeywordsChange = (keywords: string[]): void => {
         setProviderWeights(JSON.stringify(keywords));
     };
@@ -76,16 +79,12 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
                                     placeholder="e.g. http://192.168.1.100:8095"
                                     className="input input-bordered flex-1"
                                     value={musicAssistantUrl}
-                                    onChange={e => {
-                                        setMusicAssistantUrl(e.target.value);
-                                    }}
+                                    onChange={e => setMusicAssistantUrl(e.target.value)}
                                 />
                                 <LoadingButton
                                     className="btn btn-primary test-btn"
                                     loading={testingMA}
-                                    onClick={() => {
-                                        void testMA();
-                                    }}
+                                    onClick={() => void testMA()}
                                     disabled={musicAssistantUrl.trim().length === 0}
                                     loadingText="Testing..."
                                 >
@@ -98,12 +97,8 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
                                 </span>
                             </label>
                             {testResults.ma !== undefined && (
-                                <div
-                                    className={`alert ${testResults.ma.success ? "alert-success" : "alert-error"} mt-2`}
-                                >
-                                    {testResults.ma.success
-                                        ? SUCCESS_MESSAGES.CONNECTION_OK
-                                        : `Connection failed: ${testResults.ma.error ?? "Unknown error"}`}
+                                <div className={`alert ${testResults.ma.success ? "alert-success" : "alert-error"} mt-2`}>
+                                    {testResults.ma.success ? SUCCESS_MESSAGES.CONNECTION_OK : `Connection failed: ${testResults.ma.error ?? "Unknown error"}`}
                                 </div>
                             )}
                         </div>
@@ -117,9 +112,7 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
                                 placeholder="Paste token from MA web UI"
                                 className="input input-bordered"
                                 value={musicAssistantToken}
-                                onChange={e => {
-                                    setMusicAssistantToken(e.target.value);
-                                }}
+                                onChange={e => setMusicAssistantToken(e.target.value)}
                             />
                             <label className="label">
                                 <span className="label-text-alt">
@@ -146,9 +139,7 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
                                 <button
                                     type="button"
                                     className="btn btn-xs btn-ghost"
-                                    onClick={() => {
-                                        setShowDefaultPrompt(true);
-                                    }}
+                                    onClick={() => setShowDefaultPrompt(true)}
                                 >
                                     Preview Default Prompt
                                 </button>
@@ -157,9 +148,7 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
                                 className="textarea textarea-bordered h-32 w-full"
                                 placeholder="Override the default AI system prompt. Leave empty to use default."
                                 value={customSystemPrompt}
-                                onChange={e => {
-                                    setCustomSystemPrompt(e.target.value);
-                                }}
+                                onChange={e => setCustomSystemPrompt(e.target.value)}
                             ></textarea>
                             <label className="label">
                                 <span className="label-text-alt">
@@ -180,7 +169,14 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
                             />
                         </div>
 
-                        <div className="relative card-actions justify-end gap-2">
+                        <div className="divider"></div>
+
+                        <MusicApisSettings
+                            config={musicApiConfig}
+                            onConfigChange={setMusicApiConfig}
+                        />
+
+                        <div className="relative card-actions justify-end gap-2 mt-4">
                             {showCancel && onCancel !== undefined && (
                                 <button className="btn btn-ghost" onClick={onCancel}>
                                     Cancel
@@ -196,9 +192,7 @@ export const SettingsPage: React.FC<ISettingsPageProps> = ({
 
                 <DefaultSystemPromptModal
                     show={showDefaultPrompt}
-                    onClose={() => {
-                        setShowDefaultPrompt(false);
-                    }}
+                    onClose={() => setShowDefaultPrompt(false)}
                 />
             </div>
         </div>

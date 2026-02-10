@@ -108,6 +108,7 @@ export const settingsUtils = {
     customSystemPrompt?: string;
     providerWeights: string;
     defaultProviderId?: string;
+    musicApiConfig: string;
     defaultProvider: AIProviderConfig;
     providers: AIProviderConfig[];
     providerPreference: string[];
@@ -148,6 +149,9 @@ export const settingsUtils = {
       .map(s => s.trim())
       .filter(s => s.length > 0);
 
+    const musicApiConfig = (settings.musicApiConfig as string | undefined)
+      ?? '{"enabled":false,"providers":[],"blendMode":"supplement","maxExternalTracks":10}';
+
     return {
       musicAssistantUrl: (settings.musicAssistantUrl as string | undefined) ?? '',
       musicAssistantToken: settings.musicAssistantToken as string | undefined,
@@ -155,6 +159,7 @@ export const settingsUtils = {
       customSystemPrompt: settings.customSystemPrompt as string | undefined,
       providerWeights,
       defaultProviderId,
+      musicApiConfig,
       defaultProvider,
       providers: aiProviders,
       providerPreference

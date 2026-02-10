@@ -1,13 +1,26 @@
 import type { AIProviderConfig } from "@shared/types";
+import type { GenerationPhase } from "../hooks/usePlaylist";
 import React from "react";
 import { LoadingButton } from "./LoadingButton";
 import { VersionCopyrightFooter } from "./VersionCopyrightFooter";
+
+const getLoadingText = (phase: GenerationPhase, providerName: string): string => {
+    switch (phase) {
+        case "enriching_external":
+            return "Fetching from music APIs...";
+        case "matching_tracks":
+            return "Matching tracks in library...";
+        default:
+            return `Generating with ${providerName}...`;
+    }
+};
 
 interface IPlaylistCreatorFormProps {
     playlistName: string;
     prompt: string;
     trackCount: string;
     generating: boolean;
+    generationPhase: GenerationPhase;
     providers: AIProviderConfig[];
     selectedProviderId: string | null;
     onPlaylistNameChange: (value: string) => void;
@@ -22,6 +35,7 @@ export const PlaylistCreatorForm: React.FC<IPlaylistCreatorFormProps> = ({
     prompt,
     trackCount,
     generating,
+    generationPhase,
     providers,
     selectedProviderId,
     onPlaylistNameChange,
@@ -116,7 +130,7 @@ export const PlaylistCreatorForm: React.FC<IPlaylistCreatorFormProps> = ({
                             playlistName.trim().length === 0 ||
                             providers.length === 0
                         }
-                        loadingText={`Generating with ${providerName}...`}
+                        loadingText={getLoadingText(generationPhase, providerName)}
                     >
                         Generate Playlist
                     </LoadingButton>

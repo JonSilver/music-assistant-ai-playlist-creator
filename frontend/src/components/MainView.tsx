@@ -71,6 +71,7 @@ export const MainView: React.FC<IMainViewProps> = ({
                     prompt={playlist.prompt}
                     trackCount={playlist.trackCount}
                     generating={playlist.generating}
+                    generationPhase={playlist.generationPhase}
                     providers={settings.aiProviders}
                     selectedProviderId={selectedProviderId}
                     onPlaylistNameChange={playlist.setPlaylistName}
